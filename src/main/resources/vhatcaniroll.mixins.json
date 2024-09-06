@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.radimous.vhatcaniroll.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "vhatcaniroll.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "VaultGearTierConfigAccessor",
+    "StatisticsElementContainerScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
