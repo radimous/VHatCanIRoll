@@ -122,7 +122,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         if (tabIndex < 11){
             return Spatials.positionXY(5 + tabIndex * 30, 2 + (selected ? 0 : 4));
         }
-        return Spatials.positionXY(336 + (selected? 0:4), 35 + (tabIndex-11) * 30);
+        return Spatials.positionXY(337 + (selected? 0:3), 35 + (tabIndex-11) * 30);
     }
     private ISpatial getItemPos(int tabIndex) {
         if (tabIndex < 11){
