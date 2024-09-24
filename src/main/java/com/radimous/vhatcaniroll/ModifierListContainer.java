@@ -19,15 +19,17 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int i = 20;
         int k = 9;
+        boolean legendary = parent.isLegendary();
         Optional<VaultGearTierConfig> optCfg = VaultGearTierConfig.getConfig(parent.getCurrGear());
         LabelElement<?> itemName = new LabelElement<>(
             Spatials.positionXY(k, 5).width(this.innerWidth() - k).height(15), new TextComponent(
-            parent.getCurrGear().getItem().toString().toUpperCase() + " - LVL " + parent.getCurrLvl()).withStyle(ChatFormatting.UNDERLINE), LabelTextStyle.defaultStyle()
+            parent.getCurrGear().getItem().toString().toUpperCase() + " - LVL " + parent.getCurrLvl())
+            .withStyle(ChatFormatting.UNDERLINE).withStyle(legendary ? ChatFormatting.GOLD : ChatFormatting.WHITE), LabelTextStyle.defaultStyle()
         );
         this.addElement(itemName);
         if (optCfg.isPresent()) {
             VaultGearTierConfig cfg = optCfg.get();
-            for (var modifier : Helper.getModifierList(parent.getCurrLvl(), cfg)) {
+            for (var modifier : Helper.getModifierList(parent.getCurrLvl(), cfg, legendary)) {
                 LabelElement<?> labelelement = new LabelElement<>(
                     Spatials.positionXY(k, i).width(this.innerWidth() - k).height(15), modifier, LabelTextStyle.defaultStyle()
                 );
@@ -41,6 +43,12 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
             );
             this.addElement(labelelement);
         }
+    }
+    public float getScroll() {
+        return this.verticalScrollBarElement.getValue();
+    }
 
+    public void setScroll(float scroll) {
+        this.verticalScrollBarElement.setValue(scroll);
     }
 }

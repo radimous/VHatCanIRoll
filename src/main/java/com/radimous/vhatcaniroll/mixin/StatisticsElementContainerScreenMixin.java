@@ -48,7 +48,7 @@ public class StatisticsElementContainerScreenMixin extends AbstractSkillTabEleme
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 Minecraft.getInstance().setScreen(new GearModifierScreen());
             }).layout(
-                    (screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.right() + 5).translateY(this.getTabContentSpatial().bottom() + 109)
+                    (screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.right() + Config.BUTTON_X.get()).translateY(this.getTabContentSpatial().bottom() + Config.BUTTON_Y.get())
                 )
                 .tooltip((tooltipRenderer, poseStack, mouseX, mouseY, tooltipFlag) -> {
                     tooltipRenderer.renderTooltip(poseStack, List.of(new TextComponent("Gear modifiers")), mouseX, mouseY, ItemStack.EMPTY, TooltipDirection.RIGHT);
@@ -59,7 +59,7 @@ public class StatisticsElementContainerScreenMixin extends AbstractSkillTabEleme
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> new ItemStack(ModItems.CHESTPLATE), () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY
             ).layout(
-                    (screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.right() + 5).translateY(this.getTabContentSpatial().bottom() + 109)
+                    (screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.right() + Config.BUTTON_X.get()).translateY(this.getTabContentSpatial().bottom() + Config.BUTTON_Y.get())
                 )
                 .tooltip((tooltipRenderer, poseStack, mouseX, mouseY, tooltipFlag) -> {
                     tooltipRenderer.renderTooltip(poseStack, List.of(new TextComponent("Gear modifiers")), mouseX, mouseY, ItemStack.EMPTY, TooltipDirection.RIGHT);

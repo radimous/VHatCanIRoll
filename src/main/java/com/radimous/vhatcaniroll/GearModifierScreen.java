@@ -31,10 +31,11 @@ import java.util.List;
 
 public class GearModifierScreen extends AbstractElementScreen {
     //TODO: code cleanup - variable naming, magic numbers, some logic reordering etc
-    //TODO: legendary modifiers
 
     private ModifierListContainer modifierList;
     private final TextInputElement<?> lvlInput;
+    private boolean legendary;
+    private LabelElement<?> legendaryLabel;
 
     private int currIndex = 0;
     private final List<TabElement<?>> tabs = new ArrayList<>();
@@ -68,6 +69,7 @@ public class GearModifierScreen extends AbstractElementScreen {
 
         this.lvlInput = this.addElement(createLvlInput());
         createLvlButtons();
+        createLegendaryButton();
 
         // inner black window
         this.modifierList = new ModifierListContainer(
@@ -97,12 +99,16 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.lvlInput.setInput(String.valueOf(this.getCurrLvl() - 1));
     }
 
-    private void updateModifierList() {
+    private void updateModifierList(boolean keepScroll) {
+        var oldScroll = this.modifierList.getScroll();
         this.removeElement(this.modifierList);
         this.modifierList = new ModifierListContainer(
             Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57),
             this)
             .layout(this.translateWorldSpatial());
+        if (keepScroll) {
+            this.modifierList.setScroll(oldScroll);
+        }
         this.addElement(this.modifierList);
         ScreenLayout.requestLayout();
 
@@ -149,7 +155,7 @@ public class GearModifierScreen extends AbstractElementScreen {
             this.addElement(tab);
         }
         this.currIndex = tabIndex;
-        updateModifierList();
+        updateModifierList(false);
     }
 
     private TextInputElement<?> createLvlInput() {
@@ -163,7 +169,7 @@ public class GearModifierScreen extends AbstractElementScreen {
             editBox.setMaxLength(3);
             editBox.setValue(String.valueOf(VaultBarOverlay.vaultLevel));
         });
-        inputElement.onTextChanged(s -> updateModifierList());
+        inputElement.onTextChanged(s -> updateModifierList(true));
         return inputElement;
     }
 
@@ -206,6 +212,31 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(btnPlus);
     }
 
+    private void toggleLegend() {
+        this.legendary = !this.legendary;
+        updateLegendaryLabel();
+        updateModifierList(true);
+    }
+
+    private void updateLegendaryLabel() {
+        if (this.legendaryLabel != null) {
+            this.removeElement(this.legendaryLabel);
+        }
+        var formatting = this.legendary ? ChatFormatting.GOLD : ChatFormatting.WHITE;
+        this.legendaryLabel = new LabelElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 5 - 13, 38),
+            new TextComponent("✦").withStyle(formatting), LabelTextStyle.defaultStyle())
+            .layout(this.translateWorldSpatial());
+        this.addElement(legendaryLabel);
+    }
+
+    private void createLegendaryButton() {
+        updateLegendaryLabel();
+        NineSliceButtonElement<?> btnLegend =
+            new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 8 - 13, 35).size(14, 14),
+                ScreenTextures.BUTTON_EMPTY_TEXTURES, this::toggleLegend).layout(this.translateWorldSpatial());
+        this.addElement(btnLegend);
+    }
+
     private void createTabs() {
         for (int i = 0; i < VHatCanIRoll.getVaultGearItems().size(); i++) {
             addTab(i);
@@ -224,6 +255,10 @@ public class GearModifierScreen extends AbstractElementScreen {
             new FakeItemSlotElement<>(getItemPos(index), () -> gearItem, () -> false,
                 ScreenTextures.EMPTY, ScreenTextures.EMPTY).layout(
                 this.translateWorldSpatial()));
+    }
+
+    public boolean isLegendary() {
+        return legendary;
     }
 
     @Override
@@ -249,6 +284,10 @@ public class GearModifierScreen extends AbstractElementScreen {
         // shift+tab to previous gear item
         if (keyCode == InputConstants.KEY_TAB && hasShiftDown()) {
             switchTab((currIndex - 1 + VHatCanIRoll.getVaultGearItems().size()) % VHatCanIRoll.getVaultGearItems().size());
+        }
+        // alt to toggle legendary
+        if (keyCode == InputConstants.KEY_LALT || keyCode == InputConstants.KEY_RALT) {
+            toggleLegend();
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
