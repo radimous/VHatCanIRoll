@@ -293,6 +293,11 @@ public class GearModifierScreen extends AbstractElementScreen {
         if (keyCode == InputConstants.KEY_LALT || keyCode == InputConstants.KEY_RALT) {
             toggleLegend();
         }
+        // ctrl + , to toggle compact +lvl to abilities
+        if (keyCode == InputConstants.KEY_COMMA && hasControlDown()) {
+            Config.COMBINE_LVL_TO_ABILITIES.set(!Config.COMBINE_LVL_TO_ABILITIES.get());
+            updateModifierList(true);
+        }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }
