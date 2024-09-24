@@ -16,7 +16,7 @@ public class Config {
 
         COMBINE_LVL_TO_ABILITIES = builder
             .comment("combine +lvl to abilities into one row")
-            .define("combineAddedLvlToAbilities", true);
+            .define("combineAddedLvlToAbilities", false);
 
         builder.push("BUTTON");
         VAULT_SCREEN_BUTTON = builder
