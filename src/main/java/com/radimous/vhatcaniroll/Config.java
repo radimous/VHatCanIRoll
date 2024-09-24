@@ -9,13 +9,14 @@ public class Config {
     public static final ForgeConfigSpec.IntValue BUTTON_X;
     public static final ForgeConfigSpec.IntValue BUTTON_Y;
     public static final ForgeConfigSpec.BooleanValue COMBINE_LVL_TO_ABILITIES;
+    public static final ForgeConfigSpec.IntValue MAX_LEVEL_OVERRIDE;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
         COMBINE_LVL_TO_ABILITIES = builder
             .comment("combine +lvl to abilities into one row")
-            .define("combineLvlToAbilities", true);
+            .define("combineAddedLvlToAbilities", true);
 
         builder.push("BUTTON");
         VAULT_SCREEN_BUTTON = builder
@@ -33,6 +34,9 @@ public class Config {
         ALLOW_DUPE = builder
             .comment("allow duplicate modifiers")
             .define("allowDupe", false);
+        MAX_LEVEL_OVERRIDE = builder
+            .comment("override max level")
+            .defineInRange("maxLevelOverride", -1, -1, Integer.MAX_VALUE);
         builder.pop();
 
         SPEC = builder.build();

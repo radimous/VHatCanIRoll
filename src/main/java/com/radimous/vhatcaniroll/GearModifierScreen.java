@@ -188,6 +188,10 @@ public class GearModifierScreen extends AbstractElementScreen {
             ScreenLayout.requestLayout();
             return true;
         }
+        if (lvl <= Config.MAX_LEVEL_OVERRIDE.get() && lvl >= 0) {
+            ScreenLayout.requestLayout();
+            return true;
+        }
         return false;
     }
 
