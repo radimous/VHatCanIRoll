@@ -6,7 +6,6 @@ import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.gear.attribute.VaultGearAttributeRegistry;
 import iskallia.vault.gear.attribute.ability.AbilityLevelAttribute;
-import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityModification;
 import iskallia.vault.gear.attribute.config.BooleanFlagGenerator;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
 import iskallia.vault.gear.attribute.custom.EffectGearAttribute;
@@ -15,6 +14,7 @@ import iskallia.vault.util.TextComponentUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.LogicalSide;
@@ -226,7 +226,7 @@ public class Helper {
             var abName = optSkill.get().getName();
             abComp.append(res);
             abComp.append(" to level of ");
-            abComp.append(new TextComponent(abName).withStyle(SpecialAbilityModification.getAbilityStyle()));
+            abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
             return abComp;
         }
     }
