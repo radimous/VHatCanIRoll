@@ -1,6 +1,6 @@
 package com.radimous.vhatcaniroll.mixin;
 
-import iskallia.vault.gear.attribute.custom.EffectGearAttribute;
+import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

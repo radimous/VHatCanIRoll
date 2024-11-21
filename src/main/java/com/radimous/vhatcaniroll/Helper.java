@@ -6,15 +6,15 @@ import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.gear.attribute.VaultGearAttributeRegistry;
 import iskallia.vault.gear.attribute.ability.AbilityLevelAttribute;
-import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityModification;
 import iskallia.vault.gear.attribute.config.BooleanFlagGenerator;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
-import iskallia.vault.gear.attribute.custom.EffectGearAttribute;
+import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.util.TextComponentUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.LogicalSide;
@@ -55,7 +55,7 @@ public class Helper {
 
         Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, legendary);
 
-        List<String> grList = new ArrayList<>();
+        Map<String, List<Component>> groupedModifiers = new HashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
             if (legendary) {
@@ -71,21 +71,31 @@ public class Helper {
             Component newMod = getVal(
                 Objects.requireNonNull(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute())),
                 mTierList);
-            if (groupCounts.get(modGr) > 1 && !grList.contains(modGr)) {
-                grList.add(modGr);
+            if (groupCounts.get(modGr) > 1) {
+                groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(newMod);
+                continue;
             }
-            int index = grList.indexOf(modGr); // index used to determine color
-            MutableComponent full;
-            if (index == -1) {
-                full = new TextComponent("  ");
-            } else {
-                full = new TextComponent("► ").withStyle(COLORS[index % COLORS.length]);
-            }
+
+            MutableComponent full = new TextComponent("  ");
 
             full.append(newMod);
             if (Config.ALLOW_DUPE.get() || !(modList.get(modList.size() - 1).getString()).equals(full.getString())) { //dumb way to fix ability lvl+ duplication
                 modList.add(full);
             }
+        }
+        boolean useNums = false;
+        if (groupedModifiers.size() > COLORS.length) {
+            // more than 7 groups is a bit crazy, but just in case
+            useNums = true;
+        }
+        int i = 0;
+        for (var modGr: groupedModifiers.values()) {
+           for (var mod: modGr) {
+               MutableComponent full = new TextComponent(useNums ? i + " " : "► ").withStyle(COLORS[i % COLORS.length]);
+               full.append(mod);
+               modList.add(full);
+           }
+           i++;
         }
         modList.add(TextComponent.EMPTY);
     }
@@ -226,7 +236,7 @@ public class Helper {
             var abName = optSkill.get().getName();
             abComp.append(res);
             abComp.append(" to level of ");
-            abComp.append(new TextComponent(abName).withStyle(SpecialAbilityModification.getAbilityStyle()));
+            abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
             return abComp;
         }
     }
