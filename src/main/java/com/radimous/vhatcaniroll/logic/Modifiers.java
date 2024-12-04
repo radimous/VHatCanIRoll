@@ -34,13 +34,13 @@ public class Modifiers {
         new ChatFormatting[]{ChatFormatting.RED, ChatFormatting.GREEN, ChatFormatting.BLUE, ChatFormatting.YELLOW,
             ChatFormatting.LIGHT_PURPLE, ChatFormatting.AQUA, ChatFormatting.WHITE};
 
-    public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, int tierIncrease) {
+    public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory) {
         Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup = ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
         
         ArrayList<Component> modList = new ArrayList<>();
 
         for (VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup : modifierGroup.keySet()) {
-            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup, tierIncrease));
+            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup, modifierCategory));
         }
 
         return modList;
@@ -48,7 +48,7 @@ public class Modifiers {
 
     private static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
                                              Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup,
-                                             int tierIncrease) {
+                                             ModifierCategory modifierCategory) {
 
         ArrayList<Component> componentList = new ArrayList<>();
         if (!Config.SHOW_ABILITY_ENHANCEMENTS.get() && affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
@@ -67,7 +67,7 @@ public class Modifiers {
         }
 
 
-        Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, tierIncrease);
+        Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, modifierCategory);
 
         Map<String, List<Component>> groupedModifiers = new HashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
@@ -75,8 +75,8 @@ public class Modifiers {
 
             // TODO: support greater modifiers (greater is +1 tier, legendary is +2 tiers) (look how VH does it)
             // maybe ENUM - NORMAL, GREATER, LEGENDARY and the button would cycle through them
-            if (tierIncrease > 0) {
-                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, tierIncrease);
+            if (modifierCategory.getTierIncrease() > 0) {
+                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, modifierCategory);
             } else {
                 mTierList = getModifierTiers(lvl, modifierTierGroup);
             }
@@ -103,7 +103,7 @@ public class Modifiers {
             }
 
             if (Config.SHOW_CHANCE.get()) {
-                full.append(String.format(" %.2f %%", ((double) weight * 100 / totalWeight)));
+                full.append(String.format(" %.2f%%", ((double) weight * 100 / totalWeight)));
             }
 
             if (Config.ALLOW_DUPE.get() || !(componentList.get(componentList.size() - 1).getString()).equals(full.getString())) { //dumb way to fix ability lvl+ duplication
@@ -128,12 +128,12 @@ public class Modifiers {
 
     private static Map<String, Integer> countGroups(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
                                                     Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup,
-                                                    int tierIncrease) {
+                                                    ModifierCategory modifierCategory) {
         Map<String, Integer> groupCounts = new HashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
-            if (tierIncrease > 0) {
-                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, tierIncrease);
+            if (modifierCategory.getTierIncrease() > 0) {
+                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, modifierCategory);
             } else {
                 mTierList = getModifierTiers(lvl, modifierTierGroup);
             }
@@ -148,14 +148,14 @@ public class Modifiers {
 
     //TODO: check how noLegendary works in VH
     private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getIncreasedModifierTiers(int lvl,
-                                                                                VaultGearTierConfig.ModifierTierGroup modifierTierGroup, int tierIncrease) {
+                                                                                VaultGearTierConfig.ModifierTierGroup modifierTierGroup, ModifierCategory modifierCategory) {
 
         var res = new ArrayList<VaultGearTierConfig.ModifierTier<?>>();
         var highest = modifierTierGroup.getHighestForLevel(lvl);
         if (highest == null) {
             return res; // empty
         }
-        int index = Math.min(highest.getModifierTier() + tierIncrease, modifierTierGroup.size() - 1);
+        int index = Math.min(highest.getModifierTier() + modifierCategory.getTierIncrease(), modifierTierGroup.size() - 1);
         var legendTier = modifierTierGroup.get(index);
         if (legendTier == null || legendTier.getWeight() == 0){
             return res; // empty
