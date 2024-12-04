@@ -12,6 +12,11 @@ import net.minecraft.client.gui.Font;
 public class ScrollableLvlInputElement extends TextInputElement<ScrollableLvlInputElement> {
     public ScrollableLvlInputElement(ISpatial spatial, Font font) {
         super(spatial, font);
+        this.adjustEditBox(editBox -> {
+            editBox.setFilter(s -> isValidLevel(parseInt(s)));
+            editBox.setMaxLength(3);
+            editBox.setValue(String.valueOf(VaultBarOverlay.vaultLevel));
+        });
     }
 
     @Override
@@ -22,11 +27,6 @@ public class ScrollableLvlInputElement extends TextInputElement<ScrollableLvlInp
             this.setInput(String.valueOf(val));
             return true;
         }
-        this.adjustEditBox(editBox -> {
-            editBox.setFilter(s -> isValidLevel(parseInt(s)));
-            editBox.setMaxLength(3);
-            editBox.setValue(String.valueOf(VaultBarOverlay.vaultLevel));
-        });
         return super.onMouseScrolled(mouseX, mouseY, delta);
     }
 

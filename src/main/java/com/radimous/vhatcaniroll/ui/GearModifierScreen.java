@@ -195,7 +195,7 @@ public class GearModifierScreen extends AbstractElementScreen {
                 Minecraft.getInstance().font)
                 .layout(this.translateWorldSpatial())
         );
-        
+
         inputElement.onTextChanged(s -> updateModifierList(true));
         return inputElement;
     }
@@ -211,10 +211,10 @@ public class GearModifierScreen extends AbstractElementScreen {
                 .layout(this.translateWorldSpatial());
         NineSliceButtonElement<?> btnMinus =
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 72 - 13, 35).size(15, 14),
-                ScreenTextures.BUTTON_EMPTY_TEXTURES, lvlInput::increment).layout(this.translateWorldSpatial());
+                ScreenTextures.BUTTON_EMPTY_TEXTURES, lvlInput::decrement).layout(this.translateWorldSpatial());
         NineSliceButtonElement<?> btnPlus =
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 25 - 13, 35).size(15, 14),
-                ScreenTextures.BUTTON_EMPTY_TEXTURES, lvlInput::decrement).layout(this.translateWorldSpatial());
+                ScreenTextures.BUTTON_EMPTY_TEXTURES, lvlInput::increment).layout(this.translateWorldSpatial());
         this.addElement(btnMinus);
         this.addElement(minusLabel);
         this.addElement(plusLabel);
@@ -270,8 +270,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         if (keyCode == InputConstants.KEY_TAB && hasShiftDown()) {
             switchTab((currIndex - 1 + Items.getVaultGearItems().size()) % Items.getVaultGearItems().size());
         }
-        // alt to toggle legendary
-        if (keyCode == InputConstants.KEY_LALT || keyCode == InputConstants.KEY_RALT) {
+        // ctrl to change tier increase (normal, greater, legendary)
+        if (keyCode == InputConstants.KEY_LCONTROL || keyCode == InputConstants.KEY_RCONTROL) {
             toggleLegend();
         }
         // ctrl + , to toggle compact +lvl to abilities

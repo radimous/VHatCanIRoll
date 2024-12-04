@@ -204,8 +204,11 @@ public class Modifiers {
         MutableComponent res = null;
         if (modifierTiers.size() > 1) {
             res = rangeComponent(atrName, atr, atrGenerator, minConfig, maxConfig);
+            if (res != null) {
+                return res;
+            }
         }
-        if (res == null && minConfigDisplay != null) {
+        if (minConfigDisplay != null) {
             res = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
             if (minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
                 return abilityLvlComponent(res, atr, minConfigAbility);
