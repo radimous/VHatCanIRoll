@@ -80,25 +80,25 @@ public class Modifiers {
             String modGr = modifierTierGroup.getModifierGroup();
             
  
-            MutableComponent newMod = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
+            MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
             int weight = modTierListWeight(mTierList);
             if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL) {
-                newMod.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
+                modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
             }
 
             if (Config.SHOW_CHANCE.get() && modifierCategory == ModifierCategory.NORMAL) {
-                newMod.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
+                modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
             }
 
             if (groupCounts.get(modGr) > 1) {
-                groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(newMod);
+                groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(modComp);
                 continue;
             }
 
             MutableComponent full = new TextComponent("  ");
 
-            full.append(newMod);
+            full.append(modComp);
 
             if (Config.ALLOW_DUPE.get() || !(componentList.get(componentList.size() - 1).getString()).equals(full.getString())) { //dumb way to fix ability lvl+ duplication
                 componentList.add(full);
@@ -235,7 +235,7 @@ public class Modifiers {
             
             //FIXME: poison avoidance was changed to single generic "Effect Avoidance" and it's not working
             //FIXME: clouds with roman numerals are not working
-            if (atrName.equals("the_vault:effect_avoidance") && minConfigDisplay != null) {
+            if ((atrName.equals("the_vault:effect_avoidance") || atrName.equals("the_vault:effect_list_avoidance")) && minConfigDisplay != null) {
                 // res -> "30% - 50%"
                 // single ->  "30% Poison Avoidance"
                 // minRange -> "30%"
@@ -246,6 +246,7 @@ public class Modifiers {
                     // res -> "30% - 50% Poison Avoidance"
                 }
             }
+
             if (minConfig instanceof EffectGearAttribute.Config minEffectConfig
                 && maxConfig instanceof EffectGearAttribute.Config
                 && maxConfigDisplay != null) {
