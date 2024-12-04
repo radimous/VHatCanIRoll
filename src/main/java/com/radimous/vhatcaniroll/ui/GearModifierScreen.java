@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.logic.Items;
 
+import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import iskallia.vault.client.gui.framework.ScreenRenderers;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
@@ -34,8 +35,8 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     private ModifierListContainer modifierList;
     private final ScrollableLvlInputElement lvlInput;
-    private int tierIncrease = 0;
-    private LabelElement<?> legendaryLabel;
+    private ModifierCategory modifierCategory = ModifierCategory.NORMAL;
+    private LabelElement<?> modifierCategoryLabel;
 
     private int currIndex = 0;
     private final List<TabElement<?>> tabs = new ArrayList<>();
@@ -74,7 +75,7 @@ public class GearModifierScreen extends AbstractElementScreen {
 
         // inner black window
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
-        this.modifierList = new ModifierListContainer(modListSpatial, lvlInput.getValue(), tierIncrease, getCurrGear()).layout(this.translateWorldSpatial());
+        this.modifierList = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
         this.addElement(this.modifierList);
     }
 
@@ -93,7 +94,7 @@ public class GearModifierScreen extends AbstractElementScreen {
 
         this.removeElement(this.modifierList);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
-        this.modifierList = new ModifierListContainer(modListSpatial, lvlInput.getValue(), tierIncrease, getCurrGear()).layout(this.translateWorldSpatial());
+        this.modifierList = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
         
         if (keepScroll) {
             this.modifierList.setScroll(oldScroll);
@@ -221,28 +222,27 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(btnPlus);
     }
 
-    private void toggleLegend() {
-        this.tierIncrease = (tierIncrease + 1) % 3;
-        updateLegendaryLabel();
+    private void cycleModifierCategories() {
+        this.modifierCategory = modifierCategory.next();
+        updateModifierCategoryLabel();
         updateModifierList(true);
     }
 
-    private void updateLegendaryLabel() {
-        if (this.legendaryLabel != null) {
-            this.removeElement(this.legendaryLabel);
+    private void updateModifierCategoryLabel() {
+        if (this.modifierCategoryLabel != null) {
+            this.removeElement(this.modifierCategoryLabel);
         }
-        var formatting = tierIncrease == 2 ? ChatFormatting.GOLD : tierIncrease == 1 ? ChatFormatting.AQUA : ChatFormatting.WHITE;
-        this.legendaryLabel = new LabelElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 5 - 13, 38),
-            new TextComponent("✦").withStyle(formatting), LabelTextStyle.defaultStyle())
+        this.modifierCategoryLabel = new LabelElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 5 - 13, 38),
+            new TextComponent(modifierCategory.getSymbol()).withStyle(modifierCategory.getStyle()), LabelTextStyle.defaultStyle())
             .layout(this.translateWorldSpatial());
-        this.addElement(legendaryLabel);
+        this.addElement(modifierCategoryLabel);
     }
 
     private void createLegendaryButton() {
-        updateLegendaryLabel();
+        updateModifierCategoryLabel();
         NineSliceButtonElement<?> btnLegend =
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 8 - 13, 35).size(14, 14),
-                ScreenTextures.BUTTON_EMPTY_TEXTURES, this::toggleLegend).layout(this.translateWorldSpatial());
+                ScreenTextures.BUTTON_EMPTY_TEXTURES, this::cycleModifierCategories).layout(this.translateWorldSpatial());
         this.addElement(btnLegend);
     }
 
@@ -270,9 +270,9 @@ public class GearModifierScreen extends AbstractElementScreen {
         if (keyCode == InputConstants.KEY_TAB && hasShiftDown()) {
             switchTab((currIndex - 1 + Items.getVaultGearItems().size()) % Items.getVaultGearItems().size());
         }
-        // ctrl to change tier increase (normal, greater, legendary)
+        // ctrl to change modifier category (normal, greater, legendary)
         if (keyCode == InputConstants.KEY_LCONTROL || keyCode == InputConstants.KEY_RCONTROL) {
-            toggleLegend();
+            cycleModifierCategories();
         }
         // ctrl + , to toggle compact +lvl to abilities
         if (keyCode == InputConstants.KEY_COMMA && hasControlDown()) {

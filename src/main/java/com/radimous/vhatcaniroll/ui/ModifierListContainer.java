@@ -1,5 +1,6 @@
 package com.radimous.vhatcaniroll.ui;
 
+import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
@@ -8,7 +9,6 @@ import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
 import iskallia.vault.config.gear.VaultGearTierConfig;
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,7 +18,7 @@ import com.radimous.vhatcaniroll.logic.Modifiers;
 
 public class ModifierListContainer extends VerticalScrollClipContainer<ModifierListContainer> {
 
-    public ModifierListContainer(ISpatial spatial, int lvl, int tierIncrease, ItemStack gearPiece) {
+    public ModifierListContainer(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece) {
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int labelX = 9;
         int labelY = 20;
@@ -29,15 +29,14 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         LabelElement<?> itemName = new LabelElement<>(
             Spatials.positionXY(labelX, 5).width(this.innerWidth() - labelX).height(15), new TextComponent(
                 gearPiece.getItem().toString().toUpperCase() + " - LVL " + lvl)
-                //TODO: make it nicer
-            .withStyle(ChatFormatting.UNDERLINE).withStyle(tierIncrease == 2 ? ChatFormatting.GOLD : tierIncrease == 1 ? ChatFormatting.AQUA : ChatFormatting.WHITE), LabelTextStyle.defaultStyle()
+            .withStyle(modifierCategory.getStyle()), LabelTextStyle.defaultStyle()
         );
         this.addElement(itemName);
 
 
         if (optCfg.isPresent()) {
             VaultGearTierConfig cfg = optCfg.get();
-            for (var modifier : Modifiers.getModifierList(lvl, cfg, tierIncrease)) {
+            for (var modifier : Modifiers.getModifierList(lvl, cfg, modifierCategory)) {
                 LabelElement<?> labelelement = new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), modifier, LabelTextStyle.defaultStyle()
                 );
