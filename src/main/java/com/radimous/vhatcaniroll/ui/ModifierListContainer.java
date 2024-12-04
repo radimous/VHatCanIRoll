@@ -9,6 +9,7 @@ import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
 import iskallia.vault.config.gear.VaultGearTierConfig;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 
@@ -29,7 +30,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         LabelElement<?> itemName = new LabelElement<>(
             Spatials.positionXY(labelX, 5).width(this.innerWidth() - labelX).height(15), new TextComponent(
                 gearPiece.getItem().toString().toUpperCase() + " - LVL " + lvl)
-            .withStyle(modifierCategory.getStyle()), LabelTextStyle.defaultStyle()
+            .withStyle(ChatFormatting.UNDERLINE).withStyle(modifierCategory.getStyle()), LabelTextStyle.defaultStyle()
         );
         this.addElement(itemName);
 
@@ -43,7 +44,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
                 /*  TODO: maybe weight/chance should be added here, because there is everything you need for custom position
                     that would require returning something else from getModifierList (maybe List<Pair<Component, Component>>)
                     where first component is the modifier and second is the weight/chance or both (depending on the config)
-                    also it should potentionally return a list of modifiers to get all tiers of the modifier
+                    also it should potentially return a list of modifiers to get all tiers of the modifier
                     
                     
                     I want to display
