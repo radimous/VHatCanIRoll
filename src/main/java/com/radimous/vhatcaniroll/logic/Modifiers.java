@@ -1,5 +1,6 @@
-package com.radimous.vhatcaniroll;
+package com.radimous.vhatcaniroll.logic;
 
+import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.mixin.EffectConfigAccessor;
 import com.radimous.vhatcaniroll.mixin.VaultGearTierConfigAccessor;
 import iskallia.vault.config.gear.VaultGearTierConfig;
@@ -10,7 +11,6 @@ import iskallia.vault.gear.attribute.config.BooleanFlagGenerator;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
 import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
 import iskallia.vault.init.ModConfigs;
-import iskallia.vault.util.TextComponentUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -24,42 +24,59 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class Helper {
+/**
+ * This is responsible for all the logic of transforming vh config -> list of components needed for the UI
+ */
+public class Modifiers {
     private static final ChatFormatting[] COLORS =
         new ChatFormatting[]{ChatFormatting.RED, ChatFormatting.GREEN, ChatFormatting.BLUE, ChatFormatting.YELLOW,
             ChatFormatting.LIGHT_PURPLE, ChatFormatting.AQUA, ChatFormatting.WHITE};
 
-    public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, boolean legendary) {
-        Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup =
-            ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
+    public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, int tierIncrease) {
+        Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup = ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
+        
         ArrayList<Component> modList = new ArrayList<>();
+
         for (VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup : modifierGroup.keySet()) {
-            processAffixTagGroup(lvl, affixTagGroup, modifierGroup, modList, legendary);
+            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup, tierIncrease));
         }
+
         return modList;
     }
 
-    private static void processAffixTagGroup(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
+    private static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
                                              Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup,
-                                             ArrayList<Component> modList, boolean legendary) {
-        if (affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
-            return;
+                                             int tierIncrease) {
+
+        ArrayList<Component> componentList = new ArrayList<>();
+        if (!Config.SHOW_ABILITY_ENHANCEMENTS.get() && affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
+            return componentList;
         }
         if (modifierGroup.get(affixTagGroup).isEmpty()) {
-            return;
+            return componentList;
         }
-        modList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+        componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
 
-        Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, legendary);
+        int totalWeight = modifierGroup.get(affixTagGroup).stream()
+            .mapToInt(x -> getModifierTiers(lvl, x).stream().mapToInt(VaultGearTierConfig.ModifierTier::getWeight).sum())
+            .sum();
+        if (Config.SHOW_WEIGHT.get()) {
+            componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
+        }
+
+
+        Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, tierIncrease);
 
         Map<String, List<Component>> groupedModifiers = new HashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
-            if (legendary) {
-                mTierList = getLegendaryModifierTiers(lvl, modifierTierGroup);
+
+            // TODO: support greater modifiers (greater is +1 tier, legendary is +2 tiers) (look how VH does it)
+            // maybe ENUM - NORMAL, GREATER, LEGENDARY and the button would cycle through them
+            if (tierIncrease > 0) {
+                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, tierIncrease);
             } else {
                 mTierList = getModifierTiers(lvl, modifierTierGroup);
             }
@@ -68,9 +85,9 @@ public class Helper {
                 continue;
             }
             String modGr = modifierTierGroup.getModifierGroup();
-            Component newMod = getVal(
-                Objects.requireNonNull(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute())),
-                mTierList);
+            
+ 
+            Component newMod = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
             if (groupCounts.get(modGr) > 1) {
                 groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(newMod);
                 continue;
@@ -79,35 +96,44 @@ public class Helper {
             MutableComponent full = new TextComponent("  ");
 
             full.append(newMod);
-            if (Config.ALLOW_DUPE.get() || !(modList.get(modList.size() - 1).getString()).equals(full.getString())) { //dumb way to fix ability lvl+ duplication
-                modList.add(full);
+
+            int weight = modTierListWeight(mTierList);
+            if (Config.SHOW_WEIGHT.get()) {
+                full.append(" w"+weight);
+            }
+
+            if (Config.SHOW_CHANCE.get()) {
+                full.append(String.format(" %.2f %%", ((double) weight * 100 / totalWeight)));
+            }
+
+            if (Config.ALLOW_DUPE.get() || !(componentList.get(componentList.size() - 1).getString()).equals(full.getString())) { //dumb way to fix ability lvl+ duplication
+                componentList.add(full);
             }
         }
-        boolean useNums = false;
-        if (groupedModifiers.size() > COLORS.length) {
-            // more than 7 groups is a bit crazy, but just in case
-            useNums = true;
-        }
+
+        // more than 7 groups is a bit crazy, but just in case
+        boolean useNums = groupedModifiers.size() > COLORS.length;
         int i = 0;
         for (var modGr: groupedModifiers.values()) {
            for (var mod: modGr) {
                MutableComponent full = new TextComponent(useNums ? i + " " : "► ").withStyle(COLORS[i % COLORS.length]);
                full.append(mod);
-               modList.add(full);
+               componentList.add(full);
            }
            i++;
         }
-        modList.add(TextComponent.EMPTY);
+        componentList.add(TextComponent.EMPTY);
+        return componentList;
     }
 
     private static Map<String, Integer> countGroups(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
                                                     Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup,
-                                                    boolean legendary) {
+                                                    int tierIncrease) {
         Map<String, Integer> groupCounts = new HashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
-            if (legendary) {
-                mTierList = getLegendaryModifierTiers(lvl, modifierTierGroup);
+            if (tierIncrease > 0) {
+                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, tierIncrease);
             } else {
                 mTierList = getModifierTiers(lvl, modifierTierGroup);
             }
@@ -120,15 +146,16 @@ public class Helper {
         return groupCounts;
     }
 
-    private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getLegendaryModifierTiers(int lvl,
-                                                                                 VaultGearTierConfig.ModifierTierGroup modifierTierGroup) {
+    //TODO: check how noLegendary works in VH
+    private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getIncreasedModifierTiers(int lvl,
+                                                                                VaultGearTierConfig.ModifierTierGroup modifierTierGroup, int tierIncrease) {
 
         var res = new ArrayList<VaultGearTierConfig.ModifierTier<?>>();
         var highest = modifierTierGroup.getHighestForLevel(lvl);
         if (highest == null) {
             return res; // empty
         }
-        int index = Math.min(highest.getModifierTier() + 2, modifierTierGroup.size() - 1);
+        int index = Math.min(highest.getModifierTier() + tierIncrease, modifierTierGroup.size() - 1);
         var legendTier = modifierTierGroup.get(index);
         if (legendTier == null || legendTier.getWeight() == 0){
             return res; // empty
@@ -149,20 +176,23 @@ public class Helper {
             .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    // TODO: wtf is this, fix variable names and make it readable
-    // I don't think proper generics are possible, VaultGearTierConfig#getModifiersForLevel returns List<ModifierTier<?>>
-    private static <T, C> Component getVal(VaultGearAttribute<T> atr,
-                                           ArrayList<VaultGearTierConfig.ModifierTier<?>> val) {
-        if (val.isEmpty()) {
-            return new TextComponent("ERR - EMPTY VAL");
+    @SuppressWarnings("unchecked") // I don't think proper generics are possible, VaultGearTierConfig#getModifiersForLevel returns List<ModifierTier<?>>
+    private static <T, C> Component getModifierComponent(VaultGearAttribute<T> atr,
+                                           ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
+        if (modifierTiers.isEmpty()) {
+            return new TextComponent("ERR - EMPTY MODIFIER TIERS");
         }
+
+        if (atr == null) {
+            return new TextComponent("ERR - NULL ATTRIBUTE");
+        }
+
         ConfigurableAttributeGenerator<T, C> atrGenerator = (ConfigurableAttributeGenerator<T, C>) atr.getGenerator();
         if (atrGenerator == null) {
-            return new TextComponent("ERR - NULL GENERATOR");
+            return new TextComponent("ERR - NULL ATTRIBUTE GENERATOR");
         }
-        C minConfig = (C) val.get(0).getModifierConfiguration();
-        C maxConfig = (C) val.get(val.size() - 1).getModifierConfiguration();
-        MutableComponent res;
+        C minConfig = (C) modifierTiers.get(0).getModifierConfiguration();
+        C maxConfig = (C) modifierTiers.get(modifierTiers.size() - 1).getModifierConfiguration();
         ResourceLocation atrRegName = atr.getRegistryName();
         if (atrRegName == null) {
             return new TextComponent("ERR - NULL REGISTRY NAME");
@@ -170,18 +200,44 @@ public class Helper {
         String atrName = atrRegName.toString();
 
         var minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
-        var maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);
+        
+        MutableComponent res = null;
+        if (modifierTiers.size() > 1) {
+            res = rangeComponent(atrName, atr, atrGenerator, minConfig, maxConfig);
+        }
+        if (res == null && minConfigDisplay != null) {
+            res = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
+            if (minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
+                return abilityLvlComponent(res, atr, minConfigAbility);
+            }
+           
+            if (minConfig instanceof EffectGearAttribute.Config ) {
+                return minConfigDisplay;
+            }
+            return res;
+        }
+        return new TextComponent("ERR - NULL DISPLAY " + atrName);
+    }
 
-        if (val.size() > 1) {
-            // range
-            res = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
+    /**
+     * This method handles combining multiple configs into a single component
+     * VH doesn't have method for this, so we need to do it manually
+     * it is using the same logic as VH does when shifting on gear piece to get the range
+     * and combining it with normal display for single component (that has name and color)
+     */
+    private static <T, C> MutableComponent rangeComponent(String atrName, VaultGearAttribute<T> atr,
+        ConfigurableAttributeGenerator<T, C> atrGenerator, C minConfig, C maxConfig) {
+            MutableComponent res = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
+            var minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
+            var maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);
+
 
             if (res != null && minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
                 return abilityLvlComponent(res, atr, minConfigAbility);
             }
-            if (res != null && atrName.equals("the_vault:wendarr_affinity")) {
-                return res.append(" God Affinity").withStyle(atr.getReader().getColoredTextStyle());
-            }
+            
+            //FIXME: poison avoidance was changed to single generic "Effect Avoidance" and it's not working
+            //FIXME: clouds with roman numerals are not working
             if (atrName.equals("the_vault:effect_avoidance") && minConfigDisplay != null) {
                 // res -> "30% - 50%"
                 // single ->  "30% Poison Avoidance"
@@ -204,40 +260,32 @@ public class Helper {
             if (res != null) {
                 return atr.getReader().formatConfigDisplay(LogicalSide.CLIENT, res);
             }
-        }
-        if (minConfigDisplay != null) {
-            res = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
-            if (minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
-                return abilityLvlComponent(res, atr, minConfigAbility);
-            }
-            if (atrName.equals("the_vault:wendarr_affinity")) {
-                return TextComponentUtils.replace(TextComponentUtils.createSourceStack(LogicalSide.CLIENT), res,
-                        "Wendarr Affinity", new TextComponent("God Affinity"))
-                    .withStyle(atr.getReader().getColoredTextStyle());
-            }
-            if (minConfig instanceof EffectGearAttribute.Config ) {
-                return minConfigDisplay;
-            }
             return res;
-        }
-        return new TextComponent("ERR - NULL DISPLAY " + atrName);
     }
-    private static Component abilityLvlComponent(MutableComponent res, VaultGearAttribute<?> atr,
+
+    private static MutableComponent abilityLvlComponent(MutableComponent res, VaultGearAttribute<?> atr,
                                                  AbilityLevelAttribute.Config minConfig) {
 
         if (Config.COMBINE_LVL_TO_ABILITIES.get()) {
             return res.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
-        } else {
-            var abComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
-            var optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
-            if (optSkill.isEmpty()) {
-                return res.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
-            }
-            var abName = optSkill.get().getName();
-            abComp.append(res);
-            abComp.append(" to level of ");
-            abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
-            return abComp;
         }
+
+        var abComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
+        var optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
+        if (optSkill.isEmpty()) {
+            return res.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
+        }
+        var abName = optSkill.get().getName();
+        abComp.append(res);
+        abComp.append(" to level of ");
+        abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
+        return abComp;
+    }
+    
+    private static int modTierListWeight(List<VaultGearTierConfig.ModifierTier<?>> val) {
+        if (val == null || val.isEmpty()) {
+            return 0;
+        }
+        return val.stream().mapToInt(VaultGearTierConfig.ModifierTier::getWeight).sum();
     }
 }

@@ -1,7 +1,7 @@
 package com.radimous.vhatcaniroll.mixin;
 
 import com.radimous.vhatcaniroll.Config;
-import com.radimous.vhatcaniroll.GearModifierScreen;
+import com.radimous.vhatcaniroll.ui.GearModifierScreen;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.ButtonElement;
 import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
