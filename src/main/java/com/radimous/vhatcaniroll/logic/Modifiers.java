@@ -54,14 +54,18 @@ public class Modifiers {
         if (!Config.SHOW_ABILITY_ENHANCEMENTS.get() && affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
             return componentList;
         }
-        if (modifierGroup.get(affixTagGroup).isEmpty()) {
-            return componentList;
-        }
-        componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+
 
         int totalWeight = modifierGroup.get(affixTagGroup).stream()
             .mapToInt(x -> getModifierTiers(lvl, x, modifierCategory).stream().mapToInt(VaultGearTierConfig.ModifierTier::getWeight).sum())
             .sum();
+
+        if (totalWeight == 0) {
+            return componentList;
+        }
+
+        componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+
         if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL) {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
         }
@@ -233,7 +237,6 @@ public class Modifiers {
                 return abilityLvlComponent(res, atr, minConfigAbility);
             }
             
-            //FIXME: poison avoidance was changed to single generic "Effect Avoidance" and it's not working
             //FIXME: clouds with roman numerals are not working
             if ((atrName.equals("the_vault:effect_avoidance") || atrName.equals("the_vault:effect_list_avoidance")) && minConfigDisplay != null) {
                 // res -> "30% - 50%"
