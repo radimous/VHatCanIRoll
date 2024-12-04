@@ -1,6 +1,8 @@
 package com.radimous.vhatcaniroll;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.radimous.vhatcaniroll.ui.GearModifierScreen;
+
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
