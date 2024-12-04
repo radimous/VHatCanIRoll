@@ -8,21 +8,17 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue ALLOW_DUPE;
     public static final ForgeConfigSpec.IntValue BUTTON_X;
     public static final ForgeConfigSpec.IntValue BUTTON_Y;
-    public static final ForgeConfigSpec.BooleanValue COMBINE_LVL_TO_ABILITIES;
     public static final ForgeConfigSpec.IntValue MAX_LEVEL_OVERRIDE;
     public static final ForgeConfigSpec.BooleanValue SHOW_ABILITY_ENHANCEMENTS;    
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
+    public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
 
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
-        COMBINE_LVL_TO_ABILITIES = builder
-            .comment("combine +lvl to abilities into one row")
-            .define("combineAddedLvlToAbilities", false);
-
-        builder.push("BUTTON");
+      builder.push("BUTTON");
         VAULT_SCREEN_BUTTON = builder
             .comment("open VHat can I roll? from vault screen")
             .define("vaultScreenButton", true);
@@ -30,7 +26,6 @@ public class Config {
             .comment("x position of the button")
             .defineInRange("buttonPositionX", 5, Integer.MIN_VALUE, Integer.MAX_VALUE);
         
-        //TODO: auto move the button to 130 if QOL Hunters is loaded (button conflict)
         BUTTON_Y = builder
             .comment("y position of the button")
             .defineInRange("buttonPositionY", 109, Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -40,6 +35,9 @@ public class Config {
         ALLOW_DUPE = builder
             .comment("allow duplicate modifiers")
             .define("allowDupe", false);
+        QOL_HUNTERS_CONFLICT_RESOLUTION = builder
+            .comment("QOL Hunters conflict resolution")
+            .define("QOLHuntersConflictResolution", true);
         builder.pop();
 
         MAX_LEVEL_OVERRIDE = builder

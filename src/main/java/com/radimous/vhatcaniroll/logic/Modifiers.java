@@ -60,9 +60,9 @@ public class Modifiers {
         componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
 
         int totalWeight = modifierGroup.get(affixTagGroup).stream()
-            .mapToInt(x -> getModifierTiers(lvl, x).stream().mapToInt(VaultGearTierConfig.ModifierTier::getWeight).sum())
+            .mapToInt(x -> getModifierTiers(lvl, x, modifierCategory).stream().mapToInt(VaultGearTierConfig.ModifierTier::getWeight).sum())
             .sum();
-        if (Config.SHOW_WEIGHT.get()) {
+        if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL) {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
         }
 
@@ -73,21 +73,24 @@ public class Modifiers {
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
 
-            // TODO: support greater modifiers (greater is +1 tier, legendary is +2 tiers) (look how VH does it)
-            // maybe ENUM - NORMAL, GREATER, LEGENDARY and the button would cycle through them
-            if (modifierCategory.getTierIncrease() > 0) {
-                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, modifierCategory);
-            } else {
-                mTierList = getModifierTiers(lvl, modifierTierGroup);
-            }
-
+            mTierList = getModifierTiers(lvl, modifierTierGroup, modifierCategory);
             if (mTierList.isEmpty()) {
                 continue;
             }
             String modGr = modifierTierGroup.getModifierGroup();
             
  
-            Component newMod = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
+            MutableComponent newMod = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
+
+            int weight = modTierListWeight(mTierList);
+            if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL) {
+                newMod.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
+            }
+
+            if (Config.SHOW_CHANCE.get() && modifierCategory == ModifierCategory.NORMAL) {
+                newMod.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
+            }
+
             if (groupCounts.get(modGr) > 1) {
                 groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(newMod);
                 continue;
@@ -96,15 +99,6 @@ public class Modifiers {
             MutableComponent full = new TextComponent("  ");
 
             full.append(newMod);
-
-            int weight = modTierListWeight(mTierList);
-            if (Config.SHOW_WEIGHT.get()) {
-                full.append(" w"+weight);
-            }
-
-            if (Config.SHOW_CHANCE.get()) {
-                full.append(String.format(" %.2f%%", ((double) weight * 100 / totalWeight)));
-            }
 
             if (Config.ALLOW_DUPE.get() || !(componentList.get(componentList.size() - 1).getString()).equals(full.getString())) { //dumb way to fix ability lvl+ duplication
                 componentList.add(full);
@@ -132,11 +126,7 @@ public class Modifiers {
         Map<String, Integer> groupCounts = new HashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
-            if (modifierCategory.getTierIncrease() > 0) {
-                mTierList = getIncreasedModifierTiers(lvl, modifierTierGroup, modifierCategory);
-            } else {
-                mTierList = getModifierTiers(lvl, modifierTierGroup);
-            }
+            mTierList = getModifierTiers(lvl, modifierTierGroup, modifierCategory);
             if (mTierList.isEmpty()) {
                 continue;
             }
@@ -147,8 +137,12 @@ public class Modifiers {
     }
 
     //TODO: check how noLegendary works in VH
-    private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getIncreasedModifierTiers(int lvl,
-                                                                                VaultGearTierConfig.ModifierTierGroup modifierTierGroup, ModifierCategory modifierCategory) {
+    private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getModifierTiers(int lvl,
+                                                                                   VaultGearTierConfig.ModifierTierGroup modifierTierGroup, ModifierCategory modifierCategory) {
+
+        if (modifierCategory == ModifierCategory.NORMAL) {
+            return getNormalModifierTiers(lvl, modifierTierGroup);
+        }
 
         var res = new ArrayList<VaultGearTierConfig.ModifierTier<?>>();
         var highest = modifierTierGroup.getHighestForLevel(lvl);
@@ -167,8 +161,8 @@ public class Modifiers {
         res.add(legendTier);
         return res; // only one
     }
-    @NotNull private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getModifierTiers(int lvl,
-                                                                                            VaultGearTierConfig.ModifierTierGroup modifierTierGroup) {
+    @NotNull private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getNormalModifierTiers(int lvl,
+                                                                                                  VaultGearTierConfig.ModifierTierGroup modifierTierGroup) {
         return modifierTierGroup.getModifiersForLevel(lvl).stream()
             .filter(x -> x.getWeight() != 0
                 && !(x.getModifierConfiguration() instanceof BooleanFlagGenerator.BooleanFlag bf &&
@@ -177,7 +171,7 @@ public class Modifiers {
     }
 
     @SuppressWarnings("unchecked") // I don't think proper generics are possible, VaultGearTierConfig#getModifiersForLevel returns List<ModifierTier<?>>
-    private static <T, C> Component getModifierComponent(VaultGearAttribute<T> atr,
+    private static <T, C> MutableComponent getModifierComponent(VaultGearAttribute<T> atr,
                                            ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
         if (modifierTiers.isEmpty()) {
             return new TextComponent("ERR - EMPTY MODIFIER TIERS");
@@ -268,10 +262,6 @@ public class Modifiers {
 
     private static MutableComponent abilityLvlComponent(MutableComponent res, VaultGearAttribute<?> atr,
                                                  AbilityLevelAttribute.Config minConfig) {
-
-        if (Config.COMBINE_LVL_TO_ABILITIES.get()) {
-            return res.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
-        }
 
         var abComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
         var optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());

@@ -1,6 +1,7 @@
 package com.radimous.vhatcaniroll.mixin;
 
 import com.radimous.vhatcaniroll.Config;
+import com.radimous.vhatcaniroll.QOLHuntersCompat;
 import com.radimous.vhatcaniroll.ui.GearModifierScreen;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.ButtonElement;
@@ -20,6 +21,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.ForgeConfigSpec;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -42,6 +44,8 @@ public class StatisticsElementContainerScreenMixin extends AbstractSkillTabEleme
 
         // TODO: figure out how to add button like the quest button, not this ugly shit
 
+        QOLHuntersCompat.resolveQOLHuntersButtonConflict();
+
         // add blank button to vault screen
         this.addElement(
             new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
@@ -56,8 +60,9 @@ public class StatisticsElementContainerScreenMixin extends AbstractSkillTabEleme
                 })
         );
         // add chestplate icon to it
+        var chestplateStack = new ItemStack(ModItems.CHESTPLATE);
         this.addElement(
-            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> new ItemStack(ModItems.CHESTPLATE), () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY
             ).layout(
                     (screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.right() + Config.BUTTON_X.get()).translateY(this.getTabContentSpatial().bottom() + Config.BUTTON_Y.get())
                 )

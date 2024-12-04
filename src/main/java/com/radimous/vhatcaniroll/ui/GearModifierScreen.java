@@ -1,7 +1,6 @@
 package com.radimous.vhatcaniroll.ui;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.logic.Items;
 
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
@@ -69,9 +68,9 @@ public class GearModifierScreen extends AbstractElementScreen {
         createTabs();
 
         this.lvlInput = this.addElement(createLvlInput());
-        
+
         createLvlButtons(lvlInput);
-        createLegendaryButton();
+        createModifierCategoryButton();
 
         // inner black window
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
@@ -95,11 +94,11 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.removeElement(this.modifierList);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.modifierList = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
-        
+
         if (keepScroll) {
             this.modifierList.setScroll(oldScroll);
         }
-        
+
         this.addElement(this.modifierList);
         ScreenLayout.requestLayout();
 
@@ -187,7 +186,6 @@ public class GearModifierScreen extends AbstractElementScreen {
                 this.translateWorldSpatial()));
     }
 
-
     // header
 
     private ScrollableLvlInputElement createLvlInput() {
@@ -200,7 +198,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         inputElement.onTextChanged(s -> updateModifierList(true));
         return inputElement;
     }
-    
+
     private void createLvlButtons(ScrollableLvlInputElement lvlInput) {
         LabelElement<?> minusLabel =
             new LabelElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 68 - 13, 38), new TextComponent("-"),
@@ -224,11 +222,11 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     private void cycleModifierCategories() {
         this.modifierCategory = modifierCategory.next();
-        updateModifierCategoryLabel();
+        updateModifierCategoryButtonLabel();
         updateModifierList(true);
     }
 
-    private void updateModifierCategoryLabel() {
+    private void updateModifierCategoryButtonLabel() {
         if (this.modifierCategoryLabel != null) {
             this.removeElement(this.modifierCategoryLabel);
         }
@@ -238,8 +236,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(modifierCategoryLabel);
     }
 
-    private void createLegendaryButton() {
-        updateModifierCategoryLabel();
+    private void createModifierCategoryButton() {
+        updateModifierCategoryButtonLabel();
         NineSliceButtonElement<?> btnLegend =
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 8 - 13, 35).size(14, 14),
                 ScreenTextures.BUTTON_EMPTY_TEXTURES, this::cycleModifierCategories).layout(this.translateWorldSpatial());
@@ -273,11 +271,6 @@ public class GearModifierScreen extends AbstractElementScreen {
         // ctrl to change modifier category (normal, greater, legendary)
         if (keyCode == InputConstants.KEY_LCONTROL || keyCode == InputConstants.KEY_RCONTROL) {
             cycleModifierCategories();
-        }
-        // ctrl + , to toggle compact +lvl to abilities
-        if (keyCode == InputConstants.KEY_COMMA && hasControlDown()) {
-            Config.COMBINE_LVL_TO_ABILITIES.set(!Config.COMBINE_LVL_TO_ABILITIES.get());
-            updateModifierList(true);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
