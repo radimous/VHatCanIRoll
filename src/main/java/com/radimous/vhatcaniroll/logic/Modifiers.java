@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +34,8 @@ public class Modifiers {
     private static final ChatFormatting[] COLORS =
         new ChatFormatting[]{ChatFormatting.RED, ChatFormatting.GREEN, ChatFormatting.BLUE, ChatFormatting.YELLOW,
             ChatFormatting.LIGHT_PURPLE, ChatFormatting.AQUA, ChatFormatting.WHITE};
+
+    private static final Pattern CLOUD_PATTERN = Pattern.compile("^(?<effect>.*?) ?(?<lvl>I|II|III|IV|V|VI|VII|VIII|IX|X)? (?<suffix>Cloud.*)$");
 
     public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory) {
         Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup = ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
@@ -66,7 +69,7 @@ public class Modifiers {
 
         componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
 
-        if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL) {
+        if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL && affixTagGroup != VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
         }
 
@@ -87,11 +90,11 @@ public class Modifiers {
             MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
             int weight = modTierListWeight(mTierList);
-            if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL) {
+            if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL && affixTagGroup != VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) {
                 modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
             }
 
-            if (Config.SHOW_CHANCE.get() && modifierCategory == ModifierCategory.NORMAL) {
+            if (Config.SHOW_CHANCE.get() && modifierCategory == ModifierCategory.NORMAL && affixTagGroup != VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) {
                 modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
             }
 
@@ -249,6 +252,9 @@ public class Modifiers {
                     // res -> "30% - 50% Poison Avoidance"
                 }
             }
+            if (minConfigDisplay != null && maxConfigDisplay != null && (atrName.equals("the_vault:effect_cloud") || atrName.equals("the_vault:effect_cloud_when_hit"))) {
+               return getCloudRangeComponent(minConfigDisplay, maxConfigDisplay, atr);
+            }
 
             if (minConfig instanceof EffectGearAttribute.Config minEffectConfig
                 && maxConfig instanceof EffectGearAttribute.Config
@@ -262,6 +268,39 @@ public class Modifiers {
                 return atr.getReader().formatConfigDisplay(LogicalSide.CLIENT, res);
             }
             return res;
+    }
+
+    private static MutableComponent getCloudRangeComponent(MutableComponent minConfigDisplay, MutableComponent maxConfigDisplay, VaultGearAttribute<?> atr) {
+        // <Effect> [<LVL>] Cloud [when Hit]
+        // Poison Cloud
+        // Poison III Cloud
+        var minString = minConfigDisplay.getString();
+        var maxString = maxConfigDisplay.getString();
+
+        var minLvl = getCloudLvl(minString);
+        var maxLvl = getCloudLvl(maxString);
+
+        var cloudRange = makeCloudLvlRange(minString, minLvl, maxLvl);
+        return new TextComponent(cloudRange).withStyle(atr.getReader().getColoredTextStyle());
+    }
+
+    private static String getCloudLvl(String displayString){
+        var matcher = CLOUD_PATTERN.matcher(displayString);
+        if (matcher.find()) {
+            if (matcher.group("lvl") != null) {
+                return matcher.group("lvl");
+            }
+            return "I";
+        }
+        return "I";
+    }
+
+    private static String makeCloudLvlRange(String displayString, String minLvl, String maxLvl){
+        var matcher = CLOUD_PATTERN.matcher(displayString);
+        if (matcher.find()) {
+            return matcher.group("effect") + " " + minLvl + "-" + maxLvl + " " + matcher.group("suffix");
+        }
+        return displayString;
     }
 
     private static MutableComponent abilityLvlComponent(MutableComponent res, VaultGearAttribute<?> atr,
