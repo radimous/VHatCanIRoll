@@ -235,8 +235,14 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(btnPlus);
     }
 
-    private void cycleModifierCategories() {
+    private void nextModifierCategory() {
         this.modifierCategory = modifierCategory.next();
+        updateModifierCategoryButtonLabel();
+        updateModifierList(true);
+    }
+
+    private void previousModifierCategory() {
+        this.modifierCategory = modifierCategory.previous();
         updateModifierCategoryButtonLabel();
         updateModifierList(true);
     }
@@ -255,7 +261,13 @@ public class GearModifierScreen extends AbstractElementScreen {
         updateModifierCategoryButtonLabel();
         NineSliceButtonElement<?> btnLegend =
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 8 - 13, 35).size(14, 14),
-                ScreenTextures.BUTTON_EMPTY_TEXTURES, this::cycleModifierCategories).layout(this.translateWorldSpatial());
+                ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+                if (hasShiftDown()) {
+                    previousModifierCategory();
+                } else {
+                    nextModifierCategory();
+                }
+            }).layout(this.translateWorldSpatial());
         this.addElement(btnLegend);
     }
 
@@ -308,7 +320,11 @@ public class GearModifierScreen extends AbstractElementScreen {
         }
         // ctrl to change modifier category (normal, greater, legendary)
         if (keyCode == InputConstants.KEY_LCONTROL || keyCode == InputConstants.KEY_RCONTROL) {
-            cycleModifierCategories();
+            if (hasShiftDown()) {
+                previousModifierCategory();
+            } else {
+                nextModifierCategory();
+            }
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
