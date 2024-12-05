@@ -107,9 +107,7 @@ public class Modifiers {
 
             full.append(modComp);
 
-            if (Config.ALLOW_DUPE.get() || true|| !(componentList.get(componentList.size() - 1).getString()).equals(full.getString())) {
-                componentList.add(full);
-            }
+            componentList.add(full);
         }
 
         // more than 7 groups is a bit crazy, but just in case

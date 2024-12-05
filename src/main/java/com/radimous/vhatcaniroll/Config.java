@@ -5,7 +5,6 @@ import net.minecraftforge.common.ForgeConfigSpec;
 public class Config {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue VAULT_SCREEN_BUTTON;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_DUPE;
     public static final ForgeConfigSpec.IntValue BUTTON_X;
     public static final ForgeConfigSpec.IntValue BUTTON_Y;
     public static final ForgeConfigSpec.IntValue MAX_LEVEL_OVERRIDE;
@@ -32,9 +31,6 @@ public class Config {
         builder.pop();
 
         builder.push("DEBUG");
-        ALLOW_DUPE = builder
-            .comment("allow duplicate modifiers")
-            .define("allowDupe", false);
         QOL_HUNTERS_CONFLICT_RESOLUTION = builder
             .comment("QOL Hunters conflict resolution")
             .define("QOLHuntersConflictResolution", true);
