@@ -1,6 +1,9 @@
 package com.radimous.vhatcaniroll;
 
+import iskallia.vault.config.gear.VaultGearTierConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
+
+import java.util.List;
 
 public class Config {
     public static final ForgeConfigSpec SPEC;
@@ -12,6 +15,8 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
     public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
+    public static final ForgeConfigSpec.ConfigValue<List<VaultGearTierConfig.ModifierAffixTagGroup>>
+        AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
 
 
     static {
@@ -51,6 +56,11 @@ public class Config {
         SHOW_CHANCE = builder
             .comment("show chance")
             .define("showChance", true);
+
+        AFFIX_TAG_GROUP_CHANCE_BLACKLIST = builder
+            .comment("vhcir won't show chance/weight for affixes in these groups")
+            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES, VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX, VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX));
+
         SPEC = builder.build();
     }
 }
