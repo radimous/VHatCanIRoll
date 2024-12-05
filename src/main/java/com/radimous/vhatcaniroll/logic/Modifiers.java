@@ -154,6 +154,9 @@ public class Modifiers {
         if (highest == null) {
             return res; // empty
         }
+        if (modifierTierGroup.getTags().contains("noLegendary")){
+            return res; // empty
+        }
         int index = Math.min(highest.getModifierTier() + modifierCategory.getTierIncrease(), modifierTierGroup.size() - 1);
         var legendTier = modifierTierGroup.get(index);
         if (legendTier == null || legendTier.getWeight() == 0){
