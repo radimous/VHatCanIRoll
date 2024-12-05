@@ -92,9 +92,9 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         String text = """
             Colored triangles
             represent groups
-            of attributes.
+            of modifiers.
             
-            If 2 attributes are
+            If 2 modifiers are
             in the same group,
             they can't be
             rolled together.
