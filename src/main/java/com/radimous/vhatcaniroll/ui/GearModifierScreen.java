@@ -88,7 +88,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(this.modifierList);
 
         // help container will overlay the modifier list
-        this.helpContainer = new HelpContainer(Spatials.positionXY(0, 0).size(0, 0), this.getGuiSpatial());
+        this.helpContainer = new HelpContainer(Spatials.positionXY(0, 0).size(0, 0));
         createHelpButton(helpContainer);
         this.addElement(helpContainer);
     }
