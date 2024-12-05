@@ -141,7 +141,6 @@ public class Modifiers {
         return groupCounts;
     }
 
-    //TODO: check how noLegendary works in VH
     private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getModifierTiers(int lvl,
                                                                                    VaultGearTierConfig.ModifierTierGroup modifierTierGroup, ModifierCategory modifierCategory) {
 
