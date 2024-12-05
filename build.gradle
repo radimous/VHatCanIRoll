@@ -188,6 +188,8 @@ dependencies {
     implementation fg.deobf("curse.maven:alexs-mobs-426558:3853078") // wold plushie effects
     implementation fg.deobf("curse.maven:citadel-331936:3783096") // alex mobs dep
 
+    implementation fg.deobf("curse.maven:create-328085:4550986") // config
+
     //faster loading
     implementation fg.deobf("curse.maven:lazydfu-433518:3209972")
     implementation fg.deobf("curse.maven:modernfix-790626:4565795")
