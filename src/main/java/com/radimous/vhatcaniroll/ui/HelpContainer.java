@@ -42,9 +42,9 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
 
         var vimArrows = new LabelElement<>(
             Spatials.positionXY(410, 72).width(16).height(16),
-            new TextComponent("h   ").withStyle(ChatFormatting.GOLD)
-                .append(new TextComponent("lvl").withStyle(ChatFormatting.BLUE))
-                .append(new TextComponent("    l").withStyle(ChatFormatting.GOLD)),
+            new TextComponent("h ").withStyle(ChatFormatting.GOLD)
+                .append(new TextComponent("wheel").withStyle(ChatFormatting.BLUE))
+                .append(new TextComponent("  l").withStyle(ChatFormatting.GOLD)),
             LabelTextStyle.shadow()
         );
         this.addElement(vimArrows);
@@ -96,12 +96,12 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         String text = """
             Colored triangles
             represent groups
-            of attributes
+            of attributes.
             
             If 2 attributes are
             in the same group,
             they can't be
-            rolled together
+            rolled together.
             """;
 
         var array = text.split("\n");

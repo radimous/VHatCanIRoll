@@ -2,9 +2,11 @@ package com.radimous.vhatcaniroll.ui;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.radimous.vhatcaniroll.Config;
+import com.radimous.vhatcaniroll.VHatCanIRoll;
 import com.radimous.vhatcaniroll.logic.Items;
 
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
+import com.simibubi.create.foundation.config.ui.ConfigScreen;
 import com.simibubi.create.foundation.config.ui.SubMenuConfigScreen;
 import iskallia.vault.client.gui.framework.ScreenRenderers;
 import iskallia.vault.client.gui.framework.ScreenTextures;
@@ -260,6 +262,7 @@ public class GearModifierScreen extends AbstractElementScreen {
     private void createConfigButton(){
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_HISTORY_TEXTURES, () -> {
             SubMenuConfigScreen screen = new SubMenuConfigScreen(this, "VHat Can I Roll? Configuration", ModConfig.Type.CLIENT, Config.SPEC, Config.SPEC.getValues());
+            ConfigScreen.modID = VHatCanIRoll.MODID;
             Minecraft.getInstance().setScreen(screen);
 
         })).layout((screen, gui, parent, world) -> {
