@@ -1,11 +1,14 @@
 package com.radimous.vhatcaniroll.ui;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.logic.Items;
 
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
+import com.simibubi.create.foundation.config.ui.SubMenuConfigScreen;
 import iskallia.vault.client.gui.framework.ScreenRenderers;
 import iskallia.vault.client.gui.framework.ScreenTextures;
+import iskallia.vault.client.gui.framework.element.ButtonElement;
 import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.NineSliceButtonElement;
@@ -14,6 +17,8 @@ import iskallia.vault.client.gui.framework.element.TabElement;
 import iskallia.vault.client.gui.framework.element.TextureAtlasElement;
 import iskallia.vault.client.gui.framework.element.spi.ILayoutStrategy;
 import iskallia.vault.client.gui.framework.render.ScreenTooltipRenderer;
+import iskallia.vault.client.gui.framework.render.TooltipDirection;
+import iskallia.vault.client.gui.framework.render.Tooltips;
 import iskallia.vault.client.gui.framework.screen.AbstractElementScreen;
 import iskallia.vault.client.gui.framework.screen.layout.ScreenLayout;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
@@ -25,6 +30,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.config.ModConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +42,7 @@ public class GearModifierScreen extends AbstractElementScreen {
     private final ScrollableLvlInputElement lvlInput;
     private ModifierCategory modifierCategory = ModifierCategory.NORMAL;
     private LabelElement<?> modifierCategoryLabel;
+    private HelpContainer helpContainer;
 
     private int currIndex = 0;
     private final List<TabElement<?>> tabs = new ArrayList<>();
@@ -71,11 +78,17 @@ public class GearModifierScreen extends AbstractElementScreen {
 
         createLvlButtons(lvlInput);
         createModifierCategoryButton();
+        createConfigButton();
 
         // inner black window
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.modifierList = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
         this.addElement(this.modifierList);
+
+        // help container will overlay the modifier list
+        this.helpContainer = new HelpContainer(Spatials.positionXY(0, 0).size(0, 0), this.getGuiSpatial());
+        createHelpButton(helpContainer);
+        this.addElement(helpContainer);
     }
 
     // helper methods
@@ -242,6 +255,28 @@ public class GearModifierScreen extends AbstractElementScreen {
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 8 - 13, 35).size(14, 14),
                 ScreenTextures.BUTTON_EMPTY_TEXTURES, this::cycleModifierCategories).layout(this.translateWorldSpatial());
         this.addElement(btnLegend);
+    }
+
+    private void createConfigButton(){
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_HISTORY_TEXTURES, () -> {
+            SubMenuConfigScreen screen = new SubMenuConfigScreen(this, "VHat Can I Roll? Configuration", ModConfig.Type.CLIENT, Config.SPEC, Config.SPEC.getValues());
+            Minecraft.getInstance().setScreen(screen);
+
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 26);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.LEFT,() -> new TextComponent("Configuration"))
+        );
+    }
+
+    private void createHelpButton(HelpContainer hc) {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_QUEST_TEXTURES, () -> {
+            hc.setVisible(!hc.isVisible());
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 48);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Help"))
+        );
     }
 
     @Override
