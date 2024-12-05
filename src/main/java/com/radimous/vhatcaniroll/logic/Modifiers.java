@@ -69,7 +69,7 @@ public class Modifiers {
 
         componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
 
-        if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL && affixTagGroup != VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) {
+        if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
         }
 
@@ -90,11 +90,11 @@ public class Modifiers {
             MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
             int weight = modTierListWeight(mTierList);
-            if (Config.SHOW_WEIGHT.get() && modifierCategory == ModifierCategory.NORMAL && affixTagGroup != VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) {
+            if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
                 modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
             }
 
-            if (Config.SHOW_CHANCE.get() && modifierCategory == ModifierCategory.NORMAL && affixTagGroup != VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) {
+            if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
                 modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
             }
 
@@ -107,7 +107,7 @@ public class Modifiers {
 
             full.append(modComp);
 
-            if (Config.ALLOW_DUPE.get() || !(componentList.get(componentList.size() - 1).getString()).equals(full.getString())) { //dumb way to fix ability lvl+ duplication
+            if (Config.ALLOW_DUPE.get() || true|| !(componentList.get(componentList.size() - 1).getString()).equals(full.getString())) {
                 componentList.add(full);
             }
         }
@@ -240,7 +240,6 @@ public class Modifiers {
                 return abilityLvlComponent(res, atr, minConfigAbility);
             }
             
-            //FIXME: clouds with roman numerals are not working
             if ((atrName.equals("the_vault:effect_avoidance") || atrName.equals("the_vault:effect_list_avoidance")) && minConfigDisplay != null) {
                 // res -> "30% - 50%"
                 // single ->  "30% Poison Avoidance"
@@ -280,6 +279,10 @@ public class Modifiers {
         var minLvl = getCloudLvl(minString);
         var maxLvl = getCloudLvl(maxString);
 
+        if (minLvl.equals(maxLvl)) {
+            return minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
+        }
+
         var cloudRange = makeCloudLvlRange(minString, minLvl, maxLvl);
         return new TextComponent(cloudRange).withStyle(atr.getReader().getColoredTextStyle());
     }
@@ -303,15 +306,29 @@ public class Modifiers {
         return displayString;
     }
 
-    private static MutableComponent abilityLvlComponent(MutableComponent res, VaultGearAttribute<?> atr,
+    private static MutableComponent abilityLvlComponent(MutableComponent prev, VaultGearAttribute<?> atr,
                                                  AbilityLevelAttribute.Config minConfig) {
 
         var abComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
         var optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
         if (optSkill.isEmpty()) {
-            return res.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
+            return prev.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
         }
         var abName = optSkill.get().getName();
+        var parts = prev.getString().split("-");
+
+        var res = new TextComponent("").withStyle(prev.getStyle());
+        if (parts.length == 2) {
+            if (parts[0].equals(parts[1])) {
+                res.append(parts[0]);
+            } else {
+                res.append(parts[0]);
+                res.append("-");
+                res.append(parts[1]);
+            }
+        } else {
+            res.append(prev);
+        }
         abComp.append(res);
         abComp.append(" to level of ");
         abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
@@ -323,5 +340,9 @@ public class Modifiers {
             return 0;
         }
         return val.stream().mapToInt(VaultGearTierConfig.ModifierTier::getWeight).sum();
+    }
+
+    private static boolean shouldShowWeight(ModifierCategory modifierCategory, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup) {
+        return modifierCategory == ModifierCategory.NORMAL && affixTagGroup != VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES;
     }
 }
