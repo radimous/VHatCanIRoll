@@ -60,7 +60,7 @@ public class Config {
 
         AFFIX_TAG_GROUP_CHANCE_BLACKLIST = builder
             .comment("vhcir won't show chance/weight for affixes in these groups")
-            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()));
+            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()));
 
         SPEC = builder.build();
     }

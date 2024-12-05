@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -59,22 +60,35 @@ public class Modifiers {
         }
 
 
+        Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, modifierCategory);
+
+        AtomicBoolean noWeightAttr = new AtomicBoolean(false);
         int totalWeight = modifierGroup.get(affixTagGroup).stream()
-            .mapToInt(x -> getModifierTiers(lvl, x, modifierCategory).stream().mapToInt(VaultGearTierConfig.ModifierTier::getWeight).sum())
+            .mapToInt(modTierGroup -> getModifierTiers(lvl, modTierGroup, modifierCategory).stream().mapToInt(
+                    tier -> {
+                        if ((affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.IMPLICIT
+                        || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) && groupCounts.get(modTierGroup.getModifierGroup()) == 1) {
+                            noWeightAttr.set(true);
+                            return 0;
+                        }
+                        return tier.getWeight();
+                    }
+                )
+                .sum())
             .sum();
 
-        if (totalWeight == 0) {
+
+        if (totalWeight == 0 && !noWeightAttr.get()) {
             return componentList;
         }
 
         componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
 
-        if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
+        if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
         }
 
 
-        Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, modifierCategory);
 
         Map<String, List<Component>> groupedModifiers = new HashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
@@ -89,14 +103,22 @@ public class Modifiers {
  
             MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
-            int weight = modTierListWeight(mTierList);
-            if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
-                modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
+//            //if (implicit||base) && groupCounts == 0
+            if (!(
+                (affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES
+                    || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.IMPLICIT
+                )
+                    && groupCounts.get(modGr) == 1)){
+                int weight = modTierListWeight(mTierList);
+                if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
+                    modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
+                }
+
+                if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
+                    modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
+                }
             }
 
-            if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
-                modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
-            }
 
             if (groupCounts.get(modGr) > 1) {
                 groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(modComp);
