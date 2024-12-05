@@ -343,6 +343,6 @@ public class Modifiers {
     }
 
     private static boolean shouldShowWeight(ModifierCategory modifierCategory, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup) {
-        return modifierCategory == ModifierCategory.NORMAL && !Config.AFFIX_TAG_GROUP_CHANCE_BLACKLIST.get().contains(affixTagGroup);
+        return modifierCategory == ModifierCategory.NORMAL && !Config.AFFIX_TAG_GROUP_CHANCE_BLACKLIST.get().contains(affixTagGroup.name());
     }
 }

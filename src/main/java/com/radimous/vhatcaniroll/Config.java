@@ -15,8 +15,9 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
     public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
-    public static final ForgeConfigSpec.ConfigValue<List<VaultGearTierConfig.ModifierAffixTagGroup>>
-        AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
+    // string instead of enum, because forge would remove enum values that are not present in the enum
+    // (this could cause problems if mods are extending the enum - like wold's)
+    public static final ForgeConfigSpec.ConfigValue<List<String>> AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
 
 
     static {
@@ -31,13 +32,13 @@ public class Config {
             .defineInRange("buttonPositionX", 5, Integer.MIN_VALUE, Integer.MAX_VALUE);
         
         BUTTON_Y = builder
-            .comment("y position of the button")
+            .comment("y position of the button (109 default, 130 for QOL Hunters)")
             .defineInRange("buttonPositionY", 109, Integer.MIN_VALUE, Integer.MAX_VALUE);
         builder.pop();
 
         builder.push("DEBUG");
         QOL_HUNTERS_CONFLICT_RESOLUTION = builder
-            .comment("QOL Hunters conflict resolution")
+            .comment("QOL Hunters conflict resolution (shouldn't be disabled unless it causes issues)")
             .define("QOLHuntersConflictResolution", true);
         builder.pop();
 
@@ -59,7 +60,7 @@ public class Config {
 
         AFFIX_TAG_GROUP_CHANCE_BLACKLIST = builder
             .comment("vhcir won't show chance/weight for affixes in these groups")
-            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES, VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX, VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX));
+            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()));
 
         SPEC = builder.build();
     }
