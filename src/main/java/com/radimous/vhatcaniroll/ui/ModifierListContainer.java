@@ -41,12 +41,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
                 LabelElement<?> labelelement = new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), modifier, LabelTextStyle.defaultStyle()
                 );
-                /*  TODO: maybe weight/chance should be added here, because there is everything you need for custom position
-                    that would require returning something else from getModifierList (maybe List<Pair<Component, Component>>)
-                    where first component is the modifier and second is the weight/chance or both (depending on the config)
-                    also it should potentially return a list of modifiers to get all tiers of the modifier
-                    
-                    
+                /*  TODO: display individual modifier tiers
                     I want to display
                     <groupPrefix> <value> <name> <chance>
                     and make it expandable to show all tiers of the modifier
