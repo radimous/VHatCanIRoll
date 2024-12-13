@@ -43,7 +43,8 @@ public class Items {
             "BATTLESTAFF",
             "TRIDENT",
             "PLUSHIE",
-            "LOOT_SACK"
+            "LOOT_SACK",
+            "RANG"
         );
         try{
             Class<?> woldItemClass = Class.forName("xyz.iwolfking.woldsvaults.init.ModItems");
