@@ -134,6 +134,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new TransmogListContainer(modListSpatial, getCurrGear()).layout(this.translateWorldSpatial());
         this.modifierCategoryButton.setDisabled(true);
+        this.modifierCategoryButton.setVisible(false);
+        this.modifierCategoryLabel.setVisible(false);
         this.windowName.set(new TranslatableComponent("vhatcaniroll.screen.title.transmogs").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
@@ -144,6 +146,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
         this.modifierCategoryButton.setDisabled(false);
+        this.modifierCategoryButton.setVisible(true);
+        this.modifierCategoryLabel.setVisible(true);
         this.windowName.set(new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
@@ -156,6 +160,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new CraftedModifiersListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
         this.modifierCategoryButton.setDisabled(true);
+        this.modifierCategoryButton.setVisible(false);
+        this.modifierCategoryLabel.setVisible(false);
         this.windowName.set(new TranslatableComponent("vhatcaniroll.screen.title.crafted").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
