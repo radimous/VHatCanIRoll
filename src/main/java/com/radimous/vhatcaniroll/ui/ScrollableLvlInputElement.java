@@ -30,6 +30,22 @@ public class ScrollableLvlInputElement extends TextInputElement<ScrollableLvlInp
         return super.onMouseScrolled(mouseX, mouseY, delta);
     }
 
+    @Override public boolean onMouseClicked(double mouseX, double mouseY, int buttonIndex) {
+        if (buttonIndex == 1) { // right
+            this.setInput("");
+        }
+        if (buttonIndex == 2){ // middle
+            this.setValue(VaultBarOverlay.vaultLevel);
+        }
+        return super.onMouseClicked(mouseX, mouseY, buttonIndex);
+    }
+
+    @Override public boolean charTyped(char charTyped, int keyCode) {
+        if (!Character.isDigit(charTyped)) {
+            return false;
+        }
+        return super.charTyped(charTyped, keyCode);
+    }
 
     public int getValue() {
         return parseInt(this.getInput());
