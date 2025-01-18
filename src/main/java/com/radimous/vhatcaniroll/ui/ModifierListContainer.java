@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import com.radimous.vhatcaniroll.logic.Modifiers;
 
-public class ModifierListContainer extends VerticalScrollClipContainer<ModifierListContainer> {
+public class ModifierListContainer extends VerticalScrollClipContainer<ModifierListContainer> implements InnerGearScreen {
 
     public ModifierListContainer(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece) {
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
@@ -68,5 +68,10 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
 
     public void setScroll(float scroll) {
         this.verticalScrollBarElement.setValue(scroll);
+    }
+
+    @Override
+    public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece) {
+        return new ModifierListContainer(spatial, lvl, modifierCategory, gearPiece);
     }
 }

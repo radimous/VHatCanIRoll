@@ -15,6 +15,7 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
     public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
+    public static final ForgeConfigSpec.BooleanValue SHOW_UNOBTAINABLE_CRAFTED;
     // string instead of enum, because forge would remove enum values that are not present in the enum
     // (this could cause problems if mods are extending the enum - like wold's)
     public static final ForgeConfigSpec.ConfigValue<List<String>> AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
@@ -62,6 +63,9 @@ public class Config {
             .comment("vhcir won't show chance/weight for affixes in these groups")
             .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()));
 
+        SHOW_UNOBTAINABLE_CRAFTED = builder
+            .comment("show unobtainable crafted modifiers (above current lvl)")
+            .define("showUnobtainableCrafted", false);
         SPEC = builder.build();
     }
 }
