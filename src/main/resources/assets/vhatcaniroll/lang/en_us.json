@@ -1,5 +1,7 @@
 {
-  "vhatcaniroll.screen.title": "Gear Modifiers",
+  "vhatcaniroll.screen.title.random": "Random Modifiers",
+  "vhatcaniroll.screen.title.crafted": "Crafted Modifiers",
+    "vhatcaniroll.screen.title.transmogs": "Transmogs",
   "vhatcaniroll.openmodscreen": "Open VHat can I roll? screen",
   "key.categories.vhatcaniroll": "VHat can I roll?"
 }
