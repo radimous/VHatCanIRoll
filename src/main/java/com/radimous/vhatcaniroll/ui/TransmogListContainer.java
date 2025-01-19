@@ -42,7 +42,7 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
         }
         var discoveredModelIds = ClientDiscoveredEntriesData.Models.getDiscoveredModels();
         var discoveredModelObserverIds = ClientDiscoveredEntriesData.Models.getObserverModels();
-        var model =new DiscoveredModelSelectElement.DiscoveredModelSelectorModel(
+        var model = new DiscoveredModelSelectElement.DiscoveredModelSelectorModel(
             ObservableSupplier.of(() -> gearPiece, SideOnlyFixer::stackEqualExact), discoveredModelObserverIds, x -> {});
         var mEntries = model.getEntries();
         for (var x : mEntries) {

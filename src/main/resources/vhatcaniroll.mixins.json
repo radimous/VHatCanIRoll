@@ -5,11 +5,12 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "vhatcaniroll.refmap.json",
   "mixins": [
-    "EffectConfigAccessor"
   ],
   "client": [
     "StatisticsElementContainerScreenMixin",
-    "VaultGearTierConfigAccessor"
+    "VaultGearTierConfigAccessor",
+    "EffectConfigAccessor",
+    "UniqueGearConfigAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -163,7 +163,7 @@ public class Modifiers {
         return groupCounts;
     }
 
-    private static ArrayList<VaultGearTierConfig.ModifierTier<?>> getModifierTiers(int lvl,
+    public static ArrayList<VaultGearTierConfig.ModifierTier<?>> getModifierTiers(int lvl,
                                                                                    VaultGearTierConfig.ModifierTierGroup modifierTierGroup, ModifierCategory modifierCategory) {
 
         if (modifierCategory == ModifierCategory.NORMAL) {
@@ -200,7 +200,7 @@ public class Modifiers {
     }
 
     @SuppressWarnings("unchecked") // I don't think proper generics are possible, VaultGearTierConfig#getModifiersForLevel returns List<ModifierTier<?>>
-    private static <T, C> MutableComponent getModifierComponent(VaultGearAttribute<T> atr,
+    public static <T, C> MutableComponent getModifierComponent(VaultGearAttribute<T> atr,
                                            ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
         if (modifierTiers.isEmpty()) {
             return new TextComponent("ERR - EMPTY MODIFIER TIERS");
