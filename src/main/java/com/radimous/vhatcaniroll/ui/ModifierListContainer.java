@@ -23,9 +23,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int labelX = 9;
         int labelY = 20;
-        Optional<VaultGearTierConfig> optCfg = VaultGearTierConfig.getConfig(gearPiece);
 
-        
         // Label for the item name and level (GOLD if legendary, AQUA if greater, WHITE if common)
         LabelElement<?> itemName = new LabelElement<>(
             Spatials.positionXY(labelX, 5).width(this.innerWidth() - labelX).height(15), new TextComponent(
@@ -34,7 +32,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         );
         this.addElement(itemName);
 
-
+        Optional<VaultGearTierConfig> optCfg = VaultGearTierConfig.getConfig(gearPiece);
         if (optCfg.isPresent()) {
             VaultGearTierConfig cfg = optCfg.get();
             for (var modifier : Modifiers.getModifierList(lvl, cfg, modifierCategory)) {

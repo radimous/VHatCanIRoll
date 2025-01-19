@@ -47,7 +47,7 @@ public class GearModifierScreen extends AbstractElementScreen {
     private LabelElement<?> modifierCategoryLabel;
     private NineSliceButtonElement<?> modifierCategoryButton;
     private HelpContainer helpContainer;
-    private LabelElement<?> windowName;
+    private LabelElement<?> windowNameLabel;
 
     private int currIndex = 0;
     private final List<TabElement<?>> tabs = new ArrayList<>();
@@ -71,7 +71,7 @@ public class GearModifierScreen extends AbstractElementScreen {
             new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK),
             LabelTextStyle.defaultStyle()
         ).layout(this.translateWorldSpatial());
-        this.windowName = windowName;
+        this.windowNameLabel = windowName;
 
         this.addElement(background);
         this.addElement(windowName);
@@ -97,6 +97,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         createModifierButton();
         createTransmogButton();
         createCraftedModsButton();
+        createUniqueGearButton();
     }
 
     // helper methods
@@ -136,7 +137,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.modifierCategoryButton.setDisabled(true);
         this.modifierCategoryButton.setVisible(false);
         this.modifierCategoryLabel.setVisible(false);
-        this.windowName.set(new TranslatableComponent("vhatcaniroll.screen.title.transmogs").withStyle(ChatFormatting.BLACK));
+        this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.transmogs").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
     }
@@ -148,7 +149,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.modifierCategoryButton.setDisabled(false);
         this.modifierCategoryButton.setVisible(true);
         this.modifierCategoryLabel.setVisible(true);
-        this.windowName.set(new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK));
+        this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
     }
@@ -162,7 +163,21 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.modifierCategoryButton.setDisabled(true);
         this.modifierCategoryButton.setVisible(false);
         this.modifierCategoryLabel.setVisible(false);
-        this.windowName.set(new TranslatableComponent("vhatcaniroll.screen.title.crafted").withStyle(ChatFormatting.BLACK));
+        this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.crafted").withStyle(ChatFormatting.BLACK));
+        this.addElement(this.innerScreen);
+        ScreenLayout.requestLayout();
+    }
+
+    private void switchToUnique(){
+        this.removeElement(this.innerScreen);
+        this.modifierCategory = ModifierCategory.NORMAL;
+        updateModifierCategoryButtonLabel();
+        ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
+        this.innerScreen = new UniqueGearListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
+        this.modifierCategoryButton.setDisabled(true);
+        this.modifierCategoryButton.setVisible(false);
+        this.modifierCategoryLabel.setVisible(false);
+        this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.unique").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
     }
@@ -375,6 +390,17 @@ public class GearModifierScreen extends AbstractElementScreen {
             world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 96);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Crafted Modifiers"))
+        );
+    }
+
+    private void createUniqueGearButton() {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_QUEST_TEXTURES, () -> {
+            if (!(this.innerScreen instanceof UniqueGearListContainer))
+                switchToUnique();
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 36).translateY(this.getGuiSpatial().bottom() - 96);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Unique Modifiers"))
         );
     }
 
