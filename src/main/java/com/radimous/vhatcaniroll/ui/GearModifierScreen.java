@@ -400,7 +400,7 @@ public class GearModifierScreen extends AbstractElementScreen {
             if (!(this.innerScreen instanceof ModifierListContainer))
                 switchToModifiers();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 50);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.random"))
         );
@@ -408,7 +408,26 @@ public class GearModifierScreen extends AbstractElementScreen {
         ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 50))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50))
+        );
+    }
+
+    private void createUniqueGearButton() {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
+            if (!(this.innerScreen instanceof UniqueGearListContainer))
+                switchToUnique();
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 70);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.unique"))
+        );
+        ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
+        VaultGearData gearData = VaultGearData.read(chestplateStack);
+        gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_ROLL_TYPE, "Unique");
+        gearData.write(chestplateStack);
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 70))
         );
     }
 
@@ -417,7 +436,7 @@ public class GearModifierScreen extends AbstractElementScreen {
             if (!(this.innerScreen instanceof TransmogListContainer))
                 switchToTransmog();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 70);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 90);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.transmogs"))
         );
@@ -428,7 +447,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         gearData.write(chestplateStack);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50 + 20))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 90))
         );
     }
 
@@ -437,33 +456,14 @@ public class GearModifierScreen extends AbstractElementScreen {
             if (!(this.innerScreen instanceof CraftedModifiersListContainer))
                 switchToCrafted();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 70);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 110);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.crafted"))
         );
         ItemStack workbenchStack = new ItemStack(ModBlocks.MODIFIER_WORKBENCH);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> workbenchStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 50 + 20))
-        );
-    }
-
-    private void createUniqueGearButton() {
-        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
-            if (!(this.innerScreen instanceof UniqueGearListContainer))
-                switchToUnique();
-        })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50);
-        }).tooltip(
-            Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.unique"))
-        );
-        ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
-        VaultGearData gearData = VaultGearData.read(chestplateStack);
-        gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_ROLL_TYPE, "Unique");
-        gearData.write(chestplateStack);
-        this.addElement(
-            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 110))
         );
     }
 
