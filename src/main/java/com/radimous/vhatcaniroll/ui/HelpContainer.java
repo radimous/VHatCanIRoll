@@ -15,21 +15,21 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         super(spatial);
         this.setVisible(false); // Hide by default
 
-        var tabLabel = new LabelElement<>(
+        LabelElement<?> tabLabel = new LabelElement<>(
             Spatials.positionXY(336, 16).width(16).height(16),
             new TextComponent("TAB").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(tabLabel);
 
-        var shiftTabLabel = new LabelElement<>(
+        LabelElement<?> shiftTabLabel = new LabelElement<>(
             Spatials.positionXY(-60, 16).width(16).height(16),
             new TextComponent("SHIFT + TAB").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(shiftTabLabel);
 
-        var arrows = new LabelElement<>(
+        LabelElement<?> arrows = new LabelElement<>(
             Spatials.positionXY(260, 54).width(16).height(16),
             new TextComponent("← ").withStyle(ChatFormatting.GOLD)
                 .append(new TextComponent("scroll").withStyle(ChatFormatting.BLUE))
@@ -38,7 +38,7 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         ).layout(this.translateWorldSpatial());
         this.addElement(arrows);
 
-        var vimArrows = new LabelElement<>(
+        LabelElement<?> vimArrows = new LabelElement<>(
             Spatials.positionXY(262, 64).width(16).height(16),
             new TextComponent("h ").withStyle(ChatFormatting.GOLD)
                 .append(new TextComponent("wheel").withStyle(ChatFormatting.BLUE))
@@ -47,42 +47,42 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         ).layout(this.translateWorldSpatial());
         this.addElement(vimArrows);
 
-        var ctrlLabel = new LabelElement<>(
-            Spatials.positionXY(340, 38).width(16).height(16),
+        LabelElement<?> ctrlLabel = new LabelElement<>(
+            Spatials.positionXY(365, 38).width(16).height(16),
             new TextComponent("CTRL").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(ctrlLabel);
 
-        var categoryLabelNormal = new LabelElement<>(
-            Spatials.positionXY(350, 52).width(16).height(16),
+        LabelElement<?> categoryLabelNormal = new LabelElement<>(
+            Spatials.positionXY(375, 52).width(16).height(16),
             new TextComponent(ModifierCategory.NORMAL.name()).withStyle(ModifierCategory.NORMAL.getStyle()),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(categoryLabelNormal);
 
-        var categoryLabelGreater = new LabelElement<>(
-            Spatials.positionXY(350, 62).width(16).height(16),
+        LabelElement<?> categoryLabelGreater = new LabelElement<>(
+            Spatials.positionXY(375, 62).width(16).height(16),
             new TextComponent(ModifierCategory.GREATER.name()).withStyle(ModifierCategory.GREATER.getStyle()),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(categoryLabelGreater);
 
-        var categoryLabelLegendary = new LabelElement<>(
-            Spatials.positionXY(350, 72).width(16).height(16),
+        LabelElement<?> categoryLabelLegendary = new LabelElement<>(
+            Spatials.positionXY(375, 72).width(16).height(16),
             new TextComponent(ModifierCategory.LEGENDARY.name()).withStyle(ModifierCategory.LEGENDARY.getStyle()),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(categoryLabelLegendary);
 
-        var upLabel = new LabelElement<>(
-            Spatials.positionXY(340, 150).width(16).height(16),
+        LabelElement<?> upLabel = new LabelElement<>(
+            Spatials.positionXY(340, 190).width(16).height(16),
             new TextComponent("↑ k").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(upLabel);
-        var downLabel = new LabelElement<>(
-            Spatials.positionXY(340, 164).width(16).height(16),
+        LabelElement<?> downLabel = new LabelElement<>(
+            Spatials.positionXY(340, 204).width(16).height(16),
             new TextComponent("↓ j").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
@@ -100,10 +100,10 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
             rolled together.
             """;
 
-        var array = text.split("\n");
+        String[] array = text.split("\n");
         int labelY = 120;
         for (String s : array) {
-            var textLabel = new LabelElement<>(
+            LabelElement<?> textLabel = new LabelElement<>(
                 Spatials.positionXY(-100, labelY).width(20).height(15),
                 new TextComponent(s).withStyle(ChatFormatting.GOLD), LabelTextStyle.shadow()
             ).layout(this.translateWorldSpatial());

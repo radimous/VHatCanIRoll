@@ -16,17 +16,26 @@ import iskallia.vault.gear.attribute.ability.special.FrostNovaVulnerabilityModif
 import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityConfig;
 import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityGearAttribute;
 import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityModification;
+import iskallia.vault.gear.attribute.ability.special.base.template.FloatRangeModification;
+import iskallia.vault.gear.attribute.ability.special.base.template.IntRangeModification;
+import iskallia.vault.gear.attribute.ability.special.base.template.config.FloatRangeConfig;
 import iskallia.vault.gear.attribute.ability.special.base.template.config.IntRangeConfig;
+import iskallia.vault.gear.attribute.ability.special.base.template.value.FloatValue;
 import iskallia.vault.gear.attribute.ability.special.base.template.value.IntValue;
 import iskallia.vault.gear.attribute.config.BooleanFlagGenerator;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
 import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
+import iskallia.vault.gear.attribute.custom.loot.LootTriggerAttribute;
+import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
 import iskallia.vault.gear.reader.VaultGearModifierReader;
 import iskallia.vault.init.ModConfigs;
+import iskallia.vault.skill.ability.component.AbilityLabelFormatters;
+import iskallia.vault.skill.base.Skill;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.LogicalSide;
@@ -37,7 +46,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -50,6 +61,7 @@ public class Modifiers {
             ChatFormatting.LIGHT_PURPLE, ChatFormatting.AQUA, ChatFormatting.WHITE};
 
     private static final Pattern CLOUD_PATTERN = Pattern.compile("^(?<effect>.*?) ?(?<lvl>I|II|III|IV|V|VI|VII|VIII|IX|X)? (?<suffix>Cloud.*)$");
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
 
     public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory) {
         Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup = ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
@@ -155,8 +167,8 @@ public class Modifiers {
         // more than 7 groups is a bit crazy, but just in case
         boolean useNums = groupedModifiers.size() > COLORS.length;
         int i = 0;
-        for (var modGr: groupedModifiers.values()) {
-            for (var mod: modGr) {
+        for (List<Component> modGr: groupedModifiers.values()) {
+            for (Component mod: modGr) {
                 MutableComponent full = new TextComponent(useNums ? i + " " : "► ").withStyle(COLORS[i % COLORS.length]);
                 full.append(mod);
                 componentList.add(full);
@@ -222,8 +234,8 @@ public class Modifiers {
             return getNormalModifierTiers(lvl, modifierTierGroup);
         }
 
-        var res = new ArrayList<VaultGearTierConfig.ModifierTier<?>>();
-        var highest = modifierTierGroup.getHighestForLevel(lvl);
+        ArrayList<VaultGearTierConfig.ModifierTier<?>> res = new ArrayList<>();
+        VaultGearTierConfig.ModifierTier<?> highest = modifierTierGroup.getHighestForLevel(lvl);
         if (highest == null) {
             return res; // empty
         }
@@ -231,7 +243,7 @@ public class Modifiers {
             return res; // empty
         }
         int index = Math.min(highest.getModifierTier() + modifierCategory.getTierIncrease(), modifierTierGroup.size() - 1);
-        var legendTier = modifierTierGroup.get(index);
+        VaultGearTierConfig.ModifierTier<?> legendTier = modifierTierGroup.get(index);
         if (legendTier == null || legendTier.getWeight() == 0){
             return res; // empty
         }
@@ -274,7 +286,7 @@ public class Modifiers {
         }
         String atrName = atrRegName.toString();
 
-        var minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
+        MutableComponent minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
 
         if (minConfig instanceof SpecialAbilityGearAttribute.SpecialAbilityTierConfig<?,?,?> minConfigSpecial) {
             return getSpecialAbilityAttributeComponent(modifierTiers, minConfigSpecial);
@@ -300,6 +312,9 @@ public class Modifiers {
             if (minConfig instanceof AbilityAreaOfEffectPercentAttribute.Config minConfigA) {
                 return getAbilityAoePercentageComponent(atr, minConfigA, minConfigA);
             }
+            if (minConfig instanceof ManaPerLootAttribute.Config maxManaPerLootConfig) {
+                return getManaPerLootComponent(maxManaPerLootConfig, maxManaPerLootConfig);
+            }
             return res;
         }
         return new TextComponent("ERR - NULL DISPLAY " + atrName);
@@ -309,28 +324,53 @@ public class Modifiers {
     private static @NotNull MutableComponent getSpecialAbilityAttributeComponent(
         ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers,
         SpecialAbilityGearAttribute.SpecialAbilityTierConfig<?, ?, ?> minConfigSpecial) {
-        var modification = minConfigSpecial.getModification();
-        if (modification instanceof FrostNovaVulnerabilityModification frostNovaVulnerabilityModification) {
-            var minToMaxComponent = new TextComponent("<TODO>");
-            return (new TextComponent("Frost Nova also applies Level ").append(minToMaxComponent)
-                .append(" Vulnerability"));
+        SpecialAbilityModification<? extends SpecialAbilityConfig<?>, ?> modification = minConfigSpecial.getModification();
+        if (modification instanceof IntRangeModification intRangeModification){
+            var minValue = intRangeModification.getMinimumValue(getIntTiers(modifierTiers));
+            var maxValue = intRangeModification.getMaximumValue(getIntTiers(modifierTiers));
+            String minValueDisplay = minValue.map(x -> String.valueOf(x.getValue().getValue())).orElse("NULL");
+            String maxValueDisplay = maxValue.map(x -> String.valueOf(x.getValue().getValue())).orElse("NULL");
+            MutableComponent minToMaxComponent = new TextComponent(minValueDisplay + "-" + maxValueDisplay).withStyle(ChatFormatting.UNDERLINE).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(6082075)));
+            if (intRangeModification instanceof FrostNovaVulnerabilityModification) {
+                return (new TextComponent("Frost Nova also applies Level ").append(minToMaxComponent).append(" Vulnerability")).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(14076214)));
+            }
+            if (intRangeModification instanceof EntropyPoisonModification) {
+                return new TextComponent("Entropic Bind also applies Poison ").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(14076214))).append(minToMaxComponent);
+            }
+            if (intRangeModification.getKey().toString().equals("the_vault:glacial_blast_hypothermia")){
+                return (new TextComponent("Glacial Blast is ").append(minToMaxComponent).append("X more likely to shatter")).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(14076214)));
+            }
+
         }
-        if (modification instanceof EntropyPoisonModification entropyPoisonModification) {
-            var tiers = (List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>>) modifierTiers.stream().map(x -> x.getModifierConfiguration()).toList();
-            var minValue = entropyPoisonModification.getMinimumValue(tiers);
-            var minValueDisplay = new TextComponent(minValue.map(x -> String.valueOf(x.getValue().getValue())).orElse("NULL"));
-            var maxValue = entropyPoisonModification.getMaximumValue(tiers);
-            var maxValueDisplay = new TextComponent(maxValue.map(x -> String.valueOf(x.getValue().getValue())).orElse("NULL"));
-            MutableComponent cmp = new TextComponent("Entropic Bind also applies Poison ");
-            var range = new TextComponent(minValueDisplay.getString() + "-" + maxValueDisplay.getString());
-            cmp.append(range);
-            return cmp;
+        if (modification instanceof FloatRangeModification floatRangeModification) {
+            var minValue = floatRangeModification.getMinimumValue(getFloatTiers(modifierTiers));
+            var maxValue = floatRangeModification.getMaximumValue(getFloatTiers(modifierTiers));
+            float minValueDisplay = minValue.map(x -> x.getValue().getValue()).orElse(0f);
+            float maxValueDisplay = maxValue.map(x -> x.getValue().getValue()).orElse(0f);
+
+            MutableComponent minToMaxComponent = new TextComponent(DECIMAL_FORMAT.format(minValueDisplay*100) + "%-" + DECIMAL_FORMAT.format(maxValueDisplay*100)+"%").withStyle(ChatFormatting.UNDERLINE).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(6082075)));
+            if (floatRangeModification.getKey().toString().equals("the_vault:fireball_special_modification")){
+                return (new TextComponent("Fireball has ").append(minToMaxComponent).append(" chance to fire twice")).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(14076214)));
+            }
+
         }
-        var abilityKey = minConfigSpecial.getAbilityKey();
+
+
+        String abilityKey = minConfigSpecial.getAbilityKey();
         return ModConfigs.ABILITIES.getAbilityById(abilityKey).filter(skill -> skill.getName() != null).map(skill -> {
             String name = skill.getName();
             return new TextComponent("Special " + name + " modification");
         }).orElseGet(() -> (TextComponent) new TextComponent(abilityKey).withStyle(Style.EMPTY.withColor(14076214)));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>> getIntTiers(List<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
+        return modifierTiers.stream().map(x -> (SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>) x.getModifierConfiguration()).toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<FloatRangeConfig, FloatValue>, FloatRangeConfig, FloatValue>> getFloatTiers(List<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
+        return modifierTiers.stream().map(x -> (SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<FloatRangeConfig, FloatValue>, FloatRangeConfig, FloatValue>) x.getModifierConfiguration()).toList();
     }
 
     /**
@@ -342,8 +382,8 @@ public class Modifiers {
     private static <T, C> MutableComponent rangeComponent(String atrName, VaultGearAttribute<T> atr,
     ConfigurableAttributeGenerator<T, C> atrGenerator, C minConfig, C maxConfig) {
         MutableComponent res = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
-        var minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
-        var maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);
+        MutableComponent minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
+        MutableComponent maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);
 
 
         if (res != null && minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
@@ -354,8 +394,8 @@ public class Modifiers {
             // res -> "30% - 50%"
             // single ->  "30% Poison Avoidance"
             // minRange -> "30%"
-            var single = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
-            var minRange = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, minConfig);
+            MutableComponent single = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
+            MutableComponent minRange = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, minConfig);
             if (minRange != null && res != null) {
                 res.append(single.getString().replace(minRange.getString(), ""));
                 // res -> "30% - 50% Poison Avoidance"
@@ -372,9 +412,13 @@ public class Modifiers {
         if (minConfig instanceof EffectGearAttribute.Config minEffectConfig
             && maxConfig instanceof EffectGearAttribute.Config
             && maxConfigDisplay != null) {
-            var effectStr = ((EffectConfigAccessor)minEffectConfig).getAmplifier() + "-" +
+            String effectStr = ((EffectConfigAccessor)minEffectConfig).getAmplifier() + "-" +
                 maxConfigDisplay.getString();
             return new TextComponent(effectStr).withStyle(atr.getReader().getColoredTextStyle());
+        }
+
+        if (minConfig instanceof ManaPerLootAttribute.Config minManaPerLootConfig && maxConfig instanceof ManaPerLootAttribute.Config maxManaPerLootConfig) {
+            return getManaPerLootComponent(minManaPerLootConfig, maxManaPerLootConfig);
         }
 
         if (atrName.equals("the_vault:effect_cloud")){
@@ -385,6 +429,18 @@ public class Modifiers {
             return atr.getReader().formatConfigDisplay(LogicalSide.CLIENT, res);
         }
         return res;
+    }
+
+    private static @NotNull MutableComponent getManaPerLootComponent(ManaPerLootAttribute.Config minManaPerLootConfig,
+                                                                 ManaPerLootAttribute.Config maxManaPerLootConfig) {
+        int minGenerated = minManaPerLootConfig.getManaGenerated().getMin();
+        int maxGenerated = maxManaPerLootConfig.getManaGenerated().getMax();
+        float minGenChance = minManaPerLootConfig.getManaGenerationChance().getMin();
+        float maxGenChance = maxManaPerLootConfig.getManaGenerationChance().getMax();
+        var minToMax = new TextComponent(DECIMAL_FORMAT.format(minGenChance*100) + "%-" + DECIMAL_FORMAT.format(maxGenChance*100) + "%").withStyle(Style.EMPTY.withColor(20479));
+        var generated = new TextComponent(minGenerated + "-" + maxGenerated).withStyle(Style.EMPTY.withColor(20479));
+        var loot = new TextComponent(maxManaPerLootConfig.getDisplayName()).withStyle(Style.EMPTY.withColor(20479));
+        return new TextComponent("").withStyle(Style.EMPTY.withColor(65535)).append(minToMax).append(new TextComponent(" chance to generate ")).append(generated).append(" Mana per ").append(loot).append(" looted");
     }
 
     private static <T> @NotNull MutableComponent getAbilityAoePercentageComponent(VaultGearAttribute<T> atr,
@@ -423,22 +479,22 @@ public class Modifiers {
         // <Effect> [<LVL>] Cloud [when Hit]
         // Poison Cloud
         // Poison III Cloud
-        var minString = minConfigDisplay.getString();
-        var maxString = maxConfigDisplay.getString();
+        String minString = minConfigDisplay.getString();
+        String maxString = maxConfigDisplay.getString();
 
-        var minLvl = getCloudLvl(minString);
-        var maxLvl = getCloudLvl(maxString);
+        String minLvl = getCloudLvl(minString);
+        String maxLvl = getCloudLvl(maxString);
 
         if (minLvl.equals(maxLvl)) {
             return minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
         }
 
-        var cloudRange = makeCloudLvlRange(minString, minLvl, maxLvl);
+        String cloudRange = makeCloudLvlRange(minString, minLvl, maxLvl);
         return new TextComponent(cloudRange).withStyle(atr.getReader().getColoredTextStyle());
     }
 
     private static String getCloudLvl(String displayString){
-        var matcher = CLOUD_PATTERN.matcher(displayString);
+        Matcher matcher = CLOUD_PATTERN.matcher(displayString);
         if (matcher.find()) {
             if (matcher.group("lvl") != null) {
                 return matcher.group("lvl");
@@ -449,7 +505,7 @@ public class Modifiers {
     }
 
     private static String makeCloudLvlRange(String displayString, String minLvl, String maxLvl){
-        var matcher = CLOUD_PATTERN.matcher(displayString);
+        Matcher matcher = CLOUD_PATTERN.matcher(displayString);
         if (matcher.find()) {
             return matcher.group("effect") + " " + minLvl + "-" + maxLvl + " " + matcher.group("suffix");
         }
@@ -459,15 +515,15 @@ public class Modifiers {
     private static MutableComponent abilityLvlComponent(MutableComponent prev, VaultGearAttribute<?> atr,
                                                  AbilityLevelAttribute.Config minConfig) {
 
-        var abComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
-        var optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
+        MutableComponent abComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
+        Optional<Skill> optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
         if (optSkill.isEmpty()) {
             return prev.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
         }
-        var abName = optSkill.get().getName();
-        var parts = prev.getString().split("-");
+        String abName = optSkill.get().getName();
+        String[] parts = prev.getString().split("-");
 
-        var res = new TextComponent("").withStyle(prev.getStyle());
+        MutableComponent res = new TextComponent("").withStyle(prev.getStyle());
         if (parts.length == 2) {
             if (parts[0].equals(parts[1])) {
                 res.append(parts[0]);
