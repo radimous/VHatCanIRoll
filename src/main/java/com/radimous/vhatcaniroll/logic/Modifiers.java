@@ -1,15 +1,27 @@
 package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
+import com.radimous.vhatcaniroll.mixin.AbilityFloatValueAttributeReaderInvoker;
 import com.radimous.vhatcaniroll.mixin.EffectConfigAccessor;
 import com.radimous.vhatcaniroll.mixin.VaultGearTierConfigAccessor;
+import iskallia.vault.config.UniqueGearConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.gear.attribute.VaultGearAttributeRegistry;
+import iskallia.vault.gear.attribute.VaultGearModifier;
+import iskallia.vault.gear.attribute.ability.AbilityAreaOfEffectPercentAttribute;
 import iskallia.vault.gear.attribute.ability.AbilityLevelAttribute;
+import iskallia.vault.gear.attribute.ability.special.EntropyPoisonModification;
+import iskallia.vault.gear.attribute.ability.special.FrostNovaVulnerabilityModification;
+import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityConfig;
+import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityGearAttribute;
+import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityModification;
+import iskallia.vault.gear.attribute.ability.special.base.template.config.IntRangeConfig;
+import iskallia.vault.gear.attribute.ability.special.base.template.value.IntValue;
 import iskallia.vault.gear.attribute.config.BooleanFlagGenerator;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
 import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
+import iskallia.vault.gear.reader.VaultGearModifierReader;
 import iskallia.vault.init.ModConfigs;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -20,6 +32,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.LogicalSide;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,19 +53,29 @@ public class Modifiers {
 
     public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory) {
         Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup = ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
-        
+
         ArrayList<Component> modList = new ArrayList<>();
 
         for (VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup : modifierGroup.keySet()) {
-            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup, modifierCategory));
+            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup.get(affixTagGroup), modifierCategory));
         }
 
         return modList;
     }
 
-    private static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
-                                             Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup,
-                                             ModifierCategory modifierCategory) {
+    public static List<Component> getUniqueModifierList(int lvl, ModifierCategory modifierCategory, Map<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifiers) {
+        ArrayList<Component> modList = new ArrayList<>();
+
+        for (Map.Entry<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifier : modifierIdentifiers.entrySet()) {
+            modList.addAll(getUniqueAffixComponents(lvl, modifierIdentifier, modifierCategory));
+        }
+
+        return modList;
+    }
+
+    public static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
+                                                          VaultGearTierConfig.AttributeGroup modifierGroups,
+                                                          ModifierCategory modifierCategory) {
 
         ArrayList<Component> componentList = new ArrayList<>();
         if (!Config.SHOW_ABILITY_ENHANCEMENTS.get() && affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
@@ -60,14 +83,14 @@ public class Modifiers {
         }
 
 
-        Map<String, Integer> groupCounts = countGroups(lvl, affixTagGroup, modifierGroup, modifierCategory);
+        Map<String, Integer> groupCounts = countGroups(lvl, modifierGroups, modifierCategory);
 
         AtomicBoolean noWeightAttr = new AtomicBoolean(false);
-        int totalWeight = modifierGroup.get(affixTagGroup).stream()
+        int totalWeight = modifierGroups.stream()
             .mapToInt(modTierGroup -> getModifierTiers(lvl, modTierGroup, modifierCategory).stream().mapToInt(
                     tier -> {
                         if ((affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.IMPLICIT
-                        || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) && groupCounts.get(modTierGroup.getModifierGroup()) == 1) {
+                            || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES) && groupCounts.get(modTierGroup.getModifierGroup()) == 1) {
                             noWeightAttr.set(true);
                             return 0;
                         }
@@ -88,10 +111,8 @@ public class Modifiers {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
         }
 
-
-
         Map<String, List<Component>> groupedModifiers = new HashMap<>();
-        for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
+        for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup :modifierGroups) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
 
             mTierList = getModifierTiers(lvl, modifierTierGroup, modifierCategory);
@@ -99,11 +120,10 @@ public class Modifiers {
                 continue;
             }
             String modGr = modifierTierGroup.getModifierGroup();
-            
- 
+
+
             MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
-//            //if (implicit||base) && groupCounts == 0
             if (!(
                 (affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES
                     || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.IMPLICIT
@@ -114,7 +134,7 @@ public class Modifiers {
                     modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
                 }
 
-                if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
+                if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
                     modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
                 }
             }
@@ -136,22 +156,55 @@ public class Modifiers {
         boolean useNums = groupedModifiers.size() > COLORS.length;
         int i = 0;
         for (var modGr: groupedModifiers.values()) {
-           for (var mod: modGr) {
-               MutableComponent full = new TextComponent(useNums ? i + " " : "► ").withStyle(COLORS[i % COLORS.length]);
-               full.append(mod);
-               componentList.add(full);
-           }
-           i++;
+            for (var mod: modGr) {
+                MutableComponent full = new TextComponent(useNums ? i + " " : "► ").withStyle(COLORS[i % COLORS.length]);
+                full.append(mod);
+                componentList.add(full);
+            }
+            i++;
         }
         componentList.add(TextComponent.EMPTY);
         return componentList;
     }
 
-    private static Map<String, Integer> countGroups(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
-                                                    Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup,
-                                                    ModifierCategory modifierCategory) {
+    /**
+     * Same as getAffixGroupComponents, but for unique gear without chances and groups
+     */
+    public static List<Component> getUniqueAffixComponents(int lvl,Map.Entry<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifier, ModifierCategory modifierCategory) {
+
+        ArrayList<Component> componentList = new ArrayList<>();
+        if (modifierIdentifier.getValue().isEmpty()) {
+            return componentList; // no affix for this type
+        }
+        UniqueGearConfig.AffixTargetType affixTagGroup = modifierIdentifier.getKey();
+        componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+        for (ResourceLocation modifier : modifierIdentifier.getValue()) {
+            VaultGearTierConfig.ModifierTierGroup modifierTierGroup = ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM).getTierGroup(modifier);
+            if (modifierTierGroup == null) {
+                continue;
+            }
+            ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
+            mTierList = getModifierTiers(lvl, modifierTierGroup, modifierCategory);
+            if (mTierList.isEmpty()) {
+                continue;
+            }
+            MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
+            MutableComponent full = new TextComponent("  ");
+            full.append(modComp);
+            componentList.add(full);
+        }
+
+        if (componentList.size() == 1) { // only header
+            return new ArrayList<>(); // no affixes for this type (all tiers are unobtainable)
+        }
+
+        componentList.add(TextComponent.EMPTY);
+        return componentList;
+    }
+
+    private static Map<String, Integer> countGroups(int lvl, VaultGearTierConfig.AttributeGroup modifierTierGroups, ModifierCategory modifierCategory) {
         Map<String, Integer> groupCounts = new HashMap<>();
-        for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierGroup.get(affixTagGroup)) {
+        for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup : modifierTierGroups) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
             mTierList = getModifierTiers(lvl, modifierTierGroup, modifierCategory);
             if (mTierList.isEmpty()) {
@@ -163,8 +216,7 @@ public class Modifiers {
         return groupCounts;
     }
 
-    public static ArrayList<VaultGearTierConfig.ModifierTier<?>> getModifierTiers(int lvl,
-                                                                                   VaultGearTierConfig.ModifierTierGroup modifierTierGroup, ModifierCategory modifierCategory) {
+    public static ArrayList<VaultGearTierConfig.ModifierTier<?>> getModifierTiers(int lvl, VaultGearTierConfig.ModifierTierGroup modifierTierGroup, ModifierCategory modifierCategory) {
 
         if (modifierCategory == ModifierCategory.NORMAL) {
             return getNormalModifierTiers(lvl, modifierTierGroup);
@@ -223,7 +275,11 @@ public class Modifiers {
         String atrName = atrRegName.toString();
 
         var minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
-        
+
+        if (minConfig instanceof SpecialAbilityGearAttribute.SpecialAbilityTierConfig<?,?,?> minConfigSpecial) {
+            return getSpecialAbilityAttributeComponent(modifierTiers, minConfigSpecial);
+        }
+
         MutableComponent res = null;
         if (modifierTiers.size() > 1) {
             res = rangeComponent(atrName, atr, atrGenerator, minConfig, maxConfig);
@@ -240,9 +296,41 @@ public class Modifiers {
             if (minConfig instanceof EffectGearAttribute.Config ) {
                 return minConfigDisplay;
             }
+
+            if (minConfig instanceof AbilityAreaOfEffectPercentAttribute.Config minConfigA) {
+                return getAbilityAoePercentageComponent(atr, minConfigA, minConfigA);
+            }
             return res;
         }
         return new TextComponent("ERR - NULL DISPLAY " + atrName);
+    }
+
+    @SuppressWarnings("unchecked") // this thing is insane
+    private static @NotNull MutableComponent getSpecialAbilityAttributeComponent(
+        ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers,
+        SpecialAbilityGearAttribute.SpecialAbilityTierConfig<?, ?, ?> minConfigSpecial) {
+        var modification = minConfigSpecial.getModification();
+        if (modification instanceof FrostNovaVulnerabilityModification frostNovaVulnerabilityModification) {
+            var minToMaxComponent = new TextComponent("<TODO>");
+            return (new TextComponent("Frost Nova also applies Level ").append(minToMaxComponent)
+                .append(" Vulnerability"));
+        }
+        if (modification instanceof EntropyPoisonModification entropyPoisonModification) {
+            var tiers = (List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>>) modifierTiers.stream().map(x -> x.getModifierConfiguration()).toList();
+            var minValue = entropyPoisonModification.getMinimumValue(tiers);
+            var minValueDisplay = new TextComponent(minValue.map(x -> String.valueOf(x.getValue().getValue())).orElse("NULL"));
+            var maxValue = entropyPoisonModification.getMaximumValue(tiers);
+            var maxValueDisplay = new TextComponent(maxValue.map(x -> String.valueOf(x.getValue().getValue())).orElse("NULL"));
+            MutableComponent cmp = new TextComponent("Entropic Bind also applies Poison ");
+            var range = new TextComponent(minValueDisplay.getString() + "-" + maxValueDisplay.getString());
+            cmp.append(range);
+            return cmp;
+        }
+        var abilityKey = minConfigSpecial.getAbilityKey();
+        return ModConfigs.ABILITIES.getAbilityById(abilityKey).filter(skill -> skill.getName() != null).map(skill -> {
+            String name = skill.getName();
+            return new TextComponent("Special " + name + " modification");
+        }).orElseGet(() -> (TextComponent) new TextComponent(abilityKey).withStyle(Style.EMPTY.withColor(14076214)));
     }
 
     /**
@@ -252,43 +340,83 @@ public class Modifiers {
      * and combining it with normal display for single component (that has name and color)
      */
     private static <T, C> MutableComponent rangeComponent(String atrName, VaultGearAttribute<T> atr,
-        ConfigurableAttributeGenerator<T, C> atrGenerator, C minConfig, C maxConfig) {
-            MutableComponent res = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
-            var minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
-            var maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);
+    ConfigurableAttributeGenerator<T, C> atrGenerator, C minConfig, C maxConfig) {
+        MutableComponent res = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
+        var minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
+        var maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);
 
 
-            if (res != null && minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
-                return abilityLvlComponent(res, atr, minConfigAbility);
-            }
-            
-            if ((atrName.equals("the_vault:effect_avoidance") || atrName.equals("the_vault:effect_list_avoidance")) && minConfigDisplay != null) {
-                // res -> "30% - 50%"
-                // single ->  "30% Poison Avoidance"
-                // minRange -> "30%"
-                var single = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
-                var minRange = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, minConfig);
-                if (minRange != null && res != null) {
-                    res.append(single.getString().replace(minRange.getString(), ""));
-                    // res -> "30% - 50% Poison Avoidance"
-                }
-            }
-            if (minConfigDisplay != null && maxConfigDisplay != null && (atrName.equals("the_vault:effect_cloud") || atrName.equals("the_vault:effect_cloud_when_hit"))) {
-               return getCloudRangeComponent(minConfigDisplay, maxConfigDisplay, atr);
-            }
+        if (res != null && minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
+            return abilityLvlComponent(res, atr, minConfigAbility);
+        }
 
-            if (minConfig instanceof EffectGearAttribute.Config minEffectConfig
-                && maxConfig instanceof EffectGearAttribute.Config
-                && maxConfigDisplay != null) {
-                var effectStr = ((EffectConfigAccessor)minEffectConfig).getAmplifier() + "-" +
-                    maxConfigDisplay.getString();
-                return new TextComponent(effectStr).withStyle(atr.getReader().getColoredTextStyle());
+        if ((atrName.equals("the_vault:effect_avoidance") || atrName.equals("the_vault:effect_list_avoidance")) && minConfigDisplay != null) {
+            // res -> "30% - 50%"
+            // single ->  "30% Poison Avoidance"
+            // minRange -> "30%"
+            var single = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
+            var minRange = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, minConfig);
+            if (minRange != null && res != null) {
+                res.append(single.getString().replace(minRange.getString(), ""));
+                // res -> "30% - 50% Poison Avoidance"
+            }
+        }
+        if (minConfigDisplay != null && maxConfigDisplay != null && (atrName.equals("the_vault:effect_cloud") || atrName.equals("the_vault:effect_cloud_when_hit"))) {
+           return getCloudRangeComponent(minConfigDisplay, maxConfigDisplay, atr);
+        }
 
-            }
-            if (res != null) {
-                return atr.getReader().formatConfigDisplay(LogicalSide.CLIENT, res);
-            }
-            return res;
+        if ((minConfig instanceof AbilityAreaOfEffectPercentAttribute.Config minConfigA) && (maxConfig instanceof AbilityAreaOfEffectPercentAttribute.Config maxConfigA)) {
+            return getAbilityAoePercentageComponent(atr, minConfigA, maxConfigA);
+        }
+
+        if (minConfig instanceof EffectGearAttribute.Config minEffectConfig
+            && maxConfig instanceof EffectGearAttribute.Config
+            && maxConfigDisplay != null) {
+            var effectStr = ((EffectConfigAccessor)minEffectConfig).getAmplifier() + "-" +
+                maxConfigDisplay.getString();
+            return new TextComponent(effectStr).withStyle(atr.getReader().getColoredTextStyle());
+        }
+
+        if (atrName.equals("the_vault:effect_cloud")){
+            return new TextComponent("Special ability modification");
+        }
+
+        if (res != null) {
+            return atr.getReader().formatConfigDisplay(LogicalSide.CLIENT, res);
+        }
+        return res;
+    }
+
+    private static <T> @NotNull MutableComponent getAbilityAoePercentageComponent(VaultGearAttribute<T> atr,
+                                                                        AbilityAreaOfEffectPercentAttribute.Config minConfigA,
+                                                                        AbilityAreaOfEffectPercentAttribute.Config maxConfigA) {
+        float min = minConfigA.getMin();
+        float max = maxConfigA.generateMaximumValue();
+
+        VaultGearModifierReader<T> reader = atr.getReader();
+        MutableComponent minValueDisplay = new TextComponent(new DecimalFormat("0.#").format(Math.abs(min * 100.0F)) + "%");
+        MutableComponent maxValueDisplay = new TextComponent(new DecimalFormat("0.#").format(Math.abs(max * 100.0F)) + "%");
+        boolean positive = min > 0;
+        MutableComponent areaCmp = new TextComponent("Area Of Effect").withStyle(Style.EMPTY.withColor(ModConfigs.COLORS.getColor("areaOfEffect")));
+        String cdInfo;
+        if (positive) {
+            cdInfo = " more ";
+        } else {
+            cdInfo = " less ";
+        }
+
+        return new TextComponent("")
+            .append(VaultGearModifier.AffixType.IMPLICIT.getAffixPrefixComponent(true)
+                .withStyle(Style.EMPTY.withColor(6082075)))
+            .append(minValueDisplay.withStyle(Style.EMPTY.withColor(6082075)))
+            .append(new TextComponent("-").withStyle(Style.EMPTY.withColor(6082075)))
+            .append(maxValueDisplay.withStyle(Style.EMPTY.withColor(6082075)))
+            .append(cdInfo)
+            .append(areaCmp)
+            .append(" of ")
+            .append(
+                ((AbilityFloatValueAttributeReaderInvoker) reader).invokeFormatAbilityName(minConfigA.getAbilityKey()))
+            .setStyle(reader.getColoredTextStyle());
     }
 
     private static MutableComponent getCloudRangeComponent(MutableComponent minConfigDisplay, MutableComponent maxConfigDisplay, VaultGearAttribute<?> atr) {
@@ -356,7 +484,7 @@ public class Modifiers {
         abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
         return abComp;
     }
-    
+
     private static int modTierListWeight(List<VaultGearTierConfig.ModifierTier<?>> val) {
         if (val == null || val.isEmpty()) {
             return 0;
