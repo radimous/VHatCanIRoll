@@ -11,11 +11,12 @@ public class Config {
     public static final ForgeConfigSpec.IntValue BUTTON_X;
     public static final ForgeConfigSpec.IntValue BUTTON_Y;
     public static final ForgeConfigSpec.IntValue MAX_LEVEL_OVERRIDE;
-    public static final ForgeConfigSpec.BooleanValue SHOW_ABILITY_ENHANCEMENTS;    
+    public static final ForgeConfigSpec.BooleanValue SHOW_ABILITY_ENHANCEMENTS;
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
     public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
     public static final ForgeConfigSpec.BooleanValue SHOW_UNOBTAINABLE_CRAFTED;
+    public static final ForgeConfigSpec.BooleanValue DEBUG_UNIQUE_GEAR;
     // string instead of enum, because forge would remove enum values that are not present in the enum
     // (this could cause problems if mods are extending the enum - like wold's)
     public static final ForgeConfigSpec.ConfigValue<List<String>> AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
@@ -41,11 +42,16 @@ public class Config {
         QOL_HUNTERS_CONFLICT_RESOLUTION = builder
             .comment("QOL Hunters conflict resolution (shouldn't be disabled unless it causes issues)")
             .define("QOLHuntersConflictResolution", true);
-        builder.pop();
-
+        AFFIX_TAG_GROUP_CHANCE_BLACKLIST = builder
+            .comment("vhcir won't show chance/weight for affixes in these groups")
+            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()));
         MAX_LEVEL_OVERRIDE = builder
             .comment("override max level")
             .defineInRange("maxLevelOverride", -1, -1, Integer.MAX_VALUE);
+        DEBUG_UNIQUE_GEAR = builder
+            .comment("debug unique gear")
+            .define("debugUniqueGear", false);
+        builder.pop();
 
         SHOW_ABILITY_ENHANCEMENTS = builder
             .comment("show ability enhancements")
@@ -58,10 +64,6 @@ public class Config {
         SHOW_CHANCE = builder
             .comment("show chance")
             .define("showChance", true);
-
-        AFFIX_TAG_GROUP_CHANCE_BLACKLIST = builder
-            .comment("vhcir won't show chance/weight for affixes in these groups")
-            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()));
 
         SHOW_UNOBTAINABLE_CRAFTED = builder
             .comment("show unobtainable crafted modifiers (above current lvl)")

@@ -7,10 +7,11 @@
   "mixins": [
   ],
   "client": [
-    "StatisticsElementContainerScreenMixin",
-    "VaultGearTierConfigAccessor",
     "EffectConfigAccessor",
-    "UniqueGearConfigAccessor"
+    "StatisticsElementContainerScreenMixin",
+    "UniqueGearConfigAccessor",
+    "VaultGearTierConfigAccessor",
+    "AbilityFloatValueAttributeReaderInvoker"
   ],
   "injectors": {
     "defaultRequire": 1
