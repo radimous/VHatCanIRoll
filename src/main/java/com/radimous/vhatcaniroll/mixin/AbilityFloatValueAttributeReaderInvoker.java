@@ -5,7 +5,7 @@ import net.minecraft.network.chat.MutableComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(AbilityFloatValueAttribute.Reader.class)
+@Mixin(value = AbilityFloatValueAttribute.Reader.class, remap = false)
 public interface AbilityFloatValueAttributeReaderInvoker {
     @Invoker
     MutableComponent invokeFormatAbilityName(String abilityKey);

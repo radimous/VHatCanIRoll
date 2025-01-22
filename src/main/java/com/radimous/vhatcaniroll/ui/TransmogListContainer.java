@@ -22,9 +22,14 @@ import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.util.SideOnlyFixer;
 import iskallia.vault.util.function.ObservableSupplier;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
+import java.util.Set;
 
 import static iskallia.vault.client.gui.framework.ScreenTextures.BUTTON_EMPTY;
 import static iskallia.vault.client.gui.framework.ScreenTextures.BUTTON_EMPTY_DISABLED;
@@ -36,16 +41,16 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
         int labelX = 9;
         int labelY = 0;
 
-        var player = Minecraft.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) {
             return;
         }
-        var discoveredModelIds = ClientDiscoveredEntriesData.Models.getDiscoveredModels();
-        var discoveredModelObserverIds = ClientDiscoveredEntriesData.Models.getObserverModels();
-        var model = new DiscoveredModelSelectElement.DiscoveredModelSelectorModel(
+        Set<ResourceLocation> discoveredModelIds = ClientDiscoveredEntriesData.Models.getDiscoveredModels();
+        ObservableSupplier<Set<ResourceLocation>> discoveredModelObserverIds = ClientDiscoveredEntriesData.Models.getObserverModels();
+        DiscoveredModelSelectElement.DiscoveredModelSelectorModel model = new DiscoveredModelSelectElement.DiscoveredModelSelectorModel(
             ObservableSupplier.of(() -> gearPiece, SideOnlyFixer::stackEqualExact), discoveredModelObserverIds, x -> {});
-        var mEntries = model.getEntries();
-        for (var x : mEntries) {
+        List<DiscoveredModelSelectElement.TransmogModelEntry> mEntries = model.getEntries();
+        for (DiscoveredModelSelectElement.TransmogModelEntry x : mEntries) {
             ItemStack displayStack = new ItemStack(gearPiece.getItem());
             VaultGearData gearData = VaultGearData.read(displayStack);
             gearData.setState(VaultGearState.IDENTIFIED);
@@ -62,7 +67,7 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
 
                 NineSliceButtonElement<?> btn = new NineSliceButtonElement<>(Spatials.positionXY(0, labelY ).width(innerWidth()).height(18),
                     new NineSliceButtonElement.NineSliceButtonTextures(BUTTON_EMPTY, BUTTON_EMPTY, BUTTON_EMPTY, BUTTON_EMPTY_DISABLED), () -> {});
-                var canTransmog = TransmogTableBlock.canTransmogModel(player, discoveredModelIds, x.getModelId());
+                boolean canTransmog = TransmogTableBlock.canTransmogModel(player, discoveredModelIds, x.getModelId());
                 btn.setDisabled(!canTransmog);
                 this.addElement(btn);
 

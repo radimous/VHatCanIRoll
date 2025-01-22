@@ -21,6 +21,7 @@ import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -36,22 +37,21 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
         int labelY = 9;
 
         Map<ResourceLocation, UniqueGearConfig.Entry> uniqueRegistry = ((UniqueGearConfigAccessor) ModConfigs.UNIQUE_GEAR).getRegistry();
-        var regName = gearPiece.getItem().getRegistryName();
+        ResourceLocation regName = gearPiece.getItem().getRegistryName();
         if (regName == null) {
             return;
         }
-        var regPath = regName.getPath();
+        String regPath = regName.getPath();
 
         var goodEntries = uniqueRegistry.entrySet().stream().filter(entry -> entry.getValue().getModel() != null && entry.getValue().getModel().toString().contains(regPath)).toList();
-        List<Map.Entry<ResourceLocation, UniqueGearConfig.Entry>> badEntries = uniqueRegistry.entrySet().stream().filter(entry -> entry.getValue().getModel() == null || !entry.getValue().getModel().toString().contains(regPath)).toList();
 
 
-        var uniqueConfig1 = (VaultGearTierConfigAccessor) ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM);
+        VaultGearTierConfigAccessor uniqueConfig1 = (VaultGearTierConfigAccessor) ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM);
         if (uniqueConfig1 == null) {
             return;
         }
-        for (var entry : goodEntries) {
-            var value = entry.getValue();
+        for (Map.Entry<ResourceLocation, UniqueGearConfig.Entry> entry : goodEntries) {
+            UniqueGearConfig.Entry value = entry.getValue();
             String name = value.getName();
             if (name == null) {
                 continue;
@@ -83,8 +83,8 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             this.addElement(new FakeItemSlotElement<>(Spatials.positionXY(labelX - 4, iconHeight).width(16).height(16), () -> displayStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY));
 
 
-            var mlist = Modifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
-            for (var mc : mlist) {
+            List<Component> mlist = Modifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
+            for (Component mc : mlist) {
                 LabelElement<?> mcl = new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
                     mc, LabelTextStyle.defaultStyle());
@@ -97,23 +97,24 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             labelY += 10;
         }
         if (Config.DEBUG_UNIQUE_GEAR.get()) {
+            var badEntries = uniqueRegistry.entrySet().stream().filter(entry -> entry.getValue().getModel() == null || !entry.getValue().getModel().toString().contains(regPath)).toList();
             this.addElement(new LabelElement<>(
                 Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
                 new TextComponent("[DEBUG] BAD ENTRIES:").withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
             labelY += 10;
-            for (var entry : badEntries) {
+            for (Map.Entry<ResourceLocation, UniqueGearConfig.Entry> entry : badEntries) {
                 this.addElement(new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
                     new TextComponent("ID: " + entry.getKey().toString()).withStyle(ChatFormatting.RED),
                     LabelTextStyle.defaultStyle()));
                 labelY += 10;
-                var vv = entry.getValue();
-                if (vv == null) {
+                UniqueGearConfig.Entry value = entry.getValue();
+                if (value == null) {
                     continue;
                 }
                 this.addElement(new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
-                    new TextComponent("Model: " + vv.getModel()).withStyle(ChatFormatting.RED),
+                    new TextComponent("Model: " + value.getModel()).withStyle(ChatFormatting.RED),
                     LabelTextStyle.defaultStyle()));
                 labelY += 16;
             }

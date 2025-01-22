@@ -59,7 +59,7 @@ public class StatisticsElementContainerScreenMixin extends AbstractSkillTabEleme
                 })
         );
         // add chestplate icon to it
-        var chestplateStack = new ItemStack(ModItems.CHESTPLATE);
+        ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY
             ).layout(

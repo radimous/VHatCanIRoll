@@ -22,8 +22,8 @@ public class QOLHuntersCompat {
         if (qolConfigButton == null) {
             // use reflection to avoid a million dependencies
             try {
-                var cl = Class.forName("io.iridium.qolhunters.config.QOLHuntersClientConfigs");
-                var qolButton = cl.getField("SHOW_CONFIG_BUTTON").get(null);
+                Class<?> cl = Class.forName("io.iridium.qolhunters.config.QOLHuntersClientConfigs");
+                Object qolButton = cl.getField("SHOW_CONFIG_BUTTON").get(null);
                 qolConfigButton = (ForgeConfigSpec.BooleanValue) qolButton;
             } catch (NoSuchFieldException | ClassNotFoundException | IllegalAccessException e) {
                 qolHuntersLoaded = false;

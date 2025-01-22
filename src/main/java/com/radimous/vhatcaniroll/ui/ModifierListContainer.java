@@ -10,6 +10,7 @@ import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 
@@ -35,7 +36,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         Optional<VaultGearTierConfig> optCfg = VaultGearTierConfig.getConfig(gearPiece);
         if (optCfg.isPresent()) {
             VaultGearTierConfig cfg = optCfg.get();
-            for (var modifier : Modifiers.getModifierList(lvl, cfg, modifierCategory)) {
+            for (Component modifier : Modifiers.getModifierList(lvl, cfg, modifierCategory)) {
                 LabelElement<?> labelelement = new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), modifier, LabelTextStyle.defaultStyle()
                 );

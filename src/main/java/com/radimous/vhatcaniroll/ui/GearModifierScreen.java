@@ -42,12 +42,16 @@ import java.util.List;
 public class GearModifierScreen extends AbstractElementScreen {
     //TODO: remove magic numbers
     private InnerGearScreen innerScreen;
+    private NineSliceButtonElement<?> minusButton;
+    private NineSliceButtonElement<?> plusButton;
+    private LabelElement<?> minusLabel;
+    private LabelElement<?> plusLabel;
     private final ScrollableLvlInputElement lvlInput;
     private ModifierCategory modifierCategory = ModifierCategory.NORMAL;
     private LabelElement<?> modifierCategoryLabel;
     private NineSliceButtonElement<?> modifierCategoryButton;
-    private HelpContainer helpContainer;
-    private LabelElement<?> windowNameLabel;
+    private final HelpContainer helpContainer;
+    private final LabelElement<?> windowNameLabel;
 
     private int currIndex = 0;
     private final List<TabElement<?>> tabs = new ArrayList<>();
@@ -111,7 +115,7 @@ public class GearModifierScreen extends AbstractElementScreen {
      * @param keepScroll whether to keep the current scroll position
      */
     private void updateModifierList(boolean keepScroll) {
-        var oldScroll = this.innerScreen.getScroll();
+        float oldScroll = this.innerScreen.getScroll();
         this.removeElement(this.innerScreen);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = this.innerScreen.create(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear());
@@ -134,9 +138,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         updateModifierCategoryButtonLabel();
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new TransmogListContainer(modListSpatial, getCurrGear()).layout(this.translateWorldSpatial());
-        this.modifierCategoryButton.setDisabled(true);
-        this.modifierCategoryButton.setVisible(false);
-        this.modifierCategoryLabel.setVisible(false);
+        this.disableCategoryButtons();
+        this.disableLvlButtons();
         this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.transmogs").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
@@ -146,9 +149,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.removeElement(this.innerScreen);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
-        this.modifierCategoryButton.setDisabled(false);
-        this.modifierCategoryButton.setVisible(true);
-        this.modifierCategoryLabel.setVisible(true);
+        this.enableCategoryButtons();
+        this.enableLvlButtons();
         this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
@@ -160,9 +162,8 @@ public class GearModifierScreen extends AbstractElementScreen {
         updateModifierCategoryButtonLabel();
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new CraftedModifiersListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
-        this.modifierCategoryButton.setDisabled(true);
-        this.modifierCategoryButton.setVisible(false);
-        this.modifierCategoryLabel.setVisible(false);
+        this.enableLvlButtons();
+        this.disableCategoryButtons();
         this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.crafted").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
@@ -174,12 +175,41 @@ public class GearModifierScreen extends AbstractElementScreen {
         updateModifierCategoryButtonLabel();
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new UniqueGearListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
-        this.modifierCategoryButton.setDisabled(true);
-        this.modifierCategoryButton.setVisible(false);
-        this.modifierCategoryLabel.setVisible(false);
+        this.enableLvlButtons();
+        this.disableCategoryButtons();
         this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.unique").withStyle(ChatFormatting.BLACK));
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
+    }
+
+
+
+    private void enableCategoryButtons(){
+        this.modifierCategoryLabel.setVisible(true);
+        this.modifierCategoryButton.setVisible(true);
+        this.modifierCategoryButton.setDisabled(false);
+    }
+
+    private void disableCategoryButtons(){
+        this.modifierCategoryLabel.setVisible(false);
+        this.modifierCategoryButton.setVisible(false);
+        this.modifierCategoryButton.setDisabled(true);
+    }
+
+    private void enableLvlButtons(){
+        this.lvlInput.setVisible(true);
+        this.minusButton.setVisible(true);
+        this.minusLabel.setVisible(true);
+        this.plusButton.setVisible(true);
+        this.plusLabel.setVisible(true);
+    }
+
+    private void disableLvlButtons(){
+        this.lvlInput.setVisible(false);
+        this.minusButton.setVisible(false);
+        this.minusLabel.setVisible(false);
+        this.plusButton.setVisible(false);
+        this.plusLabel.setVisible(false);
     }
 
     // pulled from QuestOverviewElementScreen
@@ -272,7 +302,6 @@ public class GearModifierScreen extends AbstractElementScreen {
                 Minecraft.getInstance().font)
                 .layout(this.translateWorldSpatial())
         );
-
         inputElement.onTextChanged(s -> updateModifierList(true));
         return inputElement;
     }
@@ -292,10 +321,10 @@ public class GearModifierScreen extends AbstractElementScreen {
         NineSliceButtonElement<?> btnPlus =
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 25 - 13, 35).size(15, 14),
                 ScreenTextures.BUTTON_EMPTY_TEXTURES, lvlInput::increment).layout(this.translateWorldSpatial());
-        this.addElement(btnMinus);
-        this.addElement(minusLabel);
-        this.addElement(plusLabel);
-        this.addElement(btnPlus);
+        this.minusButton = this.addElement(btnMinus);
+        this.minusLabel = this.addElement(minusLabel);
+        this.plusLabel = this.addElement(plusLabel);
+        this.plusButton = this.addElement(btnPlus);
     }
 
     private void nextModifierCategory() {
@@ -365,9 +394,9 @@ public class GearModifierScreen extends AbstractElementScreen {
             if (!(this.innerScreen instanceof ModifierListContainer))
                 switchToModifiers();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 120);
+            world.width(21).height(21).translateX(gui.left() - 18 - 22).translateY(this.getGuiSpatial().bottom() - 118);
         }).tooltip(
-            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Random Modifiers"))
+            Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.random"))
         );
     }
 
@@ -376,9 +405,9 @@ public class GearModifierScreen extends AbstractElementScreen {
             if (!(this.innerScreen instanceof TransmogListContainer))
                 switchToTransmog();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 72);
+            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 96);
         }).tooltip(
-            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Transmogs"))
+            Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.transmogs"))
         );
     }
 
@@ -387,9 +416,9 @@ public class GearModifierScreen extends AbstractElementScreen {
             if (!(this.innerScreen instanceof CraftedModifiersListContainer))
                 switchToCrafted();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 96);
+            world.width(21).height(21).translateX(gui.left() - 18 - 22).translateY(this.getGuiSpatial().bottom() - 96);
         }).tooltip(
-            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Crafted Modifiers"))
+            Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.crafted"))
         );
     }
 
@@ -398,9 +427,9 @@ public class GearModifierScreen extends AbstractElementScreen {
             if (!(this.innerScreen instanceof UniqueGearListContainer))
                 switchToUnique();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 36).translateY(this.getGuiSpatial().bottom() - 96);
+            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 118);
         }).tooltip(
-            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Unique Modifiers"))
+            Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.unique"))
         );
     }
 

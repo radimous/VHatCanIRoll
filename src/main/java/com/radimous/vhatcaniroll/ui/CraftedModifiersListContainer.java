@@ -20,10 +20,12 @@ import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
 import iskallia.vault.config.gear.VaultGearWorkbenchConfig;
 import iskallia.vault.gear.VaultGearState;
+import iskallia.vault.gear.attribute.VaultGearModifier;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.init.ModGearAttributes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -32,6 +34,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -49,12 +53,12 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
         int labelX = 9;
         int labelY = 0;
 
-        var player = Minecraft.getInstance().player;
+        LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) {
             return;
         }
 
-        var stackCopy = gearPiece.copy();
+        ItemStack stackCopy = gearPiece.copy();
         VaultGearData gearData = VaultGearData.read(stackCopy);
         gearData.setItemLevel(lvl);
         gearData.setState(VaultGearState.IDENTIFIED);
@@ -63,8 +67,7 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
         gearData.write(stackCopy);
 
 
-
-        var crMods = VaultGearWorkbenchConfig.getConfig(gearPiece.getItem())
+        List<VaultGearWorkbenchConfig.CraftableModifierConfig> crMods = VaultGearWorkbenchConfig.getConfig(gearPiece.getItem())
             .map(VaultGearWorkbenchConfig::getAllCraftableModifiers).orElse(null);
         if (crMods == null) {
             cookieDialog();
@@ -76,11 +79,11 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
 
             // is unlocked?
             MutableComponent fullCmp = new TextComponent("");
-            var mm = mod.createModifier().orElse(null);
+            VaultGearModifier<?> mm = mod.createModifier().orElse(null);
             if (mm == null) {
                 continue;
             }
-            var oCfgDisplay = mm.getConfigDisplay(gearPiece);
+            Optional<MutableComponent> oCfgDisplay = mm.getConfigDisplay(gearPiece);
             oCfgDisplay.ifPresent(fullCmp::append);
             MutableComponent restriction = new TextComponent("");
             int minLevel = mod.getMinLevel();
@@ -122,7 +125,6 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
             labelY += 18;
 
         }
-
 
     }
 
@@ -199,15 +201,15 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
             if (this.valueSupplier.get() == 0) {
                 return;
             }
-            var ll = RenderSystem.getModelViewStack();
-            ll.pushPose();
+            PoseStack viewStack = RenderSystem.getModelViewStack();
+            viewStack.pushPose();
             float scale = 2f;
-            ll.scale(scale, scale, scale);
-            ll.translate(-getWorldSpatial().x() * (1 - 1/scale), -getWorldSpatial().y() * (1 - 1/scale), 0);
+            viewStack.scale(scale, scale, scale);
+            viewStack.translate(-getWorldSpatial().x() * (1 - 1/scale), -getWorldSpatial().y() * (1 - 1/scale), 0);
             RenderSystem.applyModelViewMatrix();
 
             super.render(renderer, poseStack, mouseX, mouseY, partialTick);
-            ll.popPose();
+            viewStack.popPose();
 
         }
     }
@@ -228,7 +230,7 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
             } else if (msDiff < 300) {
                 scale *= 1 + (300 - msDiff) * 0.001f;
             }
-            var viewStack = RenderSystem.getModelViewStack();
+            PoseStack viewStack = RenderSystem.getModelViewStack();
             viewStack.pushPose();
             viewStack.translate(- (scale - originalScale) * originalScale, - (scale - originalScale) * originalScale, 0);
             viewStack.scale(scale, scale, 1);
