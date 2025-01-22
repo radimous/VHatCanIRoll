@@ -29,10 +29,16 @@ import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.IPosition;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
+import iskallia.vault.gear.VaultGearState;
+import iskallia.vault.gear.data.VaultGearData;
+import iskallia.vault.init.ModBlocks;
+import iskallia.vault.init.ModGearAttributes;
+import iskallia.vault.init.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.config.ModConfig;
 
@@ -390,46 +396,74 @@ public class GearModifierScreen extends AbstractElementScreen {
     }
 
     private void createModifierButton() {
-        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_QUEST_TEXTURES, () -> {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof ModifierListContainer))
                 switchToModifiers();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18 - 22).translateY(this.getGuiSpatial().bottom() - 118);
+            world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 50);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.random"))
+        );
+
+        ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 50))
         );
     }
 
     private void createTransmogButton() {
-        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_QUEST_TEXTURES, () -> {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof TransmogListContainer))
                 switchToTransmog();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 96);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 70);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.transmogs"))
+        );
+        ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
+        VaultGearData gearData = VaultGearData.read(chestplateStack);
+        gearData.setState(VaultGearState.IDENTIFIED);
+        gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, new ResourceLocation("the_vault:gear/armor/flamingo/chestplate"));
+        gearData.write(chestplateStack);
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50 + 20))
         );
     }
 
     private void createCraftedModsButton() {
-        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_QUEST_TEXTURES, () -> {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof CraftedModifiersListContainer))
                 switchToCrafted();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18 - 22).translateY(this.getGuiSpatial().bottom() - 96);
+            world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 70);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.crafted"))
+        );
+        ItemStack workbenchStack = new ItemStack(ModBlocks.MODIFIER_WORKBENCH);
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> workbenchStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 18 - 18).translateY(this.getGuiSpatial().top() + 50 + 20))
         );
     }
 
     private void createUniqueGearButton() {
-        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_QUEST_TEXTURES, () -> {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof UniqueGearListContainer))
                 switchToUnique();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 118);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.unique"))
+        );
+        ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
+        VaultGearData gearData = VaultGearData.read(chestplateStack);
+        gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_ROLL_TYPE, "Unique");
+        gearData.write(chestplateStack);
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50))
         );
     }
 
