@@ -107,7 +107,7 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
             }
             LabelElement<?> labelelement = new LabelElement<>(
                 Spatials.positionXY(8, labelY + 5).width(this.innerHeight() - labelX), fullCmp,
-                LabelTextStyle.defaultStyle().shadow() // WHY DOESN'T SHADOW WORK?
+                LabelTextStyle.shadow() // WHY DOESN'T SHADOW WORK?
             );
             NineSliceButtonElement<?> btn = new NineSliceButtonElement<>(Spatials.positionXY(0, labelY ).width(innerWidth()).height(18),
                 new NineSliceButtonElement.NineSliceButtonTextures(BUTTON_EMPTY, BUTTON_EMPTY, BUTTON_EMPTY, BUTTON_EMPTY_DISABLED), () -> {});

@@ -21,6 +21,7 @@ import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -37,14 +38,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
         int labelY = 9;
 
         Map<ResourceLocation, UniqueGearConfig.Entry> uniqueRegistry = ((UniqueGearConfigAccessor) ModConfigs.UNIQUE_GEAR).getRegistry();
-        ResourceLocation regName = gearPiece.getItem().getRegistryName();
-        if (regName == null) {
-            return;
-        }
-        String regPath = regName.getPath();
-
-        var goodEntries = uniqueRegistry.entrySet().stream().filter(entry -> entry.getValue().getModel() != null && entry.getValue().getModel().toString().contains(regPath)).toList();
-
+        var goodEntries = uniqueRegistry.entrySet().stream().filter(x -> matchesItem(gearPiece, x.getValue())).toList();
 
         VaultGearTierConfigAccessor uniqueConfig1 = (VaultGearTierConfigAccessor) ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM);
         if (uniqueConfig1 == null) {
@@ -85,11 +79,13 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
 
             List<Component> mlist = Modifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
             for (Component mc : mlist) {
+                int offset = mc.getStyle().isBold() ? 0 : Minecraft.getInstance().font.width("  "); // AAAAAAAAAAAAA
                 LabelElement<?> mcl = new LabelElement<>(
-                    Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
-                    mc, LabelTextStyle.defaultStyle());
+                    Spatials.positionXY(labelX + offset, labelY).width(this.innerWidth() - labelX - offset),
+                    Spatials.width(this.innerWidth() - labelX * 2 - offset).height(9),
+                    mc, LabelTextStyle.wrap());
                 this.addElement(mcl);
-                labelY += 10;
+                labelY += Math.max(mcl.getTextStyle().calculateLines(mc, mcl.width()) * 10, 10);
             }
             this.addElement(new NineSliceElement<>(
                 Spatials.positionXY(0, labelY).width(this.innerWidth()).height(3),
@@ -97,7 +93,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             labelY += 10;
         }
         if (Config.DEBUG_UNIQUE_GEAR.get()) {
-            var badEntries = uniqueRegistry.entrySet().stream().filter(entry -> entry.getValue().getModel() == null || !entry.getValue().getModel().toString().contains(regPath)).toList();
+            var badEntries = uniqueRegistry.entrySet().stream().filter(entry -> !matchesItem(gearPiece, entry.getValue())).toList();
             this.addElement(new LabelElement<>(
                 Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
                 new TextComponent("[DEBUG] BAD ENTRIES:").withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
@@ -119,6 +115,22 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
                 labelY += 16;
             }
         }
+    }
+
+    private boolean matchesItem(ItemStack gearPiece, UniqueGearConfig.Entry value) {
+        var regName = gearPiece.getItem().getRegistryName();
+        if (regName == null) {
+            return false;
+        }
+        var regPath = regName.getPath();
+        if (value.getModel() == null) {
+            return false;
+        }
+        if (regPath.equals("wand") && value.getModel().toString().equals("the_vault:gear/sword/honey_wand")) {
+            // WHO NAMES A SWORD HONEY WAND?????????????????????????????
+            return false;
+        } // checking for slash before/after would break magnet, because its under the_vault:magnets/
+        return value.getModel().toString().contains(regPath);
     }
 
     public float getScroll() {

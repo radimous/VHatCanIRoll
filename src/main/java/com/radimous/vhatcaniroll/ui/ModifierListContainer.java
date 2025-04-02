@@ -28,7 +28,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         // Label for the item name and level (GOLD if legendary, AQUA if greater, WHITE if common)
         LabelElement<?> itemName = new LabelElement<>(
             Spatials.positionXY(labelX, 5).width(this.innerWidth() - labelX).height(15), new TextComponent(
-                gearPiece.getItem().toString().toUpperCase() + " - LVL " + lvl)
+                gearPiece.getItem().toString().replace("_", " ").toUpperCase() + " - LVL " + lvl)
             .withStyle(ChatFormatting.UNDERLINE).withStyle(modifierCategory.getStyle()), LabelTextStyle.defaultStyle()
         );
         this.addElement(itemName);
@@ -40,6 +40,8 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
                 LabelElement<?> labelelement = new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), modifier, LabelTextStyle.defaultStyle()
                 );
+                this.addElement(labelelement);
+                labelY += 10;
                 /*  TODO: display individual modifier tiers
                     I want to display
                     <groupPrefix> <value> <name> <chance>
@@ -50,8 +52,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
                         <groupPrefix> <value> <name> <chance>
                         <groupPrefix> <value> <name> <chance>
                 */
-                this.addElement(labelelement);
-                labelY += 10;
+
             }
         } else {
             LabelElement<?> labelelement = new LabelElement<>(

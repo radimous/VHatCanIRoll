@@ -65,7 +65,7 @@ public class GearModifierScreen extends AbstractElementScreen {
     public GearModifierScreen() {
         super(new TextComponent("VHat can I roll?"), ScreenRenderers.getBuffered(), ScreenTooltipRenderer::create);
         // make screen size 95% of the window height and width that looks good
-        this.setGuiSize(Spatials.size(340, 300).height((int) (
+        this.setGuiSize(Spatials.size(Config.SCREEN_WIDTH.get(), 300).height((int) (
             (Minecraft.getInstance().getWindow().getHeight() / Minecraft.getInstance().getWindow().getGuiScale()) *
                 0.95)));
 
@@ -100,7 +100,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(this.innerScreen);
 
         // help container will overlay the modifier list
-        this.helpContainer = new HelpContainer(Spatials.positionXY(0, 0).size(0, 0));
+        this.helpContainer = new HelpContainer(Spatials.copy(this.getGuiSpatial()));
         createHelpButton(helpContainer);
         this.addElement(helpContainer);
 
@@ -233,11 +233,11 @@ public class GearModifierScreen extends AbstractElementScreen {
      * @return
      */
     private IPosition getTabPos(int tabIndex, boolean selected) {
-        if (tabIndex < 11){ // top tabs
+        if (tabIndex < getMaxTopTabCount()){ // top tabs
             return Spatials.positionXY(5 + tabIndex * 30, 2 + (selected ? 0 : 4));
         }
         // right tabs (only needed for wold's rn)
-        return Spatials.positionXY(337 + (selected ? 0:3), 35 + (tabIndex-11) * 30);
+        return Spatials.positionXY(imageWidth - 3 + (selected ? 0:3), 35 + (tabIndex-getMaxTopTabCount()) * 30);
     }
 
     /**
@@ -246,15 +246,15 @@ public class GearModifierScreen extends AbstractElementScreen {
      * @return
      */
     private ISpatial getItemPos(int tabIndex) {
-        if (tabIndex < 11){
+        if (tabIndex < getMaxTopTabCount()){
             return Spatials.positionXY(10 + tabIndex * 30, 11);
         }
-        return Spatials.positionXY(342, 40 + (tabIndex-11) * 30);
+        return Spatials.positionXY(imageWidth + 2, 40 + (tabIndex-getMaxTopTabCount()) * 30);
 
     }
 
     private TabElement<?> getTabElement(int tabIndex, boolean selected) {
-        if (tabIndex < 11){ // top tabs
+        if (tabIndex < getMaxTopTabCount()){ // top tabs
             return new TabElement<>(getTabPos(tabIndex, selected),
                 new TextureAtlasElement<>(
                     selected ? ScreenTextures.TAB_BACKGROUND_TOP_SELECTED : ScreenTextures.TAB_BACKGROUND_TOP),
@@ -298,6 +298,10 @@ public class GearModifierScreen extends AbstractElementScreen {
             new FakeItemSlotElement<>(getItemPos(index), () -> gearItem, () -> false,
                 ScreenTextures.EMPTY, ScreenTextures.EMPTY).layout(
                 this.translateWorldSpatial()));
+    }
+
+    private int getMaxTopTabCount() {
+        return (this.imageWidth-10)/30;
     }
 
     // header

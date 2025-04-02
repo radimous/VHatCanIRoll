@@ -1,5 +1,6 @@
 package com.radimous.vhatcaniroll.ui;
 
+import com.radimous.vhatcaniroll.logic.Items;
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import iskallia.vault.client.gui.framework.element.ContainerElement;
 import iskallia.vault.client.gui.framework.element.LabelElement;
@@ -12,11 +13,13 @@ import net.minecraft.network.chat.TextComponent;
 
 public class HelpContainer extends ContainerElement<HelpContainer> {
     public HelpContainer(ISpatial spatial) {
-        super(spatial);
+        super(Spatials.positionXY(0, 0).size(0, 0));
         this.setVisible(false); // Hide by default
 
+        int rightOffset = this.hasRightTabs(spatial) ? 25 : 0;
+
         LabelElement<?> tabLabel = new LabelElement<>(
-            Spatials.positionXY(336, 16).width(16).height(16),
+            Spatials.positionXY(spatial.width() - 4, 16).width(16).height(16),
             new TextComponent("TAB").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
@@ -30,7 +33,7 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         this.addElement(shiftTabLabel);
 
         LabelElement<?> arrows = new LabelElement<>(
-            Spatials.positionXY(260, 54).width(16).height(16),
+            Spatials.positionXY(spatial.width() - 82, 54).width(16).height(16),
             new TextComponent("← ").withStyle(ChatFormatting.GOLD)
                 .append(new TextComponent("scroll").withStyle(ChatFormatting.BLUE))
                 .append(new TextComponent(" →").withStyle(ChatFormatting.GOLD)),
@@ -39,7 +42,7 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         this.addElement(arrows);
 
         LabelElement<?> vimArrows = new LabelElement<>(
-            Spatials.positionXY(262, 64).width(16).height(16),
+            Spatials.positionXY(spatial.width() - 80, 64).width(16).height(16),
             new TextComponent("h ").withStyle(ChatFormatting.GOLD)
                 .append(new TextComponent("wheel").withStyle(ChatFormatting.BLUE))
                 .append(new TextComponent("  l").withStyle(ChatFormatting.GOLD)),
@@ -48,42 +51,42 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         this.addElement(vimArrows);
 
         LabelElement<?> ctrlLabel = new LabelElement<>(
-            Spatials.positionXY(365, 38).width(16).height(16),
+            Spatials.positionXY(spatial.width() + 4 + rightOffset, 38).width(16).height(16),
             new TextComponent("CTRL").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(ctrlLabel);
 
         LabelElement<?> categoryLabelNormal = new LabelElement<>(
-            Spatials.positionXY(375, 52).width(16).height(16),
+            Spatials.positionXY(spatial.width() + 8 + rightOffset, 52).width(16).height(16),
             new TextComponent(ModifierCategory.NORMAL.name()).withStyle(ModifierCategory.NORMAL.getStyle()),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(categoryLabelNormal);
 
         LabelElement<?> categoryLabelGreater = new LabelElement<>(
-            Spatials.positionXY(375, 62).width(16).height(16),
+            Spatials.positionXY(spatial.width() + 8 + rightOffset, 62).width(16).height(16),
             new TextComponent(ModifierCategory.GREATER.name()).withStyle(ModifierCategory.GREATER.getStyle()),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(categoryLabelGreater);
 
         LabelElement<?> categoryLabelLegendary = new LabelElement<>(
-            Spatials.positionXY(375, 72).width(16).height(16),
+            Spatials.positionXY(spatial.width() + 8 + rightOffset, 72).width(16).height(16),
             new TextComponent(ModifierCategory.LEGENDARY.name()).withStyle(ModifierCategory.LEGENDARY.getStyle()),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(categoryLabelLegendary);
 
         LabelElement<?> upLabel = new LabelElement<>(
-            Spatials.positionXY(340, 190).width(16).height(16),
-            new TextComponent("↑ k").withStyle(ChatFormatting.GOLD),
+            Spatials.positionXY(spatial.width() - 21, 190).width(16).height(16),
+            new TextComponent("↑k").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(upLabel);
         LabelElement<?> downLabel = new LabelElement<>(
-            Spatials.positionXY(340, 204).width(16).height(16),
-            new TextComponent("↓ j").withStyle(ChatFormatting.GOLD),
+            Spatials.positionXY(spatial.width() - 21, 204).width(16).height(16),
+            new TextComponent("↓j").withStyle(ChatFormatting.GOLD),
             LabelTextStyle.shadow()
         ).layout(this.translateWorldSpatial());
         this.addElement(downLabel);
@@ -101,18 +104,21 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
             """;
 
         String[] array = text.split("\n");
-        int labelY = 120;
+        int labelY = 130;
         for (String s : array) {
             LabelElement<?> textLabel = new LabelElement<>(
-                Spatials.positionXY(-100, labelY).width(20).height(15),
+                Spatials.positionXY(-110, labelY).width(20).height(15),
                 new TextComponent(s).withStyle(ChatFormatting.GOLD), LabelTextStyle.shadow()
             ).layout(this.translateWorldSpatial());
             this.addElement(textLabel);
             labelY += 10;
         }
-
-
     }
+
+    private boolean hasRightTabs(ISpatial spatial) {
+        return spatial.width() < (Items.getVaultGearItems().size() * 30 + 10);
+    }
+
     private ILayoutStrategy translateWorldSpatial() {
         return (screen, gui, parent, world) -> world.translateXY(gui);
     }

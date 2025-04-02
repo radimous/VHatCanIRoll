@@ -39,7 +39,8 @@ public class Items {
             withTransmog(new ItemStack(ModItems.SHIELD), new ResourceLocation("the_vault:gear/shield/gold_plated")),
             withTransmog(new ItemStack(ModItems.WAND), new ResourceLocation("the_vault:gear/wand/lunar")),
             withTransmog(new ItemStack(ModItems.MAGNET), new ResourceLocation("the_vault:magnets/magnet_1")),
-            withTransmog(new ItemStack(ModItems.JEWEL), new ResourceLocation("the_vault:gear/jewel/sword_0"))
+            withTransmog(new ItemStack(ModItems.JEWEL), new ResourceLocation("the_vault:gear/jewel/sword_0")),
+            withTransmog(new ItemStack(ModItems.VOID_STONE), new ResourceLocation("the_vault:gear/void_stone/void_stone_01"))
         );
     }
 
