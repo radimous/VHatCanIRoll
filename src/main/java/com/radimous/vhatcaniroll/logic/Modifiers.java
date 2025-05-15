@@ -17,8 +17,10 @@ import iskallia.vault.gear.attribute.ability.special.base.template.value.FloatVa
 import iskallia.vault.gear.attribute.ability.special.base.template.value.IntValue;
 import iskallia.vault.gear.attribute.config.BooleanFlagGenerator;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
+import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
 import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
 import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
+import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
 import iskallia.vault.init.ModConfigs;
 import net.minecraft.ChatFormatting;
@@ -41,7 +43,9 @@ import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getAbilityAoePerc
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getAbilityOnDamageComponent;
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getCloudRangeComponent;
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getCustomComponent;
+import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getEffectTrialComponent;
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getManaPerLootComponent;
+import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getRandomGodVaultModifierAttributeComponent;
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getSpecialAbilityAttributeComponent;
 
 /**
@@ -303,11 +307,17 @@ public class Modifiers {
             if (minConfig instanceof AbilityAreaOfEffectPercentAttribute.Config minConfigA) {
                 return getAbilityAoePercentageComponent(atr, minConfigA, minConfigA);
             }
-            if (minConfig instanceof ManaPerLootAttribute.Config maxManaPerLootConfig) {
-                return getManaPerLootComponent(maxManaPerLootConfig, maxManaPerLootConfig);
+            if (minConfig instanceof ManaPerLootAttribute.Config minManaPerLootConfig) {
+                return getManaPerLootComponent(minManaPerLootConfig, minManaPerLootConfig);
             }
             if (minConfig instanceof AbilityTriggerOnDamageAttribute.Config abilityTriggerOnDamageConfig) {
                 return getAbilityOnDamageComponent(abilityTriggerOnDamageConfig, abilityTriggerOnDamageConfig);
+            }
+            if (minConfig instanceof RandomGodVaultModifierAttribute.Config minGod) {
+                return getRandomGodVaultModifierAttributeComponent(minGod, minGod);
+            }
+            if (minConfig instanceof EffectTrialAttribute.Config minTrial) {
+                return getEffectTrialComponent(minTrial, minTrial);
             }
             return res;
         }
@@ -372,6 +382,18 @@ public class Modifiers {
 
         if (minConfig instanceof ManaPerLootAttribute.Config minManaPerLootConfig && maxConfig instanceof ManaPerLootAttribute.Config maxManaPerLootConfig) {
             return getManaPerLootComponent(minManaPerLootConfig, maxManaPerLootConfig);
+        }
+
+        if (minConfig instanceof AbilityTriggerOnDamageAttribute.Config minAbilityTriggerOnDamageConfig && maxConfig instanceof AbilityTriggerOnDamageAttribute.Config maxAbilityTriggerOnDamageConfig) {
+            return getAbilityOnDamageComponent(minAbilityTriggerOnDamageConfig, maxAbilityTriggerOnDamageConfig);
+        }
+
+        if (minConfig instanceof RandomGodVaultModifierAttribute.Config minGod && maxConfig instanceof RandomGodVaultModifierAttribute.Config maxGod) {
+            return getRandomGodVaultModifierAttributeComponent(minGod, maxGod);
+        }
+
+        if (minConfig instanceof EffectTrialAttribute.Config minTrial && maxConfig instanceof EffectTrialAttribute.Config maxTrial) {
+            return getEffectTrialComponent(minTrial, maxTrial);
         }
 
         if (atrName.equals("the_vault:effect_cloud")){

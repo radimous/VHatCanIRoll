@@ -1,7 +1,10 @@
 package com.radimous.vhatcaniroll.logic;
 
+import iskallia.vault.core.vault.influence.VaultGod;
+import iskallia.vault.gear.VaultGearRarity;
 import iskallia.vault.gear.VaultGearState;
 import iskallia.vault.gear.data.VaultGearData;
+import iskallia.vault.init.ModDynamicModels;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.init.ModItems;
 import net.minecraft.resources.ResourceLocation;
@@ -40,7 +43,12 @@ public class Items {
             withTransmog(new ItemStack(ModItems.WAND), new ResourceLocation("the_vault:gear/wand/lunar")),
             withTransmog(new ItemStack(ModItems.MAGNET), new ResourceLocation("the_vault:magnets/magnet_1")),
             withTransmog(new ItemStack(ModItems.JEWEL), new ResourceLocation("the_vault:gear/jewel/sword_0")),
-            withTransmog(new ItemStack(ModItems.VOID_STONE), new ResourceLocation("the_vault:gear/void_stone/void_stone_01"))
+            withTransmog(new ItemStack(ModItems.VOID_STONE), new ResourceLocation("the_vault:gear/void_stone/void_stone_01")),
+            godCharm(new ItemStack(ModItems.VAULT_GOD_CHARM), VaultGod.IDONA, VaultGearRarity.COMMON),
+            godCharm(new ItemStack(ModItems.VAULT_GOD_CHARM), VaultGod.TENOS, VaultGearRarity.RARE),
+            godCharm(new ItemStack(ModItems.VAULT_GOD_CHARM), VaultGod.VELARA, VaultGearRarity.EPIC),
+            godCharm(new ItemStack(ModItems.VAULT_GOD_CHARM), VaultGod.WENDARR, VaultGearRarity.OMEGA)
+
         );
     }
 
@@ -51,7 +59,8 @@ public class Items {
             Pair.of("TRIDENT", "the_vault:gear/trident/orange"),
             Pair.of("PLUSHIE", "the_vault:gear/plushie/hrry"),
             Pair.of("LOOT_SACK", "the_vault:gear/loot_sack/bundle"),
-            Pair.of("RANG", "the_vault:gear/rang/wooden")
+            Pair.of("RANG", "the_vault:gear/rang/wooden"),
+            Pair.of("MAP", "the_vault:gear/map/common")
         );
         try{
             Class<?> woldItemClass = Class.forName("xyz.iwolfking.woldsvaults.init.ModItems");
@@ -82,6 +91,18 @@ public class Items {
         VaultGearData gearData = VaultGearData.read(displayStack);
         gearData.setState(VaultGearState.IDENTIFIED);
         gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, transmog);
+        gearData.write(displayStack);
+        return displayStack;
+    }
+
+    public static ItemStack godCharm(ItemStack stack, VaultGod god, VaultGearRarity rarity) {
+        ItemStack displayStack = stack.copy();
+        VaultGearData gearData = VaultGearData.read(displayStack);
+        gearData.setState(VaultGearState.IDENTIFIED);
+        gearData.createOrReplaceAttributeValue(ModGearAttributes.CHARM_VAULT_GOD, god);
+        gearData.setRarity(rarity);
+        ResourceLocation id = ModDynamicModels.VaultGodCharms.getModel(gearData.getFirstValue(ModGearAttributes.CHARM_VAULT_GOD).orElse(VaultGod.IDONA), rarity).getId();
+        gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, id);
         gearData.write(displayStack);
         return displayStack;
     }

@@ -2,6 +2,8 @@ package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.mixin.AbilityFloatValueAttributeReaderInvoker;
 import iskallia.vault.config.gear.VaultGearTierConfig;
+import iskallia.vault.core.vault.modifier.registry.VaultModifierRegistry;
+import iskallia.vault.core.vault.modifier.spi.VaultModifier;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.gear.attribute.VaultGearModifier;
 import iskallia.vault.gear.attribute.ability.AbilityAreaOfEffectPercentAttribute;
@@ -14,7 +16,9 @@ import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityModifica
 import iskallia.vault.gear.attribute.ability.special.base.template.FloatRangeModification;
 import iskallia.vault.gear.attribute.ability.special.base.template.IntRangeModification;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
+import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
 import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
+import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
 import iskallia.vault.gear.reader.VaultGearModifierReader;
 import iskallia.vault.init.ModConfigs;
@@ -25,6 +29,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -58,6 +65,43 @@ public class SpecialModifiers {
             return getLuckyThornsComponent(minConfigDisplay, minConfigDisplay, atr);
         }
         return null;
+    }
+
+    static MutableComponent getRandomGodVaultModifierAttributeComponent(RandomGodVaultModifierAttribute.Config minConfig, RandomGodVaultModifierAttribute.Config maxConfig) {
+        var reader = RandomGodVaultModifierAttribute.reader();
+            var type = VaultGearModifier.AffixType.PREFIX;
+        var minTime = minConfig.getTime();
+        var maxTime = minConfig.getTime();
+        TextComponent valueDisplay;
+        if (minTime == maxTime){
+            valueDisplay = new TextComponent(minTime.getMin() / 20 + " seconds");
+        } else {
+            valueDisplay = new TextComponent((minTime.getMin() / 20) + "-" + (maxTime.getMax() / 20) + " seconds");
+        }
+        VaultModifier<?> modifier = VaultModifierRegistry.getOpt(minConfig.getModifier()).orElse(null);
+        if (modifier == null) {
+            return new TextComponent("Random Vault God Modifier - NULL ERROR when reading modifier type").withStyle(Style.EMPTY.withColor(14901010));
+        }
+        return (new TextComponent("")).append(type.getAffixPrefixComponent(minConfig.getCount() >= 0).withStyle(reader.getColoredTextStyle())).append(valueDisplay.withStyle(reader.getColoredTextStyle())).append(" of ").append(minConfig.getCount() > 1 ? minConfig.getCount() + "x " : "").append(modifier.getNameComponentFormatted(minConfig.getCount())).withStyle(reader.getColoredTextStyle());
+
+    }
+
+    static MutableComponent getEffectTrialComponent(EffectTrialAttribute.Config minConfig, EffectTrialAttribute.Config maxConfig){
+
+        var type = VaultGearModifier.AffixType.PREFIX;
+
+        var effectId = minConfig.getEffectId();
+        var minDurationTicks = minConfig.getDurationTicks().getMin();
+        var maxDurationTicks = maxConfig.getDurationTicks().getMax();
+
+        MobEffect effect = ForgeRegistries.MOB_EFFECTS.getValue(effectId);
+        if (effect == null) {
+            return null;
+        } else {
+            MutableComponent var10000 = type.getAffixPrefixComponent(true).append(new TextComponent("Leaves a trail of ")).append((new TranslatableComponent(effect.getDescriptionId())).withStyle(Style.EMPTY.withColor(16755200))).append(new TextComponent(" for "));
+            DecimalFormat df = new DecimalFormat("0.##");
+            return var10000.append((new TextComponent(df.format(minDurationTicks / (double)20.0F) + "s").append(new TextComponent("-")).append(new TextComponent(df.format(maxDurationTicks / (double)20.0F) + "s"))).withStyle(Style.EMPTY.withColor(16755200))).setStyle(Style.EMPTY.withColor(14901010));
+        }
     }
 
     static MutableComponent getAbilityOnDamageComponent(AbilityTriggerOnDamageAttribute.Config minConfig, AbilityTriggerOnDamageAttribute.Config maxConfig) {
