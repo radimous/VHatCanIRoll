@@ -356,7 +356,9 @@ public class GearModifierScreen extends AbstractElementScreen {
             this.removeElement(this.modifierCategoryLabel);
         }
         this.modifierCategoryLabel = new LabelElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 5 - 13, 38),
-            new TextComponent(modifierCategory.getSymbol()).withStyle(modifierCategory.getStyle()), LabelTextStyle.defaultStyle())
+            new TextComponent(modifierCategory.getSymbol()).withStyle(modifierCategory.getStyle()), LabelTextStyle.defaultStyle()).tooltip(
+                () -> new TextComponent(Character.toUpperCase(modifierCategory.name().charAt(0)) + modifierCategory.name().substring(1)).withStyle(modifierCategory.getStyle())
+            )
             .layout(this.translateWorldSpatial());
         this.addElement(modifierCategoryLabel);
     }
