@@ -196,7 +196,10 @@ public class Modifiers {
                 continue;
             }
             MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
-            componentList.add(modComp);
+
+            MutableComponent full = new TextComponent("  ");
+            full.append(modComp);
+            componentList.add(full);
         }
 
         if (componentList.size() == 1) { // only header
