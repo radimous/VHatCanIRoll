@@ -20,6 +20,7 @@ import iskallia.vault.gear.VaultGearState;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
+import iskallia.vault.init.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -139,7 +140,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
         }
         var regPath = regName.getPath();
         if (value.getModel() == null) {
-            return false;
+            return gearPiece.getItem() == ModItems.JEWEL.getItem();
         }
         if (regPath.equals("wand") && value.getModel().toString().equals("the_vault:gear/sword/honey_wand")) {
             // WHO NAMES A SWORD HONEY WAND?????????????????????????????
