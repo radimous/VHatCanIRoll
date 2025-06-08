@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,6 +53,7 @@ public class SpecialModifiers {
     private static final Pattern CLOUD_PATTERN = Pattern.compile("^(?<effect>.*?) ?(?<lvl>I|II|III|IV|V|VI|VII|VIII|IX|X)? (?<suffix>Cloud.*)$");
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
 
+    @SuppressWarnings("unchecked")
     static <T, C> MutableComponent getCustomComponent(VaultGearAttribute<T> atr, ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers, C minConfig,
                                             C maxConfig, String atrName, ConfigurableAttributeGenerator<T, C> atrGenerator,
                                             MutableComponent minConfigDisplay) {
@@ -63,6 +65,17 @@ public class SpecialModifiers {
         }
         if (atrName.equals("the_vault:lucky_thorns")) {
             return getLuckyThornsComponent(minConfigDisplay, minConfigDisplay, atr);
+        }
+
+
+        // wold's objectives without relying on wold's classes
+        if (minConfig instanceof Supplier<?> supplier){
+            try {
+                var comp = atr.getReader().getValueDisplay((T) supplier.get());
+                if (comp != null){
+                    return comp.withStyle(ChatFormatting.WHITE);
+                }
+            } catch (Exception ignored) {}
         }
         return null;
     }

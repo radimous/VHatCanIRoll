@@ -87,7 +87,7 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
     }
 
     @Override
-    public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece) {
+    public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
         return new TransmogListContainer(spatial, gearPiece);
     }
 }

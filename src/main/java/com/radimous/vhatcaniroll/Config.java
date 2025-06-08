@@ -11,6 +11,7 @@ public class Config {
     public static final ForgeConfigSpec.IntValue BUTTON_X;
     public static final ForgeConfigSpec.IntValue BUTTON_Y;
     public static final ForgeConfigSpec.IntValue MAX_LEVEL_OVERRIDE;
+    public static final ForgeConfigSpec.DoubleValue SCREEN_HEIGHT;
     public static final ForgeConfigSpec.IntValue SCREEN_WIDTH;
     public static final ForgeConfigSpec.BooleanValue SHOW_ABILITY_ENHANCEMENTS;
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
@@ -69,6 +70,10 @@ public class Config {
         SHOW_UNOBTAINABLE_CRAFTED = builder
             .comment("show unobtainable crafted modifiers (above current lvl)")
             .define("showUnobtainableCrafted", false);
+
+        SCREEN_HEIGHT = builder
+            .comment("width of the screen")
+            .defineInRange("screenHeight", 0.95, 0, 1.0);
 
         SCREEN_WIDTH = builder
             .comment("width of the screen")

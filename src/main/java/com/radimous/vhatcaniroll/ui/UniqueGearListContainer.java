@@ -79,13 +79,28 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
 
             List<Component> mlist = Modifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
             for (Component mc : mlist) {
-                int offset = mc.getStyle().isBold() ? 0 : Minecraft.getInstance().font.width("  "); // AAAAAAAAAAAAA
-                LabelElement<?> mcl = new LabelElement<>(
-                    Spatials.positionXY(labelX + offset, labelY).width(this.innerWidth() - labelX - offset),
-                    Spatials.width(this.innerWidth() - labelX * 2 - offset).height(9),
-                    mc, LabelTextStyle.wrap());
-                this.addElement(mcl);
-                labelY += Math.max(mcl.getTextStyle().calculateLines(mc, mcl.width()) * 10, 10);
+                if (mc instanceof TextComponent tc){ // try to make wrapped text
+                    var newTc = new TextComponent("");
+                    for (var sibling: tc.getSiblings()){
+                        newTc.append(sibling);
+                    }
+                    var gtc = new TextComponent(tc.getText()).withStyle(tc.getStyle());
+                    LabelElement<?> gcl = new LabelElement<>(Spatials.positionXY(labelX, labelY), gtc, LabelTextStyle.defaultStyle());
+                    this.addElement(gcl);
+
+                    LabelElement<?> mcl = new LabelElement<>(
+                        Spatials.positionXY(labelX + gcl.width(), labelY).width(this.innerWidth() - labelX - gcl.width()),
+                        Spatials.width(this.innerWidth() - labelX * 2).height(9),
+                        newTc, LabelTextStyle.wrap());
+                    this.addElement(mcl);
+                    labelY += Math.max(mcl.getTextStyle().calculateLines(newTc, mcl.width()) * 10, 10);
+                } else {
+                    LabelElement<?> labelelement = new LabelElement<>(
+                        Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), mc, LabelTextStyle.defaultStyle()
+                    );
+                    this.addElement(labelelement);
+                    labelY += 10;
+                }
             }
             this.addElement(new NineSliceElement<>(
                 Spatials.positionXY(0, labelY).width(this.innerWidth()).height(3),
@@ -142,7 +157,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
     }
 
     @Override
-    public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece) {
+    public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
         return new UniqueGearListContainer(spatial, lvl, modifierCategory, gearPiece);
     }
 }

@@ -104,10 +104,10 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
             """;
 
         String[] array = text.split("\n");
-        int labelY = 130;
+        int labelY = 140;
         for (String s : array) {
             LabelElement<?> textLabel = new LabelElement<>(
-                Spatials.positionXY(-110, labelY).width(20).height(15),
+                Spatials.positionXY(-100, labelY).width(20).height(15),
                 new TextComponent(s).withStyle(ChatFormatting.GOLD), LabelTextStyle.shadow()
             ).layout(this.translateWorldSpatial());
             this.addElement(textLabel);

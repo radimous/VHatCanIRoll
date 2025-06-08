@@ -8,6 +8,7 @@ import com.radimous.vhatcaniroll.logic.Items;
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import com.simibubi.create.foundation.config.ui.ConfigScreen;
 import com.simibubi.create.foundation.config.ui.SubMenuConfigScreen;
+import iskallia.vault.VaultMod;
 import iskallia.vault.client.gui.framework.ScreenRenderers;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.ButtonElement;
@@ -29,13 +30,17 @@ import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.IPosition;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
+import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.gear.VaultGearState;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.init.ModBlocks;
+import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.init.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -56,6 +61,9 @@ public class GearModifierScreen extends AbstractElementScreen {
     private ModifierCategory modifierCategory = ModifierCategory.NORMAL;
     private LabelElement<?> modifierCategoryLabel;
     private NineSliceButtonElement<?> modifierCategoryButton;
+    private boolean mythic = false;
+    private LabelElement<?> mythicLabel;
+    private NineSliceButtonElement<?> mythicButton;
     private final HelpContainer helpContainer;
     private final LabelElement<?> windowNameLabel;
 
@@ -64,10 +72,9 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     public GearModifierScreen() {
         super(new TextComponent("VHat can I roll?"), ScreenRenderers.getBuffered(), ScreenTooltipRenderer::create);
-        // make screen size 95% of the window height and width that looks good
         this.setGuiSize(Spatials.size(Config.SCREEN_WIDTH.get(), 300).height((int) (
             (Minecraft.getInstance().getWindow().getHeight() / Minecraft.getInstance().getWindow().getGuiScale()) *
-                0.95)));
+                Config.SCREEN_HEIGHT.get())));
 
         // outer background
         NineSliceElement<?> background = new NineSliceElement<>(
@@ -92,11 +99,14 @@ public class GearModifierScreen extends AbstractElementScreen {
 
         createLvlButtons(lvlInput);
         createModifierCategoryButton();
+        if (ModConfigs.VAULT_GEAR_CONFIG.get(VaultMod.id("sword_mythic")) != null) {
+            createMythicButton();
+        }
         createConfigButton();
 
         // inner black window
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
-        this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
+        this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic).layout(this.translateWorldSpatial());
         this.addElement(this.innerScreen);
 
         // help container will overlay the modifier list
@@ -124,7 +134,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         float oldScroll = this.innerScreen.getScroll();
         this.removeElement(this.innerScreen);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
-        this.innerScreen = this.innerScreen.create(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear());
+        this.innerScreen = this.innerScreen.create(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic);
         if (this.innerScreen instanceof ILayoutElement<?> layoutElement) {
             layoutElement.layout(this.translateWorldSpatial());
         }
@@ -154,7 +164,7 @@ public class GearModifierScreen extends AbstractElementScreen {
     private void switchToModifiers(){
         this.removeElement(this.innerScreen);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
-        this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial());
+        this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic).layout(this.translateWorldSpatial());
         this.enableCategoryButtons();
         this.enableLvlButtons();
         this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK));
@@ -376,6 +386,31 @@ public class GearModifierScreen extends AbstractElementScreen {
             }).layout(this.translateWorldSpatial());
         this.addElement(btnLegend);
         this.modifierCategoryButton = btnLegend;
+    }
+
+    private void updateMythicLabel() {
+        if (this.mythicLabel != null) {
+            this.removeElement(this.mythicLabel);
+        }
+        this.mythicLabel = new LabelElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 72 - 13 - 16 + 4, 38),
+            new TextComponent("M").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(mythic ? 15597727 : ChatFormatting.WHITE.getColor()))), LabelTextStyle.defaultStyle()).tooltip(
+                () -> new TextComponent("Mythic").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(mythic ? 15597727 : ChatFormatting.WHITE.getColor())))
+            )
+            .layout(this.translateWorldSpatial());
+        this.addElement(mythicLabel);
+    }
+
+    private void createMythicButton() {
+        updateMythicLabel();
+        NineSliceButtonElement<?> btnMythic =
+            new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 72 - 13 - 16, 35).size(14, 14),
+                ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+                mythic = !mythic;
+                updateMythicLabel();
+                updateModifierList(true);
+            }).layout(this.translateWorldSpatial());
+        this.addElement(btnMythic);
+        this.mythicButton = btnMythic;
     }
 
     private void createConfigButton(){

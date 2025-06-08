@@ -136,7 +136,7 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
     }
 
     @Override
-    public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece) {
+    public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
         return new CraftedModifiersListContainer(spatial, lvl, modifierCategory, gearPiece);
     }
 

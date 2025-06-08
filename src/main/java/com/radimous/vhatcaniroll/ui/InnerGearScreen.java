@@ -8,5 +8,5 @@ import net.minecraft.world.item.ItemStack;
 public interface InnerGearScreen extends IElement {
     float getScroll();
     void setScroll(float scroll);
-    InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece);
+    InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic);
 }

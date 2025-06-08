@@ -79,8 +79,8 @@ public class Modifiers {
     }
 
     public static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
-                                                          VaultGearTierConfig.AttributeGroup modifierGroups,
-                                                          ModifierCategory modifierCategory) {
+                                                                  VaultGearTierConfig.AttributeGroup modifierGroups,
+                                                                  ModifierCategory modifierCategory) {
 
         ArrayList<Component> componentList = new ArrayList<>();
         if (!Config.SHOW_ABILITY_ENHANCEMENTS.get() && affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
