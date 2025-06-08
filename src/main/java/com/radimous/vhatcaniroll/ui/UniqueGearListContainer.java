@@ -80,7 +80,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             List<Component> mlist = Modifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
             for (Component mc : mlist) {
                 if (mc instanceof TextComponent tc){ // try to make wrapped text
-                    var newTc = new TextComponent("");
+                    var newTc = new TextComponent("").withStyle(tc.getStyle());
                     for (var sibling: tc.getSiblings()){
                         newTc.append(sibling);
                     }
