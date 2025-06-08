@@ -62,7 +62,7 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
         var regName = gearPiece.getItem().getRegistryName();
 
         if (VaultMod.id("map").equals(regName)){
-            int idx = lvl % 10; // TODO: second input for tier?
+            int idx = mythic ? 0 : lvl % 10; // TODO: second input for tier?
 
             lvl = 100;
             if (idx != 0) {

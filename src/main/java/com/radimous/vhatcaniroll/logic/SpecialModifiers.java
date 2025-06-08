@@ -20,6 +20,7 @@ import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
 import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
 import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
+import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
 import iskallia.vault.gear.reader.VaultGearModifierReader;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
@@ -256,11 +257,6 @@ public class SpecialModifiers {
                                                 AbilityLevelAttribute.Config minConfig) {
 
         MutableComponent abComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
-        Optional<Skill> optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
-        if (optSkill.isEmpty()) {
-            return prev.append(" added ability levels").withStyle(atr.getReader().getColoredTextStyle());
-        }
-        String abName = optSkill.get().getName();
         String[] parts = prev.getString().split("-");
 
         MutableComponent res = new TextComponent("").withStyle(prev.getStyle());
@@ -277,8 +273,46 @@ public class SpecialModifiers {
         }
         abComp.append(res);
         abComp.append(" to level of ");
+        if (minConfig.getAbilityKey().equals("all_abilities")){
+            return abComp.append(new TextComponent("All Abilities").withStyle(Style.EMPTY.withColor(14076214)));
+        }
+        Optional<Skill> optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
+        if (optSkill.isEmpty()) {
+            return abComp.append(new TextComponent("ABILITY NOT FOUND - id="+minConfig.getAbilityKey()).withStyle(ChatFormatting.RED));
+        }
+        String abName = optSkill.get().getName();
         abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
         return abComp;
+    }
+
+    static MutableComponent talentLvlComponent(MutableComponent prev, VaultGearAttribute<?> atr,
+                                                TalentLevelAttribute.Config minConfig) {
+
+        MutableComponent talComp = new TextComponent("+").withStyle(atr.getReader().getColoredTextStyle());
+
+        String[] parts = prev.getString().split("-");
+
+        MutableComponent res = new TextComponent("").withStyle(prev.getStyle());
+        if (parts.length == 2) {
+            if (parts[0].equals(parts[1])) {
+                res.append(parts[0]);
+            } else {
+                res.append(parts[0]);
+                res.append("-");
+                res.append(parts[1]);
+            }
+        } else {
+            res.append(prev);
+        }
+        talComp.append(res);
+        talComp.append(" to level of ");
+        Optional<Skill> optSkill = ModConfigs.TALENTS.getTalentById(minConfig.getTalent());
+        if (optSkill.isEmpty()) {
+            return talComp.append(new TextComponent("TALENT NOT FOUND - id="+minConfig.getTalent()).withStyle(ChatFormatting.RED));
+        }
+        String talName = optSkill.get().getName();
+        talComp.append(new TextComponent(talName).withStyle(Style.EMPTY.withColor(14076214)));
+        return talComp;
     }
 
 

@@ -22,6 +22,7 @@ import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttrib
 import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
 import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
+import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
 import iskallia.vault.init.ModConfigs;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -47,6 +48,7 @@ import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getEffectTrialCom
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getManaPerLootComponent;
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getRandomGodVaultModifierAttributeComponent;
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getSpecialAbilityAttributeComponent;
+import static com.radimous.vhatcaniroll.logic.SpecialModifiers.talentLvlComponent;
 
 /**
  * This is responsible for all the logic of transforming vh config -> list of components needed for the UI
@@ -300,6 +302,9 @@ public class Modifiers {
             if (minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
                 return abilityLvlComponent(res, atr, minConfigAbility);
             }
+            if (minConfig instanceof TalentLevelAttribute.Config minConfigTalent) {
+                return talentLvlComponent(res, atr, minConfigTalent);
+            }
             if (minConfig instanceof EffectGearAttribute.Config ) {
                 return minConfigDisplay;
             }
@@ -351,6 +356,10 @@ public class Modifiers {
 
         if (res != null && minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
             return abilityLvlComponent(res, atr, minConfigAbility);
+        }
+
+        if (res != null && minConfig instanceof TalentLevelAttribute.Config minConfigTalent) {
+            return talentLvlComponent(res, atr, minConfigTalent);
         }
 
         if ((atrName.equals("the_vault:effect_avoidance") || atrName.equals("the_vault:effect_list_avoidance")) && minConfigDisplay != null) {
