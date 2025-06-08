@@ -17,6 +17,7 @@ import iskallia.vault.client.gui.framework.text.LabelTextStyle;
 import iskallia.vault.config.UniqueGearConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.gear.VaultGearState;
+import iskallia.vault.gear.attribute.VaultGearModifier;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
@@ -30,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueGearListContainer> implements InnerGearScreen {
 
@@ -41,21 +43,14 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
         Map<ResourceLocation, UniqueGearConfig.Entry> uniqueRegistry = ((UniqueGearConfigAccessor) ModConfigs.UNIQUE_GEAR).getRegistry();
         var goodEntries = uniqueRegistry.entrySet().stream().filter(x -> matchesItem(gearPiece, x.getValue())).toList();
 
-        VaultGearTierConfigAccessor uniqueConfig1 = (VaultGearTierConfigAccessor) ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM);
-        if (uniqueConfig1 == null) {
-            return;
-        }
+        var uniqueConfig = ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM);
+
         for (Map.Entry<ResourceLocation, UniqueGearConfig.Entry> entry : goodEntries) {
             UniqueGearConfig.Entry value = entry.getValue();
             String name = value.getName();
             if (name == null) {
                 continue;
             }
-            ResourceLocation model = value.getModel();
-            if (model == null) {
-                continue;
-            }
-
             Map<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifiers = value.getModifierIdentifiers();
             if (modifierIdentifiers == null) {
                 continue;
@@ -73,7 +68,21 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             ItemStack displayStack = new ItemStack(gearPiece.getItem());
             VaultGearData gearData = VaultGearData.read(displayStack);
             gearData.setState(VaultGearState.IDENTIFIED);
-            gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, model);
+            ResourceLocation model = value.getModel();
+            if (model != null) {
+                gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, model);
+            } else {
+                // jewel colors
+                for (var mod : modifierIdentifiers.entrySet()) {
+                    for(ResourceLocation id : mod.getValue()) {
+                        VaultGearModifier<?> modifier = uniqueConfig.generateModifier(id, lvl, new Random());
+                        if (modifier != null) {
+                            mod.getKey().apply(gearData, modifier);
+                        }
+                    }
+                }
+            }
+
             gearData.write(displayStack);
             this.addElement(new FakeItemSlotElement<>(Spatials.positionXY(labelX - 4, iconHeight).width(16).height(16), () -> displayStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY));
 
@@ -140,7 +149,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
         }
         var regPath = regName.getPath();
         if (value.getModel() == null) {
-            return gearPiece.getItem() == ModItems.JEWEL.getItem();
+            return gearPiece.getItem().equals(ModItems.JEWEL);
         }
         if (regPath.equals("wand") && value.getModel().toString().equals("the_vault:gear/sword/honey_wand")) {
             // WHO NAMES A SWORD HONEY WAND?????????????????????????????
