@@ -204,12 +204,24 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.modifierCategoryLabel.setVisible(true);
         this.modifierCategoryButton.setVisible(true);
         this.modifierCategoryButton.setDisabled(false);
+
+        if (this.mythicLabel != null && this.mythicButton != null) {
+            this.mythicLabel.setVisible(true);
+            this.mythicButton.setVisible(true);
+            this.mythicButton.setDisabled(false);
+        }
     }
 
     private void disableCategoryButtons(){
         this.modifierCategoryLabel.setVisible(false);
         this.modifierCategoryButton.setVisible(false);
         this.modifierCategoryButton.setDisabled(true);
+
+        if (this.mythicLabel != null && this.mythicButton != null) {
+            this.mythicLabel.setVisible(false);
+            this.mythicButton.setVisible(false);
+            this.mythicButton.setDisabled(true);
+        }
     }
 
     private void enableLvlButtons(){
