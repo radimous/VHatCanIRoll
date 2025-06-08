@@ -24,6 +24,7 @@ import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
 import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
 import iskallia.vault.init.ModConfigs;
+import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -91,6 +92,7 @@ public class Modifiers {
 
 
         Map<String, Integer> groupCounts = countGroups(lvl, modifierGroups, modifierCategory);
+        Map<ResourceLocation, Pair<Integer, Integer>> boolWeights = new HashMap<>();
 
         AtomicBoolean noWeightAttr = new AtomicBoolean(false);
         int totalWeight = modifierGroups.stream()
@@ -107,6 +109,30 @@ public class Modifiers {
                 .sum())
             .sum();
 
+         for (var modifierTierGroup : modifierGroups){
+             for (VaultGearTierConfig.ModifierTier<?> modifierTier : modifierTierGroup.getModifiersForLevel(lvl)) {
+                 if (modifierTier.getModifierConfiguration() instanceof BooleanFlagGenerator.BooleanFlag bf){
+                     var currBoolWeights = boolWeights.get(modifierTierGroup.getAttribute());
+                        if (currBoolWeights == null) {
+                            boolWeights.put(modifierTierGroup.getAttribute(), Pair.of(bf.get() ? modifierTier.getWeight() : 0, bf.get() ? 0 : modifierTier.getWeight()));
+                        } else {
+                            boolWeights.put(modifierTierGroup.getAttribute(),
+                                Pair.of(currBoolWeights.left() + (bf.get() ? modifierTier.getWeight() : 0),
+                                    currBoolWeights.right() + (bf.get() ? 0 : modifierTier.getWeight())));
+                        }
+                 }
+             }
+         }
+
+        var toRemove = new ArrayList<ResourceLocation>();
+        for (var entry : boolWeights.entrySet()) {
+            if (entry.getValue().left() == 0 || entry.getValue().right() == 0) {
+                toRemove.add(entry.getKey());
+            }
+        }
+        for (var entry : toRemove) {
+            boolWeights.remove(entry);
+        }
 
         if (totalWeight == 0 && !noWeightAttr.get()) {
             return componentList;
@@ -131,20 +157,22 @@ public class Modifiers {
 
             MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
-            if (!(
-                (affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES
-                    || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.IMPLICIT
-                )
-                    && groupCounts.get(modGr) == 1)){
-                int weight = modTierListWeight(mTierList);
-                if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup)) {
-                    modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
-                }
+            int weight = modTierListWeight(mTierList);
+            if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
+                modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
+            }
 
-                if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
-                    modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
+            if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
+                modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
+            }
+
+            if (Config.SHOW_CHANCE.get() && !boolWeights.isEmpty()) {
+                Pair<Integer, Integer> boolWeight = boolWeights.get(modifierTierGroup.getAttribute());
+                if (boolWeight != null) {
+                    modComp.append(new TextComponent(String.format(" %.2f%%", ((double) boolWeight.left() * 100 / (boolWeight.left() + boolWeight.right())))).withStyle(ChatFormatting.GRAY));
                 }
             }
+
 
 
             if (groupCounts.get(modGr) > 1) {
