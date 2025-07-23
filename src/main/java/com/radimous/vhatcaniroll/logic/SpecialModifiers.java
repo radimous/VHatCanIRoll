@@ -67,7 +67,9 @@ public class SpecialModifiers {
         if (atrName.equals("the_vault:lucky_thorns")) {
             return getLuckyThornsComponent(minConfigDisplay, minConfigDisplay, atr);
         }
-
+        if (atrName.equals("the_vault:phoenix")){
+            return getPhoenixComponent(atr, minConfig, maxConfig, atrGenerator);
+        }
 
         // wold's objectives without relying on wold's classes
         if (minConfig instanceof Supplier<?> supplier){
@@ -144,6 +146,17 @@ public class SpecialModifiers {
             .append(new TextComponent(" increased physical damage"))
             .setStyle(ModGearAttributes.THIRD_ATTACK.getReader().getColoredTextStyle());
 
+    }
+
+    private static <T, C> MutableComponent getPhoenixComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig, ConfigurableAttributeGenerator<T,C> atrGenerator) {
+        var range = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
+        if (range == null) return null;
+
+        return new TextComponent("")
+            .append((new TextComponent("+Revives you instantly, and heals you fully if you die inside a vault. This effect can occur ")))
+            .append(range.withStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW)))
+            .append(new TextComponent(" times per vault."))
+            .setStyle(ModGearAttributes.PHOENIX.getReader().getColoredTextStyle());
     }
 
     /**

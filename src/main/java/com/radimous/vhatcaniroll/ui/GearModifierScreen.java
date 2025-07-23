@@ -240,12 +240,6 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.plusLabel.setVisible(false);
     }
 
-    // pulled from QuestOverviewElementScreen
-    private ILayoutStrategy translateWorldSpatial() {
-        return (screen, gui, parent, world) -> world.translateXY(this.getGuiSpatial());
-    }
-
-
     // tabs
 
     /**
