@@ -15,8 +15,8 @@ public class ScrollableLvlInputElement extends TextInputElement<ScrollableLvlInp
         this.adjustEditBox(editBox -> {
             editBox.setFilter(s -> isValidLevel(parseInt(s)));
             editBox.setMaxLength(3);
-            editBox.setValue(String.valueOf(VaultBarOverlay.vaultLevel));
         });
+        this.setValue(VaultBarOverlay.vaultLevel);
     }
 
     @Override
@@ -52,9 +52,7 @@ public class ScrollableLvlInputElement extends TextInputElement<ScrollableLvlInp
     }
 
     public void setValue(int value) {
-        if (isValidLevel(value)) {
-            this.setInput(String.valueOf(value));
-        }
+        this.setInput(String.valueOf(getClampedLvl(value)));
     }
 
     public void increment() {
@@ -73,16 +71,26 @@ public class ScrollableLvlInputElement extends TextInputElement<ScrollableLvlInp
         }
     }
 
+    public int getClampedLvl(int lvl) {
+        if (lvl < 0) {
+            return 0;
+        }
+        return Math.min(lvl, getMaxLevel());
+    }
+
     public boolean isValidLevel(int lvl){
-      if (lvl <= ModConfigs.LEVELS_META.getMaxLevel() && lvl >= 0) {
+      if (lvl <= getMaxLevel() && lvl >= 0) {
             ScreenLayout.requestLayout();
             return true;
         }
-        if (lvl <= Config.MAX_LEVEL_OVERRIDE.get() && lvl >= 0) {
-            ScreenLayout.requestLayout();
-            return true;
-        }
+
         return false;
+    }
+
+    public static int getMaxLevel() {
+        int maxGameLvl = ModConfigs.LEVELS_META.getMaxLevel();
+        int maxOverride =  Config.MAX_LEVEL_OVERRIDE.get();
+        return Math.max(maxGameLvl, maxOverride);
     }
 
 }

@@ -319,6 +319,9 @@ public class SpecialModifiers {
         }
         talComp.append(res);
         talComp.append(" to level of ");
+        if (minConfig.getTalent().equals("all_talents")){
+            return talComp.append(new TextComponent("All Talents").withStyle(Style.EMPTY.withColor(14076214)));
+        }
         Optional<Skill> optSkill = ModConfigs.TALENTS.getTalentById(minConfig.getTalent());
         if (optSkill.isEmpty()) {
             return talComp.append(new TextComponent("TALENT NOT FOUND - id="+minConfig.getTalent()).withStyle(ChatFormatting.RED));
