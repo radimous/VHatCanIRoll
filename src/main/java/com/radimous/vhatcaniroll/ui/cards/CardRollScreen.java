@@ -84,9 +84,8 @@ public class CardRollScreen extends AbstractElementScreen {
     }
 
 
-// BUTTON_EMPTY_TEXTURES => BUTTON_EMPTY_GRAY_TEXTURES for 19.6
     private void createAllButton() {
-        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 3), ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 3), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
             replaceInnerScreen("all");
             })).layout((screen, gui, parent, world) -> {
                 world.width(80).height(16).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 27);
@@ -100,7 +99,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
 
     private void createBoosterPacksButton() {
-        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY( -70, 23), ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY( -70, 23), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
             replaceInnerScreen("boosterPacks");
         })).layout((screen, gui, parent, world) -> {
             world.width(80).height(16).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 27);
@@ -113,7 +112,7 @@ public class CardRollScreen extends AbstractElementScreen {
     }
 
     private void createModifiersButton() {
-        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 43), ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 43), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
             replaceInnerScreen("modifiers");
         })).layout((screen, gui, parent, world) -> {
             world.width(80).height(16).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 27);
@@ -126,7 +125,7 @@ public class CardRollScreen extends AbstractElementScreen {
     }
 
     private void createConditionsButton() {
-        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 63), ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 63), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
             replaceInnerScreen("conditions");
         })).layout((screen, gui, parent, world) -> {
             world.width(80).height(16).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 27);
@@ -139,7 +138,7 @@ public class CardRollScreen extends AbstractElementScreen {
     }
 
     private void createScalersButton() {
-        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 83), ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 83), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
             replaceInnerScreen("scalers");
         })).layout((screen, gui, parent, world) -> {
             world.width(80).height(16).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 27);
@@ -152,7 +151,7 @@ public class CardRollScreen extends AbstractElementScreen {
     }
 
     private void createTasksButton() {
-        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 103), ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-70, 103), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
             replaceInnerScreen("tasks");
         })).layout((screen, gui, parent, world) -> {
             world.width(80).height(16).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 27);
@@ -189,7 +188,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
         for (var link : newLinks.keySet()) {
             if ("start".equals(link) || "end".equals(link)) continue;
-            linkElements.add(this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(x, y), ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
+            linkElements.add(this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(x, y), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
                 this.innerScreen.scrollToLink(link);
             })).layout((screen, gui, parent, world) -> {
                 world.width(80).height(16).translateX(gui.left() - 16).translateY(this.getGuiSpatial().bottom());
