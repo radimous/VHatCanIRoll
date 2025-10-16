@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.mixin;
+package com.radimous.vhatcaniroll.mixin.accessors;
 
 import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
 import net.minecraft.resources.ResourceLocation;

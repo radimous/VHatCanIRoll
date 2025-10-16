@@ -1,6 +1,6 @@
 package com.radimous.vhatcaniroll.logic;
 
-import com.radimous.vhatcaniroll.mixin.AbilityFloatValueAttributeReaderInvoker;
+import com.radimous.vhatcaniroll.mixin.accessors.AbilityFloatValueAttributeReaderInvoker;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.core.vault.modifier.registry.VaultModifierRegistry;
 import iskallia.vault.core.vault.modifier.spi.VaultModifier;

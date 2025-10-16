@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.mixin;
+package com.radimous.vhatcaniroll.mixin.accessors;
 
 import iskallia.vault.gear.attribute.ability.AbilityFloatValueAttribute;
 import net.minecraft.network.chat.MutableComponent;

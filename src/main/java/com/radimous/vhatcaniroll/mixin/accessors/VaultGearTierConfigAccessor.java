@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.mixin;
+package com.radimous.vhatcaniroll.mixin.accessors;
 
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import org.spongepowered.asm.mixin.Mixin;

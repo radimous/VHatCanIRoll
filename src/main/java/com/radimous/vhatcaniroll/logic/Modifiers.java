@@ -1,8 +1,8 @@
 package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
-import com.radimous.vhatcaniroll.mixin.EffectConfigAccessor;
-import com.radimous.vhatcaniroll.mixin.VaultGearTierConfigAccessor;
+import com.radimous.vhatcaniroll.mixin.accessors.EffectConfigAccessor;
+import com.radimous.vhatcaniroll.mixin.accessors.VaultGearTierConfigAccessor;
 import iskallia.vault.config.UniqueGearConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.gear.attribute.VaultGearAttribute;

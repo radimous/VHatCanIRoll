@@ -5,13 +5,24 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "vhatcaniroll.refmap.json",
   "mixins": [
+    "accessors.cards.BoosterPackConfigCardConfigAccessor",
+    "accessors.cards.CardConditionAccessor",
+    "accessors.cards.CardConditionFilterConfigAccessor",
+    "accessors.cards.CardConditionsConfigAccessor",
+    "accessors.cards.CardScalerFilterConfigAccessor",
+    "accessors.cards.CardScalersConfigAccessor",
+    "accessors.cards.CardTasksConfigAccessor",
+    "accessors.cards.TaskLootCardModifierConfigAccessor"
   ],
   "client": [
-    "EffectConfigAccessor",
     "StatisticsElementContainerScreenMixin",
-    "UniqueGearConfigAccessor",
-    "VaultGearTierConfigAccessor",
-    "AbilityFloatValueAttributeReaderInvoker"
+    "accessors.AbilityFloatValueAttributeReaderInvoker",
+    "accessors.EffectConfigAccessor",
+    "accessors.UniqueGearConfigAccessor",
+    "accessors.VaultGearTierConfigAccessor",
+    "accessors.cards.BoosterPackEntryAccessor",
+    "accessors.cards.CardConditionConfigAccessor",
+    "accessors.cards.CardScalerConfigAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

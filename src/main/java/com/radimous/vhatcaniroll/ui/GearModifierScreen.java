@@ -6,6 +6,7 @@ import com.radimous.vhatcaniroll.VHatCanIRoll;
 import com.radimous.vhatcaniroll.logic.Items;
 
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
+import com.radimous.vhatcaniroll.ui.cards.CardRollScreen;
 import com.simibubi.create.foundation.config.ui.ConfigScreen;
 import com.simibubi.create.foundation.config.ui.SubMenuConfigScreen;
 import iskallia.vault.VaultMod;
@@ -20,7 +21,6 @@ import iskallia.vault.client.gui.framework.element.TabElement;
 import iskallia.vault.client.gui.framework.element.TextureAtlasElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
 import iskallia.vault.client.gui.framework.element.spi.ILayoutElement;
-import iskallia.vault.client.gui.framework.element.spi.ILayoutStrategy;
 import iskallia.vault.client.gui.framework.render.ScreenTooltipRenderer;
 import iskallia.vault.client.gui.framework.render.TooltipDirection;
 import iskallia.vault.client.gui.framework.render.Tooltips;
@@ -30,7 +30,6 @@ import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.IPosition;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
-import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.gear.VaultGearState;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.init.ModBlocks;
@@ -46,6 +45,7 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,9 +72,9 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     public GearModifierScreen() {
         super(new TextComponent("VHat can I roll?"), ScreenRenderers.getBuffered(), ScreenTooltipRenderer::create);
-        this.setGuiSize(Spatials.size(Config.SCREEN_WIDTH.get(), 300).height((int) (
+        this.setGuiSize(Spatials.size(Config.GEAR_SCREEN_WIDTH.get(), 300).height((int) (
             (Minecraft.getInstance().getWindow().getHeight() / Minecraft.getInstance().getWindow().getGuiScale()) *
-                Config.SCREEN_HEIGHT.get())));
+                Config.GEAR_SCREEN_HEIGHT.get())));
 
         // outer background
         NineSliceElement<?> background = new NineSliceElement<>(
@@ -118,6 +118,9 @@ public class GearModifierScreen extends AbstractElementScreen {
         createTransmogButton();
         createCraftedModsButton();
         createUniqueGearButton();
+        if (!FMLEnvironment.production) {
+            createCardButton();
+        }
     }
 
     // helper methods
@@ -514,6 +517,24 @@ public class GearModifierScreen extends AbstractElementScreen {
         );
     }
 
+    private void createCardButton() {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() + 20, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
+            Minecraft.getInstance().setScreen(new CardRollScreen());
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 180);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.RIGHT, () -> new TextComponent("WIP CARD ROLLS [DEV-ENV]"))
+        );
+        ItemStack boosterPackStack = new ItemStack(ModItems.BOOSTER_PACK);
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(this.getGuiSpatial().width() + 20, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 180))
+        );
+    }
+
+    private static final String CARD_ROLL_CODE = "wipcardrolls";
+    private int codeProgress = 0;
+
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         // left/right to increase/decrease lvl
@@ -550,6 +571,34 @@ public class GearModifierScreen extends AbstractElementScreen {
                 nextModifierCategory();
             }
         }
+        processCardCode(keyCode);
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private void processCardCode(int keyCode) {
+        char typedChar = getCharFromKeyCode(keyCode);
+        if (typedChar == 0) return;
+
+        if (Character.toLowerCase(typedChar) == CARD_ROLL_CODE.charAt(codeProgress)) {
+            codeProgress++;
+
+            if (codeProgress == CARD_ROLL_CODE.length()) {
+                Minecraft.getInstance().setScreen(new CardRollScreen());
+                codeProgress = 0;
+            }
+        } else {
+            codeProgress = 0;
+            if (Character.toLowerCase(typedChar) == CARD_ROLL_CODE.charAt(0)) {
+                codeProgress = 1;
+            }
+        }
+    }
+
+    private char getCharFromKeyCode(int keyCode) {
+        // This depends on your environment — for Minecraft LWJGL:
+        if (keyCode >= 32 && keyCode <= 126) {
+            return (char) keyCode;
+        }
+        return 0;
     }
 }

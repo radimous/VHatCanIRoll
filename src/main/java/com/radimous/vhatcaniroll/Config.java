@@ -11,14 +11,17 @@ public class Config {
     public static final ForgeConfigSpec.IntValue BUTTON_X;
     public static final ForgeConfigSpec.IntValue BUTTON_Y;
     public static final ForgeConfigSpec.IntValue MAX_LEVEL_OVERRIDE;
-    public static final ForgeConfigSpec.DoubleValue SCREEN_HEIGHT;
-    public static final ForgeConfigSpec.IntValue SCREEN_WIDTH;
+    public static final ForgeConfigSpec.DoubleValue GEAR_SCREEN_HEIGHT;
+    public static final ForgeConfigSpec.IntValue GEAR_SCREEN_WIDTH;
+    public static final ForgeConfigSpec.DoubleValue CARD_SCREEN_HEIGHT;
+    public static final ForgeConfigSpec.IntValue CARD_SCREEN_WIDTH;
     public static final ForgeConfigSpec.BooleanValue SHOW_ABILITY_ENHANCEMENTS;
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
     public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
     public static final ForgeConfigSpec.BooleanValue SHOW_UNOBTAINABLE_CRAFTED;
     public static final ForgeConfigSpec.BooleanValue DEBUG_UNIQUE_GEAR;
+    public static final ForgeConfigSpec.BooleanValue DEBUG_CARDS;
     // string instead of enum, because forge would remove enum values that are not present in the enum
     // (this could cause problems if mods are extending the enum - like wold's)
     public static final ForgeConfigSpec.ConfigValue<List<String>> AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
@@ -53,6 +56,9 @@ public class Config {
         DEBUG_UNIQUE_GEAR = builder
             .comment("debug unique gear")
             .define("debugUniqueGear", false);
+        DEBUG_CARDS = builder
+            .comment("debug cards")
+            .define("debugCards", false);
         builder.pop();
 
         SHOW_ABILITY_ENHANCEMENTS = builder
@@ -71,13 +77,21 @@ public class Config {
             .comment("show unobtainable crafted modifiers (above current lvl)")
             .define("showUnobtainableCrafted", false);
 
-        SCREEN_HEIGHT = builder
-            .comment("width of the screen")
+        GEAR_SCREEN_HEIGHT = builder
+            .comment("width of the gear screen")
             .defineInRange("screenHeight", 0.95, 0, 1.0);
 
-        SCREEN_WIDTH = builder
-            .comment("width of the screen")
+        GEAR_SCREEN_WIDTH = builder
+            .comment("width of the gear screen")
             .defineInRange("screenWidth", 370, 250, Integer.MAX_VALUE);
+
+        CARD_SCREEN_HEIGHT = builder
+            .comment("width of the card screen")
+            .defineInRange("cardScreenHeight", 0.95, 0, 1.0);
+
+        CARD_SCREEN_WIDTH = builder
+            .comment("width of the card screen")
+            .defineInRange("cardScreenWidth", 450, 250, Integer.MAX_VALUE);
         SPEC = builder.build();
     }
 }
