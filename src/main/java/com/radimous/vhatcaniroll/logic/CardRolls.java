@@ -157,7 +157,7 @@ public class CardRolls {
                 ret.add(new TextComponent("    MODEL: "+ cardModel));
             }
             if ((cardColor != null && !cardColor.isEmpty()) || Config.DEBUG_CARDS.get()) { // hehe
-                ret.add(new TextComponent("    COLOR: "+ coloredSet(cardColor)));
+                ret.add(new TextComponent("    COLOR: ").append(coloredSet(cardColor)));
             }
             if (cardGroups !=null || Config.DEBUG_CARDS.get()) {
                 ret.add(new TextComponent("    GROUPS: "+ cardGroups));
@@ -603,17 +603,18 @@ public class CardRolls {
     }
 
     private static TextComponent colorComponent(TextComponent component) {
+
         if ("GREEN".equals(component.getContents())) {
-            return (TextComponent) component.withStyle(ChatFormatting.GREEN);
+            return (TextComponent) component.withStyle(CardEntry.Color.GREEN.getColoredText().getStyle());
         }
         if ("RED".equals(component.getContents())) {
-            return (TextComponent) component.withStyle(ChatFormatting.RED);
+            return (TextComponent) component.withStyle(CardEntry.Color.RED.getColoredText().getStyle());
         }
         if ("BLUE".equals(component.getContents())) {
-            return (TextComponent) component.withStyle(ChatFormatting.BLUE);
+            return (TextComponent) component.withStyle(CardEntry.Color.BLUE.getColoredText().getStyle());
         }
         if ("YELLOW".equals(component.getContents())) {
-            return (TextComponent) component.withStyle(ChatFormatting.YELLOW);
+            return (TextComponent) component.withStyle(CardEntry.Color.YELLOW.getColoredText().getStyle());
         }
         return component;
     }
