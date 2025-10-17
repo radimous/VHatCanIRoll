@@ -20,6 +20,7 @@ import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
 import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
 import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
+import iskallia.vault.gear.attribute.talent.RandomVaultModifierAttribute;
 import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
 import iskallia.vault.gear.reader.VaultGearModifierReader;
 import iskallia.vault.init.ModConfigs;

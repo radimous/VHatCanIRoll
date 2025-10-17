@@ -2,6 +2,7 @@ package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.mixin.accessors.cards.*;
+import iskallia.vault.config.ColorsConfig;
 import iskallia.vault.config.card.BoosterPackConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.core.card.CardCondition;
@@ -32,40 +33,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class CardRolls {
-    public static List<Component> getAll() {
-        List<Component> ret = new ArrayList<>();
-
-        ret.addAll(getBoosterPackList());
-        for (int i = 0 ; i< 2 ; i++) {
-            ret.add(new TextComponent(""));
-        }
-
-        ret.addAll(getModifierList());
-
-        for (int i = 0 ; i< 2 ; i++) {
-            ret.add(new TextComponent(""));
-        }
-
-        ret.addAll(getConditionsList());
-
-        for (int i = 0 ; i< 2 ; i++) {
-            ret.add(new TextComponent(""));
-        }
-
-        ret.addAll(getScalerList());
-
-        for (int i = 0 ; i< 2 ; i++) {
-            ret.add(new TextComponent(""));
-        }
-
-        ret.addAll(getTaskList());
-
-
-        System.out.println(ret.size());
-        return ret;
-    }
-
-
 
     public static List<Component> getBoosterPackList() {
         List<Component> ret = new ArrayList<>();
@@ -84,10 +51,21 @@ public class CardRolls {
                 ret.add(new TextComponent("  MODEL: ").append(vvA.getModel().getUnopened()));
             }
             ret.add(new TextComponent("  CARDS: ").append(formatInlineWeightedList(vvA.getRoll())));
-            ret.add(new TextComponent("  CARD COLOR: ").append(formatInlineWeightedList(vvA.getColor())));
+            var col = vvA.getColor();
+            if (
+                col != null
+                    && !equalWeight(col)
+                    && (col.size() == 4 // hide all four at equal weight
+                        && col.contains(CardEntry.Color.RED)
+                        && col.contains(CardEntry.Color.GREEN)
+                        && col.contains(CardEntry.Color.BLUE)
+                        && col.contains(CardEntry.Color.YELLOW)
+                )
+            ) {
+                ret.add(new TextComponent("  CARD COLOR: ").append(formatInlineWeightedList(vvA.getColor())));
+            }
             ret.add(new TextComponent("  CARD TIER: ").append(formatInlineWeightedList(vvA.getTier())));
-
-
+            ret.add(new TextComponent("  CARDS:"));
             for (var pool : vv.getCard().entrySet()) {
                 var poolKey = pool.getKey(); // "default"
                 var poolWeight = pool.getValue();
@@ -101,18 +79,17 @@ public class CardRolls {
                     String cardScaler = cardConfigA.getScaler();
                     double chance = cardConfigA.getProbability();
 
-                    boolean debug = Config.DEBUG_CARDS.get();
                     ret.add(new TextComponent("    MODIFIER: ").append(createComponent(modifier)));
-                    if (cardColor != null || debug) {
+                    if (cardColor != null || Config.DEBUG_CARDS.get()) {
                         ret.add(new TextComponent("    COLOR: ").append(formatInlineWeightedList(cardColor)));
                     }
-                    if (cardGroups != null || debug) {
+                    if (cardGroups != null || Config.DEBUG_CARDS.get()) {
                         ret.add(new TextComponent("    GROUPS: "+ cardGroups));
                     }
-                    if ((cardCondition != null && !cardCondition.isEmpty()) || debug) {
+                    if ((cardCondition != null && !cardCondition.isEmpty()) || Config.DEBUG_CARDS.get()) {
                         ret.add(new TextComponent("    CONDITION: ").append(createComponent(cardCondition)));
                     }
-                    if ((cardScaler != null && !cardScaler.isEmpty())|| debug) {
+                    if ((cardScaler != null && !cardScaler.isEmpty())|| Config.DEBUG_CARDS.get()) {
                         ret.add(new TextComponent("    SCALER: ").append(createComponent(cardScaler)));
                     }
                     if (chance != 1) {
@@ -126,120 +103,135 @@ public class CardRolls {
         return ret;
     }
 
-    public static List<Component> getModifierList() {
+    public static Collection<String> getModifierPools() {
+        var modifiers = ModConfigs.CARD_MODIFIERS;
+        var modPools = modifiers.getPools();
+        return Collections.unmodifiableCollection(modPools.keySet());
+    }
+
+    public static List<Component> getModifierList(String modifierPool) {
         List<Component> ret = new ArrayList<>();
         ret.add(new TextComponent("MODIFIERS").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
         ret.add(new TextComponent(""));
+        if (modifierPool == null) {
+            ret.add(new TextComponent("Select modifier pool from the list on the right side =>").withStyle(ChatFormatting.YELLOW));
+        }
 
-        var modifiers = ModConfigs.CARD_MODIFIERS; // THIS IS CORE
+        var modifiers = ModConfigs.CARD_MODIFIERS;
 
         var modPools = modifiers.getPools();
+        var poolVal = modPools.get(modifierPool);
+        if (poolVal == null) {
+            ret.add(new TextComponent("modifier pool " + modifierPool + " not found").withStyle(ChatFormatting.RED));
+        }
         var modVals = modifiers.getValues();
-        for (var pool : modPools.entrySet()) {
-            var poolKey = pool.getKey(); // "default"
-            ret.add(new TextComponent(poolKey).withStyle(ChatFormatting.GREEN));
-            var poolVal = pool.getValue();
-            boolean showWeight = Config.SHOW_WEIGHT.get() && !equalWeight(poolVal);
-            for (var cardRoll: poolVal.entrySet()) {
-                var cardId = cardRoll.getKey(); // cooldown_reduction
-                var cardWeight = cardRoll.getValue();
-                var cardConfig = modVals.get(cardId);
+
+        ret.add(new TextComponent(modifierPool).withStyle(ChatFormatting.UNDERLINE));
+        boolean showWeight = Config.SHOW_WEIGHT.get() && !equalWeight(poolVal);
+        for (var cardRoll: poolVal.entrySet()) {
+            var cardId = cardRoll.getKey(); // cooldown_reduction
+            var cardWeight = cardRoll.getValue();
+            var cardConfig = modVals.get(cardId);
+            if (Config.DEBUG_CARDS.get()) {
+                var rollCmp = new TextComponent("  id: "+ cardId);
+                if (showWeight) {
+                    rollCmp.append(new TextComponent("  WEIGHT: " + cardWeight).withStyle(ChatFormatting.GRAY));
+                }
+                ret.add(rollCmp);
+            }
+            if (cardConfig == null) {
+                ret.add(new TextComponent("  ERR: config for "+cardId + " card is null").withStyle(ChatFormatting.RED));
+                continue;
+            }
+            var cardColor = cardConfig.colors;
+            var cardCondition = cardConfig.condition;
+            var cardModel = cardConfig.model;
+            var cardGroups = cardConfig.groups;
+            var cardScaler = cardConfig.scaler;
+            var cardValue = cardConfig.value;
+            var cardName = cardConfig.name;
+
+            ret.add(new TextComponent("  ").append(cardName));
+
+            if (Config.DEBUG_CARDS.get()) {
+                ret.add(new TextComponent("    MODEL: "+ cardModel));
+            }
+            if ((cardColor != null && !cardColor.isEmpty()) || Config.DEBUG_CARDS.get()) { // hehe
+                ret.add(new TextComponent("    COLOR: "+ coloredSet(cardColor)));
+            }
+            if (cardGroups !=null || Config.DEBUG_CARDS.get()) {
+                ret.add(new TextComponent("    GROUPS: "+ cardGroups));
+            }
+            if (cardCondition != null || Config.DEBUG_CARDS.get()) {
+                ret.add(new TextComponent("    COND: "+ cardCondition));
+            }
+            if (cardScaler !=null || Config.DEBUG_CARDS.get()) {
+                ret.add(new TextComponent("    SCALER: "+ cardScaler));
+            }
+            if (cardValue instanceof GearCardModifier<?> gearCardModifier) {
+                CardProperty.Config gearCardConfig = gearCardModifier.getConfig();
+                if (gearCardConfig instanceof CardModifier.Config modifierConfig) {
+                    int maxTier = modifierConfig.maxTier;
+                    if (Config.DEBUG_CARDS.get()) {
+                        ret.add(new TextComponent("    MAX TIER: "+ maxTier));
+                    }
+                }
+                if (gearCardConfig instanceof GearCardModifier.Config<?> gearModifierConfig) {
+                    VaultGearAttribute<?> atr = gearModifierConfig.getAttribute();
+                    Map<Integer, String> configPool = gearModifierConfig.getPool();
+                    for (Map.Entry<Integer, String> configPoolVal: configPool.entrySet()) {
+                        var singleTierArray = new ArrayList<VaultGearTierConfig.ModifierTier<?>>();
+                        singleTierArray.add(new VaultGearTierConfig.ModifierTier<>(0,0, gearModifierConfig.getConfig(configPoolVal.getKey())));
+                        var modComp = Modifiers.getModifierComponent(atr, singleTierArray);
+                        ret.add(new TextComponent("    T" + configPoolVal.getKey() + ": ").append(modComp));
+                    }
+
+                }
+            } else if (cardValue instanceof TaskLootCardModifier taskLootCardModifier) {
+                TaskLootCardModifier.Config taskLootConfig = taskLootCardModifier.getConfig();
+                var taskLootConfigA = (TaskLootCardModifierConfigAccessor)taskLootConfig;
                 if (Config.DEBUG_CARDS.get()) {
-                    var rollCmp = new TextComponent("  id: "+ cardId);
-                    if (showWeight) {
-                        rollCmp.append(new TextComponent("  WEIGHT: " + cardWeight).withStyle(ChatFormatting.GRAY));
-                    }
-                    ret.add(rollCmp);
+                    ret.add(new TextComponent("    MAX TIER: " + taskLootConfig.maxTier));
                 }
-
-                var cardColor = cardConfig.colors;
-                var cardCondition = cardConfig.condition;
-                var cardModel = cardConfig.model;
-                var cardGroups = cardConfig.groups;
-                var cardScaler = cardConfig.scaler;
-                var cardValue = cardConfig.value;
-
-                var debug = Config.DEBUG_CARDS.get();
-                if (debug) {
-                    ret.add(new TextComponent("  MODEL: "+ cardModel));
-                }
-                if ((cardColor != null && !cardColor.isEmpty()) || debug) {
-                    ret.add(new TextComponent("  COLOR: "+ cardColor));
-                }
-                if (cardGroups !=null || debug) {
-                    ret.add(new TextComponent("  GROUPS: "+ cardGroups));
-                }
-                if (cardCondition != null || debug) {
-                    ret.add(new TextComponent("  COND: "+ cardCondition));
-                }
-                if (cardScaler !=null || debug) {
-                    ret.add(new TextComponent("  SCALER: "+ cardScaler));
-                }
-                if (cardValue instanceof GearCardModifier<?> gearCardModifier) {
-                    CardProperty.Config gearCardConfig = gearCardModifier.getConfig();
-                    if (gearCardConfig instanceof CardModifier.Config modifierConfig) {
-                        int maxTier = modifierConfig.maxTier;
-                        if (debug) {
-                            ret.add(new TextComponent("  MAX TIER: "+ maxTier));
-                        }
-                    }
-                    if (gearCardConfig instanceof GearCardModifier.Config<?> gearModifierConfig) {
-                        VaultGearAttribute<?> atr = gearModifierConfig.getAttribute();
-                        Map<Integer, String> configPool = gearModifierConfig.getPool();
-                        for (Map.Entry<Integer, String> configPoolVal: configPool.entrySet()) {
-                            var singleTierArray = new ArrayList<VaultGearTierConfig.ModifierTier<?>>();
-                            singleTierArray.add(new VaultGearTierConfig.ModifierTier<>(0,0, gearModifierConfig.getConfig(configPoolVal.getKey())));
-                            var modComp = Modifiers.getModifierComponent(atr, singleTierArray);
-                            ret.add(new TextComponent("  T" + configPoolVal.getKey() + ": ").append(modComp));
-                        }
-
-                    }
-                } else if (cardValue instanceof TaskLootCardModifier taskLootCardModifier) {
-                    TaskLootCardModifier.Config taskLootConfig = taskLootCardModifier.getConfig();
-                    var taskLootConfigA = (TaskLootCardModifierConfigAccessor)taskLootConfig;
-                    if (debug) {
-                        ret.add(new TextComponent("    MAX TIER: " + taskLootConfig.maxTier));
-                    }
-                    ret.add(new TextComponent("    TASK: ").append(createComponent(taskLootConfigA.getTask())));
-                    var lootItems = taskLootConfigA.getLoot().getChildren();
-                    if (lootItems.size() == 1) {
-                        var item = lootItems.entrySet().stream().findFirst().orElse(null);
-                        if (item != null) {
-                            if (item.getKey() instanceof ItemLootEntry itemLootEntry) {
-                                ret.add(new TextComponent("    LOOT: " + processIntroll(itemLootEntry.getCount()) + " " +itemLootEntry.getItem()));
-                            } else {
-                                ret.add(new TextComponent("    LOOT: UNSUPPORTED (non Item loot)").withStyle(ChatFormatting.RED));
-                            }
+                ret.add(new TextComponent("    TASK: ").append(createComponent(taskLootConfigA.getTask())));
+                var lootItems = taskLootConfigA.getLoot().getChildren();
+                if (lootItems.size() == 1) {
+                    var item = lootItems.entrySet().stream().findFirst().orElse(null);
+                    if (item != null) {
+                        if (item.getKey() instanceof ItemLootEntry itemLootEntry) {
+                            ret.add(new TextComponent("    LOOT: " + processIntroll(itemLootEntry.getCount()) + " " +itemLootEntry.getItem()));
                         } else {
-                            ret.add(new TextComponent("    LOOT: UNSUPPORTED (single NULL)").withStyle(ChatFormatting.RED));
+                            ret.add(new TextComponent("    LOOT: UNSUPPORTED (non Item loot)").withStyle(ChatFormatting.RED));
                         }
                     } else {
-                        ret.add(new TextComponent("    LOOT: UNSUPPORTED (not a single item)").withStyle(ChatFormatting.RED));
+                        ret.add(new TextComponent("    LOOT: UNSUPPORTED (single NULL)").withStyle(ChatFormatting.RED));
                     }
-                    if (taskLootConfigA.getCount().size() == 1) {
-                        var cnt = taskLootConfigA.getCount().entrySet().stream().findFirst().orElse(null);
-                        if (cnt != null) {
-                            ret.add(new TextComponent("    COUNT: " + processIntroll(cnt.getValue())));
-                        } else {
-                            ret.add(new TextComponent("    COUNT: UNSUPPORTED (null cnt)").withStyle(ChatFormatting.RED));
-                        }
+                } else {
+                    ret.add(new TextComponent("    LOOT: UNSUPPORTED (not a single item)").withStyle(ChatFormatting.RED));
+                }
+                if (taskLootConfigA.getCount().size() == 1) {
+                    var cnt = taskLootConfigA.getCount().entrySet().stream().findFirst().orElse(null);
+                    if (cnt != null) {
+                        ret.add(new TextComponent("    COUNT: " + processIntroll(cnt.getValue())));
                     } else {
-                        ret.add(new TextComponent("    COUNT:"));
-                        for (var cnt : taskLootConfigA.getCount().entrySet()) {
-                            ret.add(new TextComponent("                 - "+cnt.getKey()+ " => " + processIntroll(cnt.getValue())));
-                        }
+                        ret.add(new TextComponent("    COUNT: UNSUPPORTED (null cnt)").withStyle(ChatFormatting.RED));
                     }
+                } else {
+                    ret.add(new TextComponent("    COUNT:"));
+                    for (var cnt : taskLootConfigA.getCount().entrySet()) {
+                        ret.add(new TextComponent("                 - "+cnt.getKey()+ " => " + processIntroll(cnt.getValue())));
+                    }
+                }
 
 //                    ret.add(new TextComponent("    HIGHLIGHT: " + taskLootConfigA.getHighlightColor()));
-                    ret.add(new TextComponent("    TOOLTIP: ").append(taskLootConfigA.getTooltip()));
-                } else if (cardValue instanceof DummyCardModifier) {
-                    // WHY IS THIS EVEN A THING
-                } else {
-                    ret.add(new TextComponent("    UNKNOWN CARD VALUE: "+ cardValue).withStyle(ChatFormatting.RED));
-                }
-                ret.add(new TextComponent(""));
+                ret.add(new TextComponent("    TOOLTIP: ").append(taskLootConfigA.getTooltip()));
+            } else if (cardValue instanceof DummyCardModifier) {
+                // WHY IS THIS EVEN A THING
+            } else {
+                ret.add(new TextComponent("    UNKNOWN CARD VALUE: "+ cardValue).withStyle(ChatFormatting.RED));
             }
             ret.add(new TextComponent(""));
+
         }
         return ret;
     }
@@ -281,10 +273,9 @@ public class CardRolls {
                         if (!equalWeight(conditionTier.getValue())) {
                             ret.add(new TextComponent("         WEIGHT: " + condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
-                        boolean debug = Config.DEBUG_CARDS.get();
                         for (CardCondition.Filter.Config condTier: condTierList) {
                             var condT = (CardConditionFilterConfigAccessor)condTier;
-                            if (debug) {
+                            if (Config.DEBUG_CARDS.get()) {
                                 ret.add(new TextComponent("         COLOR: ").append(formatInlineWeightedList(condT.getColorFilter())));
                                 ret.add(new TextComponent("         GROUP: ").append(formatInlineWeightedList(condT.getGroupFilter())));
                                 ret.add(new TextComponent("         NEIGHBOR: ").append(formatInlineWeightedList(condT.getNeighborFilter())));
@@ -342,19 +333,18 @@ public class CardRolls {
                         if (!equalWeight(conditionTier.getValue())) {
                             ret.add(new TextComponent(indent+"WEIGHT: " + condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
-                        boolean debug = Config.DEBUG_CARDS.get();
                         for (CardScaler.Filter.Config condTier: condTierList) {
                             var condT = (CardScalerFilterConfigAccessor)condTier;
-                            if (debug || condT.getColorFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+                            if (Config.DEBUG_CARDS.get() || condT.getColorFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
                                 ret.add(new TextComponent(indent+"COLOR: ").append(formatInlineWeightedList(condT.getColorFilter())));
                             }
-                            if (debug || condT.getGroupFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+                            if (Config.DEBUG_CARDS.get() || condT.getGroupFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
                                 ret.add(new TextComponent(indent+"GROUP: ").append(formatInlineWeightedList(condT.getGroupFilter())));
                             }
-                            if (debug || condT.getNeighborFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+                            if (Config.DEBUG_CARDS.get() || condT.getNeighborFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
                                 ret.add(new TextComponent(indent+"NEIGHBOR: ").append(formatInlineWeightedList(condT.getNeighborFilter())));
                             }
-                            if (debug || condT.getTierFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+                            if (Config.DEBUG_CARDS.get() || condT.getTierFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
                                 ret.add(new TextComponent(indent+"TIER: ").append(formatInlineWeightedList(condT.getTierFilter())));
                             }
                             ret.add(new TextComponent(""));
@@ -377,6 +367,9 @@ public class CardRolls {
         var taskValues  = tasks.getValues();
         for (var pool: taskPools.entrySet()) {
             var poolKey = pool.getKey();
+            if (poolKey.equals("default") && !Config.DEBUG_CARDS.get()) {
+                continue; // just skip this config (it's only used by Ma Balls)
+            }
             var poolValues = pool.getValue();
             ret.add(new TextComponent(poolKey));
             boolean showWeight = Config.SHOW_WEIGHT.get() && !equalWeight(poolValues);
@@ -514,9 +507,9 @@ public class CardRolls {
         if (weightedList.size() == 1) {
             var entry = weightedList.entrySet().stream().toList().get(0);
             if (entry.getValue() > 0 && entry.getKey() instanceof Set set && set.size() == 1) {
-                return new TextComponent(""+set.iterator().next());
+                return colorComponent(new TextComponent(""+set.iterator().next()));
             }
-            return entry != null && entry.getValue() > 0 ? new TextComponent( "" + entry.getKey()) : new TextComponent("{}");
+            return entry != null && entry.getValue() > 0 ? colorComponent(new TextComponent( "" + entry.getKey())) : new TextComponent("{}");
         }
         var showWeight = Config.SHOW_WEIGHT.get() && !equalWeight(weightedList);
         TextComponent ret = new TextComponent("{");
@@ -527,7 +520,7 @@ public class CardRolls {
             var entry = it.next();
             if (entry.getValue() > 0) {
                 if (entry.getKey() instanceof Set set && set.size() == 1) {
-                    ret.append(new TextComponent(""+set.iterator().next()));
+                    ret.append(colorComponent(new TextComponent(""+set.iterator().next())));
                 } else {
                     ret.append(new TextComponent(""+entry.getKey()));
                 }
@@ -607,6 +600,40 @@ public class CardRolls {
         }
 
         return text;
+    }
 
+    private static TextComponent colorComponent(TextComponent component) {
+        if ("GREEN".equals(component.getContents())) {
+            return (TextComponent) component.withStyle(ChatFormatting.GREEN);
+        }
+        if ("RED".equals(component.getContents())) {
+            return (TextComponent) component.withStyle(ChatFormatting.RED);
+        }
+        if ("BLUE".equals(component.getContents())) {
+            return (TextComponent) component.withStyle(ChatFormatting.BLUE);
+        }
+        if ("YELLOW".equals(component.getContents())) {
+            return (TextComponent) component.withStyle(ChatFormatting.YELLOW);
+        }
+        return component;
+    }
+
+    private static TextComponent coloredSet(Set<CardEntry.Color> colors) {
+        if (colors == null) {
+            return new TextComponent("null");
+        }
+        var ret = new TextComponent("[");
+
+        var it = colors.iterator();
+        while (it.hasNext()) {
+            var color = it.next();
+            ret.append(colorComponent(new TextComponent(""+color)));
+
+            if (it.hasNext()) {
+                ret.append(new TextComponent(", "));
+            }
+        }
+        ret.append("]");
+        return ret;
     }
 }

@@ -5,8 +5,10 @@ import com.radimous.vhatcaniroll.mixin.accessors.EffectConfigAccessor;
 import com.radimous.vhatcaniroll.mixin.accessors.VaultGearTierConfigAccessor;
 import iskallia.vault.config.UniqueGearConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
+import iskallia.vault.core.vault.modifier.registry.VaultModifierRegistry;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.gear.attribute.VaultGearAttributeRegistry;
+import iskallia.vault.gear.attribute.VaultGearModifier;
 import iskallia.vault.gear.attribute.ability.AbilityAreaOfEffectPercentAttribute;
 import iskallia.vault.gear.attribute.ability.AbilityLevelAttribute;
 import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityGearAttribute;
@@ -22,17 +24,19 @@ import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttrib
 import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
 import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
+import iskallia.vault.gear.attribute.talent.RandomVaultModifierAttribute;
 import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
 import iskallia.vault.init.ModConfigs;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -368,6 +372,16 @@ public class Modifiers {
             }
             if (minConfig instanceof EffectTrialAttribute.Config minTrial) {
                 return getEffectTrialComponent(minTrial, minTrial);
+            }
+            if (minConfig instanceof RandomVaultModifierAttribute.Config minTemporal) {
+
+                var type = VaultGearModifier.AffixType.PREFIX;
+                var modifierId = minTemporal.getModifier();
+                var modifier = VaultModifierRegistry.getOpt(modifierId).orElse(null);
+                if (modifier == null) {
+                    return new TextComponent("modifier " + modifierId + " not found in modifier registry").withStyle(ChatFormatting.RED);
+                }
+                return new TextComponent("+" + (minTemporal.getTime().getMin() / 20) + "s-" + (minTemporal.getTime().getMax() / 20) + "s of ").append(modifier.getNameComponentFormatted(minTemporal.getCount())).withStyle(atr.getReader().getColoredTextStyle());
             }
             if (true) {
                 Pattern pattern = Pattern.compile("^.*(.+)-(\\1).*$");
