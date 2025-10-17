@@ -74,7 +74,6 @@ public class CardRollListContainer extends VerticalScrollClipContainer<CardRollL
                     newTc, LabelTextStyle.wrap());
                 this.addElement(mcl);
                 if (tc.getStyle().getColor() != null &&tc.getStyle().getColor().getValue() == ChatFormatting.GREEN.getColor()) {
-                    System.out.println("GREEN" + tc.getText() + this.getScroll());
                     links.put(tc.getText(), labelY);
                 }
                 labelY += Math.max(mcl.getTextStyle().calculateLines(newTc, mcl.width()) * 10, 10);
