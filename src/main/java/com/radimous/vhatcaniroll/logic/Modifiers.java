@@ -38,6 +38,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.radimous.vhatcaniroll.logic.SpecialModifiers.abilityLvlComponent;
@@ -325,6 +327,18 @@ public class Modifiers {
         if (modifierTiers.size() > 1) {
             res = rangeComponent(atrName, atr, atrGenerator, minConfig, maxConfig);
             if (res != null) {
+                if (true) {
+                    Pattern pattern = Pattern.compile("^.*(.+)-(\\1).*$");
+                    Matcher matcher = pattern.matcher(res.getString());
+                    if (matcher.matches()) {
+                        System.out.println("MATCH: "+ res.getString());
+                        System.out.println("MATCH: "+ res);
+                        String number = matcher.group(2);  // "1"
+                        res = (MutableComponent) CardRolls.replace(res, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(res.getStyle()));
+                        System.out.println(res.getString());
+                        System.out.println(res);
+                    }
+                }
                 return res;
             }
         }
@@ -354,6 +368,18 @@ public class Modifiers {
             }
             if (minConfig instanceof EffectTrialAttribute.Config minTrial) {
                 return getEffectTrialComponent(minTrial, minTrial);
+            }
+            if (true) {
+                Pattern pattern = Pattern.compile("^.*(.+)-(\\1).*$");
+                Matcher matcher = pattern.matcher(minConfigDisplay.getString());
+                if (matcher.matches()) {
+                    System.out.println("MATCH: "+ minConfigDisplay.getString());
+                    System.out.println("MATCH: "+ minConfigDisplay);
+                    String number = matcher.group(2);  // "1"
+                    minConfigDisplay = (MutableComponent) CardRolls.replace(minConfigDisplay, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(minConfigDisplay.getStyle()));
+                    System.out.println(minConfigDisplay.getString());
+                    System.out.println(minConfigDisplay);
+                }
             }
             return res;
         }

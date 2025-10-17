@@ -518,17 +518,17 @@ public class GearModifierScreen extends AbstractElementScreen {
     }
 
     private void createCardButton() {
-        this.addElement(new ButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() + 20, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             Minecraft.getInstance().setScreen(new CardRollScreen());
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 180);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130);
         }).tooltip(
-            Tooltips.single(TooltipDirection.RIGHT, () -> new TextComponent("WIP CARD ROLLS [DEV-ENV]"))
+            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Cards"))
         );
         ItemStack boosterPackStack = new ItemStack(ModItems.BOOSTER_PACK);
         this.addElement(
-            new FakeItemSlotElement<>(Spatials.positionXY(this.getGuiSpatial().width() + 20, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 180))
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130))
         );
     }
 

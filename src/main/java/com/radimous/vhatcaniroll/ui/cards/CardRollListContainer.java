@@ -4,18 +4,15 @@ import com.radimous.vhatcaniroll.logic.CardRolls;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
-import iskallia.vault.client.gui.framework.screen.layout.ScreenLayout;
 import iskallia.vault.client.gui.framework.spatial.Padding;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
-import iskallia.vault.init.ModItems;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.item.ItemStack;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +26,6 @@ public class CardRollListContainer extends VerticalScrollClipContainer<CardRollL
         int labelX = 9;
         int labelY = 10;
 
-        var gearPiece = new ItemStack(ModItems.BOOSTER_PACK);
-//        // Label for the item name and level (GOLD if legendary, GREEN if greater, WHITE if common)
-//        LabelElement<?> itemName = new LabelElement<>(
-//            Spatials.positionXY(labelX, 5).width(this.innerWidth() - labelX).height(15), new TextComponent(gearPiece.getItem().getName(gearPiece).getString().toUpperCase())
-//            .withStyle(ChatFormatting.UNDERLINE), LabelTextStyle.defaultStyle()
-//        );
-//        this.addElement(itemName);
-
         List<Component> modifiers = switch (screenType) {
             case "all" -> CardRolls.getAll();
             case "boosterPacks" -> CardRolls.getBoosterPackList();
@@ -47,10 +36,10 @@ public class CardRollListContainer extends VerticalScrollClipContainer<CardRollL
             default -> List.of(new TextComponent("UNKNOWN CARD SCREEN TYPE").withStyle(ChatFormatting.RED));
         };
 
-        if (modifiers == null || modifiers.isEmpty()) {
+        if (modifiers.isEmpty()) {
             LabelElement<?> labelelement = new LabelElement<>(
                 Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), new TextComponent(
-                "Card roll config for " + gearPiece.getItem() + " not found"), LabelTextStyle.defaultStyle()
+                "No "+screenType+" info "), LabelTextStyle.defaultStyle()
             );
             this.addElement(labelelement);
             return;
@@ -60,23 +49,26 @@ public class CardRollListContainer extends VerticalScrollClipContainer<CardRollL
         for (Component mc : modifiers) {
 
             if (mc instanceof TextComponent tc){ // try to make wrapped text
-                var newTc = new TextComponent("");
+                String stripped = tc.getText().stripLeading();
+                String removed = tc.getText().substring(0, tc.getText().length() - stripped.length());
+                int whiteSpaceWidth = Minecraft.getInstance().font.width(removed);
+                var newTc = new TextComponent(stripped).withStyle(tc.getStyle());
                 for (var sibling: tc.getSiblings()){
+                    if (sibling.getString().equals(tc.getText())) {
+                        continue;
+                    }
                     newTc.append(sibling);
                 }
-                var gtc = new TextComponent(tc.getText()).withStyle(tc.getStyle());
-                LabelElement<?> gcl = new LabelElement<>(Spatials.positionXY(labelX, labelY), gtc, LabelTextStyle.defaultStyle());
-                this.addElement(gcl);
 
                 LabelElement<?> mcl = new LabelElement<>(
-                    Spatials.positionXY(labelX + gcl.width(), labelY).width(this.innerWidth() - labelX - gcl.width()),
-                    Spatials.width(this.innerWidth() - labelX * 2).height(9),
+                    Spatials.positionXY(labelX + whiteSpaceWidth , labelY).width(this.innerWidth() - labelX - whiteSpaceWidth),
+                    Spatials.width(this.innerWidth() - labelX * 2 - whiteSpaceWidth).height(9),
                     newTc, LabelTextStyle.wrap());
                 this.addElement(mcl);
-                if (tc.getStyle().getColor() != null &&tc.getStyle().getColor().getValue() == ChatFormatting.GREEN.getColor()) {
+                if (tc.getStyle().getColor() != null && tc.getStyle().getColor().getValue() == ChatFormatting.GREEN.getColor()) {
                     links.put(tc.getText(), labelY);
                 }
-                labelY += Math.max(mcl.getTextStyle().calculateLines(newTc, mcl.width()) * 10, 10);
+                labelY += Math.max(mcl.getTextStyle().calculateLines(newTc, mcl.width() - whiteSpaceWidth) * 10, 10);
             } else {
                 LabelElement<?> labelelement = new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), mc, LabelTextStyle.defaultStyle()
@@ -110,7 +102,7 @@ public class CardRollListContainer extends VerticalScrollClipContainer<CardRollL
         var adjustedTargetLocation = Math.max(0,targetLocation - 6) ;
         var adjustedEndLocation = Math.max(endLocation, 1); // prevent /0
         float visibleFraction = ((float) (adjustedTargetLocation)/ adjustedEndLocation) * ((float) height() / adjustedEndLocation);
-        visibleFraction -= ((float) (adjustedTargetLocation)/ adjustedEndLocation) * ((float) 8 / adjustedEndLocation);
+//        visibleFraction -= ((float) (adjustedTargetLocation)/ adjustedEndLocation) * ((float) 8 / adjustedEndLocation);
         float targetScroll = (float) adjustedTargetLocation/ adjustedEndLocation + visibleFraction;
         targetScroll = Math.max(0, Math.min(1, targetScroll));
         this.setScroll(targetScroll);
