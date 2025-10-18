@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 
 public class CardRolls {
 
+    public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
+
     public static List<Component> getBoosterPackList() {
         List<Component> ret = new ArrayList<>();
         ret.add(new TextComponent("BOOSTER  PACKS").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
@@ -66,10 +68,16 @@ public class CardRolls {
             }
             ret.add(new TextComponent("  Card Tier: ").append(formatInlineWeightedList(vvA.getTier())));
             ret.add(new TextComponent("  Cards:"));
+            boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(vv.getCard());
+            boolean showChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(vv.getCard());
             for (var pool : vv.getCard().entrySet()) {
                 var poolKey = pool.getKey();
                 var poolWeight = pool.getValue();
-                if (Config.SHOW_CARD_WEIGHT.get()) {
+                if (showWeight && showChance) {
+                    ret.add(new TextComponent("    Chance: "+DECIMAL_FORMAT.format(100* poolWeight / vv.getCard().getTotalWeight()) + "%" + " Weight: " + poolWeight).withStyle(ChatFormatting.GRAY));
+                } else if (showChance) {
+                    ret.add(new TextComponent("    Chance: "+DECIMAL_FORMAT.format(100* poolWeight / vv.getCard().getTotalWeight()) + "%").withStyle(ChatFormatting.GRAY));
+                } else if (showWeight) {
                     ret.add(new TextComponent("    Weight: "+poolWeight).withStyle(ChatFormatting.GRAY));
                 }
                 for (BoosterPackConfig.CardConfig cardConfig: poolKey) {
@@ -130,6 +138,7 @@ public class CardRolls {
 
         ret.add(new TextComponent(modifierPool));
         boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolVal);
+        boolean showChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(poolVal);
         for (var cardRoll: poolVal.entrySet()) {
             var cardId = cardRoll.getKey();
             var cardWeight = cardRoll.getValue();
@@ -151,8 +160,12 @@ public class CardRolls {
             var cardName = cardConfig.name;
 
             var nameCmp = new TextComponent("  ").append(cardName);
-            if (showWeight) {
-                nameCmp.append(new TextComponent("  Weight: " + cardWeight).withStyle(ChatFormatting.GRAY));
+            if (showWeight && showChance) {
+                nameCmp.append(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* cardWeight / poolVal.getTotalWeight()) + "%" + " Weight: " + cardWeight).withStyle(ChatFormatting.GRAY));
+            } else if (showChance) {
+                nameCmp.append(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* cardWeight / poolVal.getTotalWeight()) + "%").withStyle(ChatFormatting.GRAY));
+            } else if (showWeight) {
+                nameCmp.append(new TextComponent("  Weight: "+cardWeight).withStyle(ChatFormatting.GRAY));
             }
             ret.add(nameCmp);
 
@@ -278,11 +291,17 @@ public class CardRolls {
                     if (conditionTiers.size() > 1) {
                         ret.add(new TextComponent("     Tier: "+conditionTier.getKey()));
                     }
+                    boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(conditionTier.getValue());
+                    boolean showChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(conditionTier.getValue());
                     for (Map.Entry<List<CardCondition.Filter.Config>, Double> kk:  conditionTier.getValue().entrySet()) {
                         var condTierList = kk.getKey();
                         var condTierWeight = kk.getValue();
-                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_CARD_WEIGHT.get()) {
-                            ret.add(new TextComponent("     Weight: " + condTierWeight).withStyle(ChatFormatting.GRAY));
+                        if (showWeight && showChance) {
+                            ret.add(new TextComponent("     Chance: "+DECIMAL_FORMAT.format(100* condTierWeight / conditionTier.getValue().getTotalWeight()) + "%" + " Weight: " + condTierWeight).withStyle(ChatFormatting.GRAY));
+                        } else if (showChance) {
+                            ret.add(new TextComponent("     Chance: "+DECIMAL_FORMAT.format(100* condTierWeight / conditionTier.getValue().getTotalWeight()) + "%").withStyle(ChatFormatting.GRAY));
+                        } else if (showWeight) {
+                            ret.add(new TextComponent("     Weight: "+condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
                         for (CardCondition.Filter.Config condTier: condTierList) {
                             var condT = (CardConditionFilterConfigAccessor)condTier;
@@ -321,11 +340,17 @@ public class CardRolls {
             var poolKey = pool.getKey();
             var poolValues = pool.getValue();
             ret.add(new TextComponent(poolKey));
+            boolean showPoolWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolValues);
+            boolean showPoolChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(poolValues);
             for (var poolValue: poolValues.entrySet()) {
                 if (poolValues.size() > 1) {
                     var pvCmp = new TextComponent("  Entry: " + poolValue.getKey());
-                    if (!equalWeight(poolValues) && Config.SHOW_CARD_WEIGHT.get()) {
-                        pvCmp.append((new TextComponent("  Weight: " + poolValue.getValue()).withStyle(ChatFormatting.GRAY)));
+                    if (showPoolWeight && showPoolChance) {
+                        pvCmp.append(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* poolValue.getValue() / poolValues.getTotalWeight()) + "%" + " Weight: " + poolValue.getValue()).withStyle(ChatFormatting.GRAY));
+                    } else if (showPoolChance) {
+                        pvCmp.append(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* poolValue.getValue() / poolValues.getTotalWeight()) + "%").withStyle(ChatFormatting.GRAY));
+                    } else if (showPoolWeight) {
+                        pvCmp.append(new TextComponent("  Weight: "+poolValue.getValue()).withStyle(ChatFormatting.GRAY));
                     }
                     ret.add(pvCmp);
                 }
@@ -338,11 +363,17 @@ public class CardRolls {
                         ret.add(new TextComponent("    Tier: "+conditionTier.getKey()));
                         indent =poolValues.size() > 1 ?  "      " : "    ";
                     }
+                    boolean showConditionWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(conditionTier.getValue());
+                    boolean showConditionChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(conditionTier.getValue());
                     for (Map.Entry<List<CardScaler.Filter.Config>, Double> kk:  conditionTier.getValue().entrySet()) {
                         var condTierList = kk.getKey();
                         var condTierWeight = kk.getValue();
-                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_CARD_WEIGHT.get()) {
-                            ret.add(new TextComponent(indent+"Weight: " + condTierWeight).withStyle(ChatFormatting.GRAY));
+                        if (showConditionWeight && showConditionChance) {
+                            ret.add(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* condTierWeight / conditionTier.getValue().getTotalWeight()) + "%" + " Weight: " + condTierWeight).withStyle(ChatFormatting.GRAY));
+                        } else if (showConditionChance) {
+                            ret.add(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* condTierWeight / conditionTier.getValue().getTotalWeight()) + "%").withStyle(ChatFormatting.GRAY));
+                        } else if (showConditionWeight) {
+                            ret.add(new TextComponent("  Weight: "+condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
                         for (CardScaler.Filter.Config condTier: condTierList) {
                             var condT = (CardScalerFilterConfigAccessor)condTier;
@@ -379,6 +410,7 @@ public class CardRolls {
             var poolValues = pool.getValue();
             ret.add(new TextComponent(poolKey));
             boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolValues);
+            boolean showChance = Config.SHOW_CHANCE.get() && !equalWeight(poolValues);
             for (var poolValue: poolValues.entrySet()) {
                 Task task = taskValues.get(poolValue.getKey());
                 if (task.getRenderer() instanceof CardTaskRenderer cardTaskRenderer) {
@@ -399,8 +431,12 @@ public class CardRolls {
                         }
                     }
                     var tt = new TextComponent("  ").append(tooltip);
-                    if (showWeight) {
-                        tt.append(new TextComponent("  Weight: " + poolValue.getValue()).withStyle(ChatFormatting.GRAY));
+                    if (showWeight && showChance) {
+                        tt.append(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* poolValue.getValue() / poolValues.getTotalWeight()) + "%" + " Weight: " + poolValue.getValue()).withStyle(ChatFormatting.GRAY));
+                    } else if (showChance) {
+                        tt.append(new TextComponent("  Chance: "+DECIMAL_FORMAT.format(100* poolValue.getValue() / poolValues.getTotalWeight()) + "%").withStyle(ChatFormatting.GRAY));
+                    } else if (showWeight) {
+                        tt.append(new TextComponent("  Weight: "+poolValue.getValue()).withStyle(ChatFormatting.GRAY));
                     }
                     ret.add(tt);
                 } else {
@@ -504,6 +540,7 @@ public class CardRolls {
             return entry != null && entry.getValue() > 0 ? colorComponent(new TextComponent( "" + entry.getKey())) : new TextComponent("{}");
         }
         var showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(weightedList);
+        var showChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(weightedList);
         TextComponent ret = new TextComponent("{");
         var totalWeight = weightedList.getTotalWeight();
 
@@ -516,8 +553,12 @@ public class CardRolls {
                 } else {
                     ret.append(new TextComponent(""+entry.getKey()));
                 }
-                if (showWeight) {
-                    ret.append(new TextComponent(" " + new DecimalFormat("0.##").format(100*entry.getValue() / totalWeight) + "%").withStyle(ChatFormatting.GRAY));
+                if (showWeight && showChance) {
+                    ret.append(new TextComponent(" "+DECIMAL_FORMAT.format(100* entry.getValue() / totalWeight) + "%" + " W" + entry.getValue()).withStyle(ChatFormatting.GRAY));
+                } else if (showChance) {
+                    ret.append(new TextComponent(" "+DECIMAL_FORMAT.format(100* entry.getValue() / totalWeight) + "%").withStyle(ChatFormatting.GRAY));
+                } else if (showWeight) {
+                    ret.append(new TextComponent(" W"+entry.getValue()).withStyle(ChatFormatting.GRAY));
                 }
                 if (it.hasNext()) {
                     ret.append(new TextComponent(" | "));

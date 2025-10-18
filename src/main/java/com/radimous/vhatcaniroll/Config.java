@@ -18,6 +18,7 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue SHOW_ABILITY_ENHANCEMENTS;
     public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CARD_WEIGHT;
+    public static final ForgeConfigSpec.BooleanValue SHOW_CARD_CHANCE;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
     public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
     public static final ForgeConfigSpec.BooleanValue SHOW_UNOBTAINABLE_CRAFTED;
@@ -96,7 +97,11 @@ public class Config {
 
         SHOW_CARD_WEIGHT = builder
             .comment("show card roll weight")
-            .define("showCardWeight", true);
+            .define("showCardWeight", false);
+
+        SHOW_CARD_CHANCE = builder
+            .comment("show card roll chance")
+            .define("showCardChance", true);
 
         SPEC = builder.build();
     }
