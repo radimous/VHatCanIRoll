@@ -36,7 +36,7 @@ public class CardRolls {
 
     public static List<Component> getBoosterPackList() {
         List<Component> ret = new ArrayList<>();
-        ret.add(new TextComponent("BOOSTER PACKS").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
+        ret.add(new TextComponent("BOOSTER  PACKS").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
         ret.add(new TextComponent(""));
         var boosterPack = ModConfigs.BOOSTER_PACK;
         var packVal = boosterPack.getValues();
@@ -67,9 +67,9 @@ public class CardRolls {
             ret.add(new TextComponent("  CARD TIER: ").append(formatInlineWeightedList(vvA.getTier())));
             ret.add(new TextComponent("  CARDS:"));
             for (var pool : vv.getCard().entrySet()) {
-                var poolKey = pool.getKey(); // "default"
+                var poolKey = pool.getKey();
                 var poolWeight = pool.getValue();
-                if (Config.SHOW_WEIGHT.get()) {
+                if (Config.SHOW_CARD_WEIGHT.get()) {
                     ret.add(new TextComponent("    WEIGHT: "+poolWeight).withStyle(ChatFormatting.GRAY));
                 }
                 for (BoosterPackConfig.CardConfig cardConfig: poolKey) {
@@ -129,9 +129,9 @@ public class CardRolls {
         var modVals = modifiers.getValues();
 
         ret.add(new TextComponent(modifierPool).withStyle(ChatFormatting.UNDERLINE));
-        boolean showWeight = Config.SHOW_WEIGHT.get() && !equalWeight(poolVal);
+        boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolVal);
         for (var cardRoll: poolVal.entrySet()) {
-            var cardId = cardRoll.getKey(); // cooldown_reduction
+            var cardId = cardRoll.getKey();
             var cardWeight = cardRoll.getValue();
             var cardConfig = modVals.get(cardId);
             if (Config.DEBUG_CARDS.get()) {
@@ -159,7 +159,7 @@ public class CardRolls {
             if (Config.DEBUG_CARDS.get()) {
                 ret.add(new TextComponent("    MODEL: "+ cardModel));
             }
-            if ((cardColor != null && !cardColor.isEmpty()) || Config.DEBUG_CARDS.get()) { // hehe
+            if ((cardColor != null && !cardColor.isEmpty()) || Config.DEBUG_CARDS.get()) {
                 ret.add(new TextComponent("    COLOR: ").append(coloredSet(cardColor)));
             }
             if (cardGroups !=null || Config.DEBUG_CARDS.get()) {
@@ -281,7 +281,7 @@ public class CardRolls {
                     for (Map.Entry<List<CardCondition.Filter.Config>, Double> kk:  conditionTier.getValue().entrySet()) {
                         var condTierList = kk.getKey();
                         var condTierWeight = kk.getValue();
-                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_WEIGHT.get()) {
+                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_CARD_WEIGHT.get()) {
                             ret.add(new TextComponent("     WEIGHT: " + condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
                         for (CardCondition.Filter.Config condTier: condTierList) {
@@ -324,7 +324,7 @@ public class CardRolls {
             for (var poolValue: poolValues.entrySet()) {
                 if (poolValues.size() > 1) {
                     var pvCmp = new TextComponent("  ENTRY: " + poolValue.getKey());
-                    if (!equalWeight(poolValues) && Config.SHOW_WEIGHT.get()) {
+                    if (!equalWeight(poolValues) && Config.SHOW_CARD_WEIGHT.get()) {
                         pvCmp.append((new TextComponent("  WEIGHT: " + poolValue.getValue()).withStyle(ChatFormatting.GRAY)));
                     }
                     ret.add(pvCmp);
@@ -341,7 +341,7 @@ public class CardRolls {
                     for (Map.Entry<List<CardScaler.Filter.Config>, Double> kk:  conditionTier.getValue().entrySet()) {
                         var condTierList = kk.getKey();
                         var condTierWeight = kk.getValue();
-                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_WEIGHT.get()) {
+                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_CARD_WEIGHT.get()) {
                             ret.add(new TextComponent(indent+"WEIGHT: " + condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
                         for (CardScaler.Filter.Config condTier: condTierList) {
@@ -378,7 +378,7 @@ public class CardRolls {
             }
             var poolValues = pool.getValue();
             ret.add(new TextComponent(poolKey));
-            boolean showWeight = Config.SHOW_WEIGHT.get() && !equalWeight(poolValues);
+            boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolValues);
             for (var poolValue: poolValues.entrySet()) {
                 Task task = taskValues.get(poolValue.getKey());
                 if (task.getRenderer() instanceof CardTaskRenderer cardTaskRenderer) {
@@ -503,7 +503,7 @@ public class CardRolls {
             }
             return entry != null && entry.getValue() > 0 ? colorComponent(new TextComponent( "" + entry.getKey())) : new TextComponent("{}");
         }
-        var showWeight = Config.SHOW_WEIGHT.get() && !equalWeight(weightedList);
+        var showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(weightedList);
         TextComponent ret = new TextComponent("{");
         var totalWeight = weightedList.getTotalWeight();
 
@@ -532,19 +532,19 @@ public class CardRolls {
 
     private static MutableComponent conditionText(CardConditionFilterConfigAccessor filter) {
         List<Component> parts = new ArrayList<>();
-        if (filter.getColorFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if ((hasAnyNonNull(filter.getColorFilter()))) {
             parts.add(formatInlineWeightedList(filter.getColorFilter()));
         }
 
-        if (filter.getNeighborFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if ((hasAnyNonNull(filter.getNeighborFilter()))) {
             parts.add(formatInlineWeightedList(filter.getNeighborFilter()));
         }
 
-        if (filter.getGroupFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if (hasAnyNonNull(filter.getGroupFilter())) {
             parts.add(formatInlineWeightedList(filter.getGroupFilter()));
         }
 
-        if (filter.getTierFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if (hasAnyNonNull(filter.getTierFilter())) {
             parts.add(formatInlineWeightedList(filter.getTierFilter())); // TODO: this is not the best, shows {1,2,3,4} instead of 1-4
         }
 
@@ -596,19 +596,19 @@ public class CardRolls {
 
     private static MutableComponent scalerText(CardScalerFilterConfigAccessor filter) {
         List<Component> parts = new ArrayList<>();
-        if (filter.getColorFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if (hasAnyNonNull(filter.getColorFilter())) {
             parts.add(formatInlineWeightedList(filter.getColorFilter()));
         }
 
-        if (filter.getNeighborFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if (hasAnyNonNull(filter.getNeighborFilter())) {
             parts.add(formatInlineWeightedList(filter.getNeighborFilter()));
         }
 
-        if (filter.getGroupFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if (hasAnyNonNull(filter.getGroupFilter())) {
             parts.add(formatInlineWeightedList(filter.getGroupFilter()));
         }
 
-        if (filter.getTierFilter().keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull)) {
+        if (hasAnyNonNull(filter.getTierFilter())) {
             parts.add(formatInlineWeightedList(filter.getTierFilter()));
         }
 
@@ -664,5 +664,9 @@ public class CardRolls {
         }
         ret.append("]");
         return ret;
+    }
+
+    private static <T>boolean hasAnyNonNull(WeightedList<Set<T>> weightedList) {
+        return weightedList.keySet().stream().filter(Objects::nonNull).flatMap(Collection::stream).anyMatch(Objects::nonNull);
     }
 }
