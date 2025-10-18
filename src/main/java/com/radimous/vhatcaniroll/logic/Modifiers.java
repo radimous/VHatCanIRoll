@@ -331,17 +331,11 @@ public class Modifiers {
         if (modifierTiers.size() > 1) {
             res = rangeComponent(atrName, atr, atrGenerator, minConfig, maxConfig);
             if (res != null) {
-                if (true) {
-                    Pattern pattern = Pattern.compile("^.*(.+)-(\\1).*$");
-                    Matcher matcher = pattern.matcher(res.getString());
-                    if (matcher.matches()) {
-                        System.out.println("MATCH: "+ res.getString());
-                        System.out.println("MATCH: "+ res);
-                        String number = matcher.group(2);  // "1"
-                        res = (MutableComponent) CardRolls.replace(res, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(res.getStyle()));
-                        System.out.println(res.getString());
-                        System.out.println(res);
-                    }
+                Pattern pattern = Pattern.compile("^.*(.+)-(\\1) .*$");
+                Matcher matcher = pattern.matcher(res.getString());
+                if (matcher.matches()) {
+                    String number = matcher.group(1);
+                    res = (MutableComponent) CardRolls.replace(res, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(res.getStyle()));
                 }
                 return res;
             }
@@ -383,18 +377,13 @@ public class Modifiers {
                 }
                 return new TextComponent("+" + (minTemporal.getTime().getMin() / 20) + "s-" + (minTemporal.getTime().getMax() / 20) + "s of ").append(modifier.getNameComponentFormatted(minTemporal.getCount())).withStyle(atr.getReader().getColoredTextStyle());
             }
-            if (true) {
-                Pattern pattern = Pattern.compile("^.*(.+)-(\\1).*$");
-                Matcher matcher = pattern.matcher(minConfigDisplay.getString());
-                if (matcher.matches()) {
-                    System.out.println("MATCH: "+ minConfigDisplay.getString());
-                    System.out.println("MATCH: "+ minConfigDisplay);
-                    String number = matcher.group(2);  // "1"
-                    minConfigDisplay = (MutableComponent) CardRolls.replace(minConfigDisplay, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(minConfigDisplay.getStyle()));
-                    System.out.println(minConfigDisplay.getString());
-                    System.out.println(minConfigDisplay);
-                }
+            Pattern pattern = Pattern.compile("^.*(.+)-(\\1) .*$");
+            Matcher matcher = pattern.matcher(res.getString());
+            if (matcher.matches()) {
+                String number = matcher.group(1);
+                res = (MutableComponent) CardRolls.replace(res, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(res.getStyle()));
             }
+
             return res;
         }
         return new TextComponent("ERR - NULL DISPLAY " + atrName);

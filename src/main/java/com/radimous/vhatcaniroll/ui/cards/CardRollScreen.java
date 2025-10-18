@@ -30,7 +30,7 @@ public class CardRollScreen extends AbstractElementScreen {
     private final List<IElement> linkElements;
     private InnerCardScreen innerScreen;
     public CardRollScreen() {
-        super(new TextComponent("Card Rolls"), ScreenRenderers.getBuffered(), ScreenTooltipRenderer::create);
+        super(new TextComponent("Cards"), ScreenRenderers.getBuffered(), ScreenTooltipRenderer::create);
 
         linkElements = new ArrayList<>();
         int w = Config.CARD_SCREEN_WIDTH.get();
@@ -50,7 +50,7 @@ public class CardRollScreen extends AbstractElementScreen {
         // window title
         LabelElement<?> windowName = new LabelElement<>(
             Spatials.positionXY(7, 8).size(this.getGuiSpatial().width() / 2 - 7, 20),
-            new TextComponent("Card rolls [WIP]").withStyle(ChatFormatting.BLACK),
+            new TextComponent("Cards").withStyle(ChatFormatting.BLACK),
             LabelTextStyle.defaultStyle()
         ).layout(this.translateWorldSpatial());
 //        this.windowNameLabel = windowName;
