@@ -128,7 +128,7 @@ public class CardRolls {
         }
         var modVals = modifiers.getValues();
 
-        ret.add(new TextComponent(modifierPool).withStyle(ChatFormatting.UNDERLINE));
+        ret.add(new TextComponent(modifierPool));
         boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolVal);
         for (var cardRoll: poolVal.entrySet()) {
             var cardId = cardRoll.getKey();
