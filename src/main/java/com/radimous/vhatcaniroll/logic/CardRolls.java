@@ -2,7 +2,6 @@ package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.mixin.accessors.cards.*;
-import iskallia.vault.config.ColorsConfig;
 import iskallia.vault.config.card.BoosterPackConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.core.card.CardCondition;
@@ -70,7 +69,9 @@ public class CardRolls {
             for (var pool : vv.getCard().entrySet()) {
                 var poolKey = pool.getKey(); // "default"
                 var poolWeight = pool.getValue();
-                ret.add(new TextComponent("    WEIGHT: "+poolWeight).withStyle(ChatFormatting.GRAY));
+                if (Config.SHOW_WEIGHT.get()) {
+                    ret.add(new TextComponent("    WEIGHT: "+poolWeight).withStyle(ChatFormatting.GRAY));
+                }
                 for (BoosterPackConfig.CardConfig cardConfig: poolKey) {
                     var modifier = cardConfig.getModifier();
                     var cardConfigA = (BoosterPackConfigCardConfigAccessor) cardConfig;
@@ -135,9 +136,6 @@ public class CardRolls {
             var cardConfig = modVals.get(cardId);
             if (Config.DEBUG_CARDS.get()) {
                 var rollCmp = new TextComponent("  id: "+ cardId);
-                if (showWeight) {
-                    rollCmp.append(new TextComponent("  WEIGHT: " + cardWeight).withStyle(ChatFormatting.GRAY));
-                }
                 ret.add(rollCmp);
             }
             if (cardConfig == null) {
@@ -152,7 +150,11 @@ public class CardRolls {
             var cardValue = cardConfig.value;
             var cardName = cardConfig.name;
 
-            ret.add(new TextComponent("  ").append(cardName));
+            var nameCmp = new TextComponent("  ").append(cardName);
+            if (showWeight) {
+                nameCmp.append(new TextComponent("  WEIGHT: " + cardWeight).withStyle(ChatFormatting.GRAY));
+            }
+            ret.add(nameCmp);
 
             if (Config.DEBUG_CARDS.get()) {
                 ret.add(new TextComponent("    MODEL: "+ cardModel));
@@ -265,10 +267,6 @@ public class CardRolls {
             ret.add(new TextComponent(poolKey));
             for (var poolValue: poolValues.entrySet()) {
                 var condition = conditionValues.get(poolValue.getKey());
-//                Map<Integer, List<CardCondition.Filter>> condFilters = condition.getFilters();
-//                if (condFilters.isEmpty()) {
-//                    continue;
-//                }
                 CardCondition.Config conditionConfig = condition.getConfig();
                 var conditionConfigA = (CardConditionConfigAccessor) conditionConfig;
                 var conditionTiers = conditionConfigA.getTiers();
@@ -283,7 +281,7 @@ public class CardRolls {
                     for (Map.Entry<List<CardCondition.Filter.Config>, Double> kk:  conditionTier.getValue().entrySet()) {
                         var condTierList = kk.getKey();
                         var condTierWeight = kk.getValue();
-                        if (!equalWeight(conditionTier.getValue())) {
+                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_WEIGHT.get()) {
                             ret.add(new TextComponent("     WEIGHT: " + condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
                         for (CardCondition.Filter.Config condTier: condTierList) {
@@ -326,7 +324,7 @@ public class CardRolls {
             for (var poolValue: poolValues.entrySet()) {
                 if (poolValues.size() > 1) {
                     var pvCmp = new TextComponent("  ENTRY: " + poolValue.getKey());
-                    if (!equalWeight(poolValues)) {
+                    if (!equalWeight(poolValues) && Config.SHOW_WEIGHT.get()) {
                         pvCmp.append((new TextComponent("  WEIGHT: " + poolValue.getValue()).withStyle(ChatFormatting.GRAY)));
                     }
                     ret.add(pvCmp);
@@ -343,7 +341,7 @@ public class CardRolls {
                     for (Map.Entry<List<CardScaler.Filter.Config>, Double> kk:  conditionTier.getValue().entrySet()) {
                         var condTierList = kk.getKey();
                         var condTierWeight = kk.getValue();
-                        if (!equalWeight(conditionTier.getValue())) {
+                        if (!equalWeight(conditionTier.getValue()) && Config.SHOW_WEIGHT.get()) {
                             ret.add(new TextComponent(indent+"WEIGHT: " + condTierWeight).withStyle(ChatFormatting.GRAY));
                         }
                         for (CardScaler.Filter.Config condTier: condTierList) {
