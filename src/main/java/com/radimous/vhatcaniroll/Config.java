@@ -96,7 +96,7 @@ public class Config {
 
         SHOW_CARD_WEIGHT = builder
             .comment("show card roll weight")
-            .define("showCardWeight", false);
+            .define("showCardWeight", true);
 
         SPEC = builder.build();
     }
