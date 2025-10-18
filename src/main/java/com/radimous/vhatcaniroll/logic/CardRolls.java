@@ -320,7 +320,7 @@ public class CardRolls {
         for (var pool: scalerPools.entrySet()) {
             var poolKey = pool.getKey();
             var poolValues = pool.getValue();
-            ret.add(new TextComponent("POOL: " + poolKey));
+            ret.add(new TextComponent(poolKey));
             for (var poolValue: poolValues.entrySet()) {
                 if (poolValues.size() > 1) {
                     var pvCmp = new TextComponent("  ENTRY: " + poolValue.getKey());
