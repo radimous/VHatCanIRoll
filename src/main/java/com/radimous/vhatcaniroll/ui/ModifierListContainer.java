@@ -16,6 +16,7 @@ import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.init.ModItems;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -71,7 +72,13 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
             itemName.set(new TextComponent(gearPiece.getItem().getName(gearPiece).getString().toUpperCase() + " - Tier " + idx)
                 .withStyle(ChatFormatting.UNDERLINE).withStyle(modifierCategory.getStyle()));
 
+            LabelElement<?> tierTooltip = new LabelElement<>(
+                Spatials.positionXY(spatial.right() - Minecraft.getInstance().font.width("Tier = last lvl digit") - 30, 5).width(this.innerWidth() - labelX).height(15), new TextComponent("Tier = last lvl digit")
+                .withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_GRAY), LabelTextStyle.defaultStyle()
+            );
+            this.addElement(tierTooltip);
         }
+
         if (regName != null && mythic){
             optCfg = Optional.ofNullable(ModConfigs.VAULT_GEAR_CONFIG.get(VaultMod.id(regName.getPath()+"_mythic")));
             var newComp = new TextComponent("");
