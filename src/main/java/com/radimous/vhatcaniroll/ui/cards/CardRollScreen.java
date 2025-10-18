@@ -99,7 +99,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createModifiersButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 23), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardModifierListContainer((Spatials.positionXY(this.getGuiSpatial().left() + 7, this.getGuiSpatial().top() + 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)), null).layout(translateWorldSpatial()));
+            replaceInnerScreen(() -> new CardModifierListContainer((Spatials.positionXY(7,  20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)), null).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left()).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Modifiers").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -109,7 +109,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createConditionsButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 43), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardConditionsListContainer(Spatials.positionXY(this.getGuiSpatial().left() + 7, this.getGuiSpatial().top() + 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen(() -> new CardConditionsListContainer(Spatials.positionXY(+ 7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Conditions").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -119,7 +119,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createScalersButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 63), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardScalersListContainer(Spatials.positionXY(this.getGuiSpatial().left() + 7, this.getGuiSpatial().top() + 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen(() -> new CardScalersListContainer(Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Scalers").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -129,7 +129,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createTasksButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 83), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardTasksListContainer(Spatials.positionXY(this.getGuiSpatial().left() + 7, this.getGuiSpatial().top() + 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen(() -> new CardTasksListContainer(Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Tasks").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -157,7 +157,7 @@ public class CardRollScreen extends AbstractElementScreen {
             for (String pool : CardRolls.getModifierPools()) {
                 if ("start".equals(pool) || "end".equals(pool)) continue;
                 linkElements.add(this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(x, y), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-                    replaceInnerScreen(() -> new CardModifierListContainer((Spatials.positionXY(this.getGuiSpatial().left() + 7, this.getGuiSpatial().top() + 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)), pool));
+                    replaceInnerScreen(() -> new CardModifierListContainer((Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)), pool).layout(translateWorldSpatial()));
                 })).layout((screen, gui, parent, world) -> {
                     world.width(80).height(16).translateX(gui.left()).translateY(this.getGuiSpatial().top());
                 }));
