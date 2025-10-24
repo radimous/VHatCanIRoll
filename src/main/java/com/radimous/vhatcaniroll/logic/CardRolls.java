@@ -38,7 +38,7 @@ public class CardRolls {
 
     public static List<Component> getBoosterPackList() {
         List<Component> ret = new ArrayList<>();
-        ret.add(new TextComponent("BOOSTER  PACKS").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
+        ret.add(new TextComponent("BOOSTER PACKS").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
         ret.add(new TextComponent(""));
         var boosterPack = ModConfigs.BOOSTER_PACK;
         var packVal = boosterPack.getValues();
