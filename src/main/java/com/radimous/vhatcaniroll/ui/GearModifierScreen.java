@@ -36,6 +36,7 @@ import iskallia.vault.init.ModBlocks;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.init.ModItems;
+import iskallia.vault.item.BoosterPackItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Style;
@@ -523,6 +524,7 @@ public class GearModifierScreen extends AbstractElementScreen {
             Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Cards"))
         );
         ItemStack boosterPackStack = new ItemStack(ModItems.BOOSTER_PACK);
+        BoosterPackItem.setId(boosterPackStack, VaultMod.sId("default"));
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
                 .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130))
