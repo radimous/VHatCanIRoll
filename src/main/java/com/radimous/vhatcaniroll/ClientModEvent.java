@@ -11,5 +11,6 @@ public class ClientModEvent {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         ClientRegistry.registerKeyBinding(Keybind.OPEN_MOD_SCREEN);
+        ClientRegistry.registerKeyBinding(Keybind.OPEN_MOD_SCREEN_HOVER);
     }
 }
