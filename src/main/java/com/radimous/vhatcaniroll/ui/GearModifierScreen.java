@@ -598,4 +598,14 @@ public class GearModifierScreen extends AbstractElementScreen {
         }
         return 0;
     }
+
+    public static GearModifierScreen openScreenAtIndex(int targetIndex) {
+        GearModifierScreen screen = new GearModifierScreen();
+        screen.switchTab(targetIndex);
+        return screen;
+    }
+
+    public void setLevelInput(int level) {
+        this.lvlInput.setValue(level);
+    }
 }
