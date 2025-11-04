@@ -148,7 +148,7 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     }
 
-    private void switchToTransmog(){
+    public void switchToTransmog(){
         this.removeElement(this.innerScreen);
         this.modifierCategory = ModifierCategory.NORMAL;
         updateModifierCategoryButtonLabel();
@@ -161,7 +161,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         ScreenLayout.requestLayout();
     }
 
-    private void switchToModifiers(){
+    public void switchToModifiers(){
         this.removeElement(this.innerScreen);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic).layout(this.translateWorldSpatial());
@@ -172,7 +172,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         ScreenLayout.requestLayout();
     }
 
-    private void switchToCrafted(){
+    public void switchToCrafted(){
         this.removeElement(this.innerScreen);
         this.modifierCategory = ModifierCategory.NORMAL;
         updateModifierCategoryButtonLabel();
@@ -185,7 +185,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         ScreenLayout.requestLayout();
     }
 
-    private void switchToUnique(){
+    public void switchToUnique(){
         this.removeElement(this.innerScreen);
         this.modifierCategory = ModifierCategory.NORMAL;
         updateModifierCategoryButtonLabel();

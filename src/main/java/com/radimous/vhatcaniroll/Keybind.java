@@ -7,6 +7,7 @@ import com.radimous.vhatcaniroll.ui.GearModifierScreen;
 
 import iskallia.vault.core.vault.influence.VaultGod;
 import iskallia.vault.gear.VaultGearState;
+import iskallia.vault.gear.VaultGearType;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.gear.item.VaultGearItem;
 import iskallia.vault.init.ModGearAttributes;
@@ -46,24 +47,25 @@ public final class Keybind {
 
 
     @SubscribeEvent
-    public static void handleEventInput(TickEvent.ClientTickEvent event) {
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) return;
+
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || event.phase == TickEvent.Phase.START) {
+        if (mc.player == null) return;
+
+        if (mc.screen != null) {
+            if (OPEN_MOD_SCREEN_HOVER.isDown()) {
+                if (++holdCounter >= HOLD_THRESHOLD) {
+                    openModifierScreen();
+                    holdCounter = 0;
+                }
+            } else {
+                holdCounter = 0;
+            }
             return;
         }
 
-        if(mc.screen != null && OPEN_MOD_SCREEN.isDown()) {
-            holdCounter++;
-            if(holdCounter >= HOLD_THRESHOLD) {
-                openModifierScreen();
-                holdCounter = 0;
-            }
-        }
-        else {
-            holdCounter = 0;
-        }
-
-        if (OPEN_MOD_SCREEN.consumeClick() && mc.screen == null) {
+        if (OPEN_MOD_SCREEN.consumeClick()) {
             openModifierScreen();
         }
     }
@@ -93,8 +95,8 @@ public final class Keybind {
                         "vhatcaniroll.key.hover_tooltip",
                         new TextComponent("[")
                                 .withStyle(ChatFormatting.GRAY)
-                                .append(new KeybindComponent(OPEN_MOD_SCREEN.getName())
-                                        .copy().withStyle(ChatFormatting.GREEN))
+                                .append(new KeybindComponent(OPEN_MOD_SCREEN_HOVER.getName())
+                                        .copy().withStyle(ChatFormatting.YELLOW))
                                 .append("]").withStyle(ChatFormatting.GRAY)
                 ).withStyle(ChatFormatting.DARK_GRAY);
             }
@@ -145,8 +147,10 @@ public final class Keybind {
                         }
                     }
 
-                    if(tabItem.getItem() instanceof VaultArmorItem && hoverStack.getItem() instanceof VaultArmorItem) {
-                        return tabItem.getEquipmentSlot() != null && tabItem.getEquipmentSlot().equals(hoverStack.getEquipmentSlot());
+                    if(tabItem.getItem() instanceof VaultArmorItem vaultArmorItemTab && hoverStack.getItem() instanceof VaultArmorItem vaultArmorItemHover) {
+                        VaultGearType typeTab = vaultArmorItemTab.getGearType(tabItem);
+                        VaultGearType typeHover = vaultArmorItemHover.getGearType(hoverStack);
+                        return typeTab.equals(typeHover);
                     }
 
 
@@ -157,8 +161,10 @@ public final class Keybind {
 
         GearModifierScreen modifierScreen = GearModifierScreen.openScreenAtIndex(targetIndex);
 
-        if (hoverData.getState() == VaultGearState.IDENTIFIED) {
-            modifierScreen.setLevelInput(hoverData.getItemLevel());
+        modifierScreen.setLevelInput(hoverData.getItemLevel());
+
+        if(hoverData.getFirstValue(ModGearAttributes.GEAR_UNIQUE_POOL).isPresent()) {
+            modifierScreen.switchToUnique();
         }
 
         mc.setScreen(modifierScreen);
@@ -179,7 +185,7 @@ public final class Keybind {
 
             if (i < filled) {
                 float hue = (float) i / totalBars;
-                int rgb = hsvToRgb(hue, 1.0f, 1.0f); // full saturation and brightness
+                int rgb = hsvToRgb(hue, 1.0f, 1.0f);
                 segment.setStyle(Style.EMPTY.withColor(rgb));
             } else {
                 segment.setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GRAY));
@@ -200,6 +206,6 @@ public final class Keybind {
 
 
     public static final String VHAT_CAN_I_ROLL_CATEGORY = "key.categories.vhatcaniroll";
-    public static final KeyMapping
-        OPEN_MOD_SCREEN = new KeyMapping("vhatcaniroll.openmodscreen", KeyConflictContext.UNIVERSAL, InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_PAGE_DOWN), VHAT_CAN_I_ROLL_CATEGORY);
+    public static final KeyMapping OPEN_MOD_SCREEN = new KeyMapping("vhatcaniroll.openmodscreen", KeyConflictContext.IN_GAME, InputConstants.UNKNOWN, VHAT_CAN_I_ROLL_CATEGORY);
+    public static final KeyMapping OPEN_MOD_SCREEN_HOVER = new KeyMapping("vhatcaniroll.openmodscreen_hover", KeyConflictContext.GUI, InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_W), VHAT_CAN_I_ROLL_CATEGORY);
 }

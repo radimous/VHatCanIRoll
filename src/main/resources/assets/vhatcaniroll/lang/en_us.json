@@ -4,6 +4,7 @@
   "vhatcaniroll.screen.title.unique": "Unique Gear",
   "vhatcaniroll.screen.title.transmogs": "Transmogs",
   "vhatcaniroll.openmodscreen": "Open VHat can I roll? screen",
+  "vhatcaniroll.openmodscreen_hover": "Open VHat can I roll? screen (Hover)",
   "key.categories.vhatcaniroll": "VHat can I roll?",
   "vhatcaniroll.key.hover_tooltip": "Hold %s to view rolls"
 }
