@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Either;
 import com.radimous.vhatcaniroll.logic.Items;
 import com.radimous.vhatcaniroll.ui.GearModifierScreen;
 
+import iskallia.vault.VaultMod;
 import iskallia.vault.core.vault.influence.VaultGod;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.gear.item.VaultGearItem;
@@ -155,6 +156,14 @@ public final class Keybind {
 
         if(hoverData.getFirstValue(ModGearAttributes.GEAR_UNIQUE_POOL).isPresent()) {
             modifierScreen.switchToUnique();
+        }
+
+        if (VaultMod.id("map").equals(hoverStack.getItem().getRegistryName())){
+            for (var mapAttr: hoverData.getAttributes()) {
+                if (VaultMod.id("map_tier").equals(mapAttr.getAttribute().getRegistryName()) && mapAttr.getValue() instanceof Integer intValue) {
+                    modifierScreen.setLevelInput(intValue);
+                }
+            }
         }
 
         mc.setScreen(modifierScreen);
