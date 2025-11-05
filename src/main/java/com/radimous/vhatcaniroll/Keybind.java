@@ -6,12 +6,9 @@ import com.radimous.vhatcaniroll.logic.Items;
 import com.radimous.vhatcaniroll.ui.GearModifierScreen;
 
 import iskallia.vault.core.vault.influence.VaultGod;
-import iskallia.vault.gear.VaultGearState;
-import iskallia.vault.gear.VaultGearType;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.gear.item.VaultGearItem;
 import iskallia.vault.init.ModGearAttributes;
-import iskallia.vault.item.gear.VaultArmorItem;
 import iskallia.vault.item.gear.VaultCharmItem;
 import iskallia.vault.item.tool.ToolItem;
 import net.minecraft.ChatFormatting;
@@ -187,9 +184,7 @@ public final class Keybind {
             bar.append(segment);
         }
 
-        bar.append(new TextComponent("=")
-                        .setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GRAY)))
-                .append(new TextComponent("]")
+        bar.append(new TextComponent("]")
                         .setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)));
 
         return bar;
