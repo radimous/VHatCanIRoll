@@ -92,10 +92,8 @@ public final class Keybind {
                 tooltip = new TranslatableComponent(
                         "vhatcaniroll.key.hover_tooltip",
                         new TextComponent("[")
-                                .withStyle(ChatFormatting.GRAY)
-                                .append(new KeybindComponent(OPEN_MOD_SCREEN_HOVER.getName())
-                                        .copy().withStyle(ChatFormatting.YELLOW))
-                                .append("]").withStyle(ChatFormatting.GRAY)
+                                .append(OPEN_MOD_SCREEN_HOVER.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.GRAY))
+                                .append("]")
                 ).withStyle(ChatFormatting.DARK_GRAY);
             }
 
