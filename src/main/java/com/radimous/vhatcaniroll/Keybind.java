@@ -147,13 +147,6 @@ public final class Keybind {
                         }
                     }
 
-                    if(tabItem.getItem() instanceof VaultArmorItem vaultArmorItemTab && hoverStack.getItem() instanceof VaultArmorItem vaultArmorItemHover) {
-                        VaultGearType typeTab = vaultArmorItemTab.getGearType(tabItem);
-                        VaultGearType typeHover = vaultArmorItemHover.getGearType(hoverStack);
-                        return typeTab.equals(typeHover);
-                    }
-
-
                     return hoverStack.getItem().equals(tabItem.getItem());
                 })
                 .findFirst()
