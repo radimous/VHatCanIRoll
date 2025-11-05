@@ -412,9 +412,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         NineSliceButtonElement<?> btnMythic =
             new NineSliceButtonElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 72 - 13 - 16, 35).size(14, 14),
                 ScreenTextures.BUTTON_EMPTY_TEXTURES, () -> {
-                mythic = !mythic;
-                updateMythicLabel();
-                updateModifierList(true);
+                setMythic(!mythic);
             }).layout(this.translateWorldSpatial());
         this.addElement(btnMythic);
         this.mythicButton = btnMythic;
@@ -609,5 +607,11 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     public void setLevelInput(int level) {
         this.lvlInput.setValue(level);
+    }
+
+    public void setMythic(boolean mythic) {
+        this.mythic = mythic;
+        updateMythicLabel();
+        updateModifierList(true);
     }
 }

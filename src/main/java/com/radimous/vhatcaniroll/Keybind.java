@@ -163,6 +163,9 @@ public final class Keybind {
                 }
             }
         }
+        if ("MYTHIC".equals(hoverData.getRarity().name())) {
+            modifierScreen.setMythic(true);
+        }
 
         mc.setScreen(modifierScreen);
     }
