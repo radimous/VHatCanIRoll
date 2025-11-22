@@ -52,7 +52,8 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
                 modifiers = List.of(new TextComponent("Charm missing god attribution during modifier generation"));
             } else {
                 VaultGod god = godOpt.get();
-                modifiers = Modifiers.getAffixGroupComponents(lvl, VaultGearTierConfig.ModifierAffixTagGroup.PREFIX,  ModConfigs.VAULT_CHARM.getModifierGroup(god), ModifierCategory.NORMAL);
+                modifiers = Modifiers.getAffixGroupComponents(lvl, VaultGearTierConfig.ModifierAffixTagGroup.PREFIX,  ModConfigs.VAULT_CHARM.getModifierGroup(god),
+                    null, ModifierCategory.NORMAL);
                 LabelElement<?> itemNamePerRep = new LabelElement<>(
                     Spatials.positionXY(itemName.right(), 5).width(this.innerWidth() - labelX).height(15), new TextComponent("  values scale with " + god.getName() + " reputation")
                     .withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_GRAY), LabelTextStyle.defaultStyle()

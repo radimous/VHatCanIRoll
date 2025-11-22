@@ -14,6 +14,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,20 +31,35 @@ public class Modifiers {
             ChatFormatting.LIGHT_PURPLE, ChatFormatting.AQUA, ChatFormatting.WHITE};
 
     public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory) {
-        Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup = ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
+        Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup =
+            ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
 
         ArrayList<Component> modList = new ArrayList<>();
 
         for (VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup : modifierGroup.keySet()) {
-            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup.get(affixTagGroup), modifierCategory));
+            getConflictingGroupModifiers(affixTagGroup, modifierGroup);
+            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup.get(affixTagGroup), getConflictingGroupModifiers(affixTagGroup, modifierGroup), modifierCategory));
         }
 
         return modList;
     }
 
+    private static VaultGearTierConfig.AttributeGroup getConflictingGroupModifiers(VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
+                                                                                   Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup) {
+        VaultGearTierConfig.AttributeGroup conflictingGroupModifiers = null;
+        if (affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.PREFIX) {
+            conflictingGroupModifiers = modifierGroup.get(VaultGearTierConfig.ModifierAffixTagGroup.SUFFIX);
+        }
+        if (affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.SUFFIX) {
+            conflictingGroupModifiers = modifierGroup.get(VaultGearTierConfig.ModifierAffixTagGroup.PREFIX);
+        }
+        return conflictingGroupModifiers;
+    }
+
     public static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
-                                                                  VaultGearTierConfig.AttributeGroup modifierGroups,
-                                                                  ModifierCategory modifierCategory) {
+                                                          VaultGearTierConfig.AttributeGroup modifierGroups,
+                                                          @Nullable VaultGearTierConfig.AttributeGroup conflictingGroupModifiers,
+                                                          ModifierCategory modifierCategory) {
 
         ArrayList<Component> componentList = new ArrayList<>();
         if (!Config.SHOW_ABILITY_ENHANCEMENTS.get() && affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
@@ -52,6 +68,8 @@ public class Modifiers {
 
 
         Map<String, Integer> groupCounts = countGroups(lvl, modifierGroups, modifierCategory);
+        Map<String, Integer> crossAffixCounts = conflictingGroupModifiers == null ? null : countGroups(lvl, conflictingGroupModifiers, modifierCategory);
+
         Map<ResourceLocation, Pair<Integer, Integer>> boolWeights = new HashMap<>();
 
         AtomicBoolean noWeightAttr = new AtomicBoolean(false);
@@ -133,7 +151,7 @@ public class Modifiers {
                 }
             }
 
-
+            //TODO: cross affix here
             if (groupCounts.get(modGr) > 1) {
                 groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(modComp);
                 continue;
@@ -142,6 +160,10 @@ public class Modifiers {
             MutableComponent full = new TextComponent("  ");
 
             full.append(modComp);
+            if (crossAffixCounts != null && crossAffixCounts.containsKey(modGr)) {
+                full = full.withStyle(ChatFormatting.UNDERLINE);
+                full = new GroupTextComponent((TextComponent) full, new TextComponent("CROSS AFFIX CONFLICT! " + modGr));
+            }
 
             componentList.add(full);
         }
@@ -150,10 +172,14 @@ public class Modifiers {
         boolean useNums = groupedModifiers.size() > COLORS.length;
         int i = 0;
         for (Map.Entry<String, List<Component>> modGr: groupedModifiers.entrySet()) {
+            boolean crossAffixConflict = crossAffixCounts != null && crossAffixCounts.containsKey(modGr.getKey());
             for (Component mod: modGr.getValue()) {
                 MutableComponent full = new TextComponent(useNums ? i + " " : "► ").withStyle(COLORS[i % COLORS.length]);
                 full.append(mod);
-                componentList.add(new GroupTextComponent((TextComponent) full, (TextComponent)new TextComponent(modGr.getKey()).withStyle(COLORS[i % COLORS.length])));
+                if (crossAffixConflict){
+                    full = full.withStyle(ChatFormatting.UNDERLINE);
+                }
+                componentList.add(new GroupTextComponent((TextComponent) full, (TextComponent)new TextComponent((crossAffixConflict?"CROSS AFFIX CONFLICT! ":"")+modGr.getKey()).withStyle(COLORS[i % COLORS.length])));
             }
             i++;
         }
