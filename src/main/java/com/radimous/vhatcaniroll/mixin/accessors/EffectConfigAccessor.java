@@ -9,6 +9,4 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface EffectConfigAccessor {
     @Accessor
     int getAmplifier();
-    @Accessor
-    ResourceLocation getEffectKey();
 }

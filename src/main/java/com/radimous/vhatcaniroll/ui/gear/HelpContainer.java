@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.ui;
+package com.radimous.vhatcaniroll.ui.gear;
 
 import com.radimous.vhatcaniroll.logic.Items;
 import com.radimous.vhatcaniroll.logic.ModifierCategory;

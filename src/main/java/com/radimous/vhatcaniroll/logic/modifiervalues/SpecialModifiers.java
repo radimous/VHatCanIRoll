@@ -1,5 +1,6 @@
-package com.radimous.vhatcaniroll.logic;
+package com.radimous.vhatcaniroll.logic.modifiervalues;
 
+import com.radimous.vhatcaniroll.logic.Modifiers;
 import com.radimous.vhatcaniroll.mixin.accessors.AbilityFloatValueAttributeReaderInvoker;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.core.vault.modifier.registry.VaultModifierRegistry;
@@ -15,6 +16,10 @@ import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityGearAttr
 import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityModification;
 import iskallia.vault.gear.attribute.ability.special.base.template.FloatRangeModification;
 import iskallia.vault.gear.attribute.ability.special.base.template.IntRangeModification;
+import iskallia.vault.gear.attribute.ability.special.base.template.config.FloatRangeConfig;
+import iskallia.vault.gear.attribute.ability.special.base.template.config.IntRangeConfig;
+import iskallia.vault.gear.attribute.ability.special.base.template.value.FloatValue;
+import iskallia.vault.gear.attribute.ability.special.base.template.value.IntValue;
 import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
 import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
 import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
@@ -27,28 +32,22 @@ import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.skill.base.Skill;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.radimous.vhatcaniroll.logic.Modifiers.getFloatTiers;
-import static com.radimous.vhatcaniroll.logic.Modifiers.getIntTiers;
 
 /**
  * This handles very ugly parts
- * it's still very tightly coupled with {@link Modifiers}, but it was just too long
  */
 public class SpecialModifiers {
 
@@ -56,22 +55,27 @@ public class SpecialModifiers {
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
 
     @SuppressWarnings("unchecked")
-    static <T, C> MutableComponent getCustomComponent(VaultGearAttribute<T> atr, ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers, C minConfig,
-                                            C maxConfig, String atrName, ConfigurableAttributeGenerator<T, C> atrGenerator,
-                                            MutableComponent minConfigDisplay) {
+    static <T, C> MutableComponent getCustomComponent(VaultGearAttribute<T> atr, C minConfig,
+                                            C maxConfig, String atrName, ConfigurableAttributeGenerator<T, C> atrGenerator) {
+        // Custom based on attribute name
         if (atrName.equals("the_vault:relentless_strike")) {
-            return getRelentlessStrikeComponent(atr, modifierTiers, minConfig, maxConfig, atrGenerator, minConfigDisplay);
+            return getRelentlessStrikeComponent(atr, minConfig, maxConfig, atrGenerator);
         }
         if (atrName.equals("the_vault:third_attack")) {
-            return getThirdAttackComponent(atr, modifierTiers, minConfig, maxConfig, atrGenerator, minConfigDisplay);
+            return getThirdAttackComponent(atr, minConfig, maxConfig, atrGenerator);
         }
         if (atrName.equals("the_vault:lucky_thorns")) {
-            return getLuckyThornsComponent(minConfigDisplay, minConfigDisplay, atr);
+            return getLuckyThornsComponent();
         }
         if (atrName.equals("the_vault:phoenix")){
             return getPhoenixComponent(atr, minConfig, maxConfig, atrGenerator);
         }
 
+        // custom based on attribute class
+        var customClassComponent = getCustomClassComponent(atr, minConfig, maxConfig);
+        if (customClassComponent != null) {
+            return customClassComponent;
+        }
         // wold's objectives without relying on wold's classes
         if (minConfig instanceof Supplier<?> supplier){
             try {
@@ -80,6 +84,42 @@ public class SpecialModifiers {
                     return comp.withStyle(ChatFormatting.WHITE);
                 }
             } catch (Exception ignored) {}
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T, C> MutableComponent getCustomClassComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig) {
+        if (minConfig == null || maxConfig == null) {
+            return null;
+        }
+        if (minConfig.getClass() != maxConfig.getClass()) {
+            return null;
+        }
+
+        if (minConfig instanceof AbilityAreaOfEffectPercentAttribute.Config minConfigA && maxConfig instanceof AbilityAreaOfEffectPercentAttribute.Config maxConfigA) {
+            return getAbilityAoePercentageComponent(atr, minConfigA, maxConfigA);
+        }
+        if (minConfig instanceof ManaPerLootAttribute.Config minManaPerLootConfig && maxConfig instanceof ManaPerLootAttribute.Config maxManaPerLootConfig) {
+            return getManaPerLootComponent(minManaPerLootConfig, maxManaPerLootConfig);
+        }
+        if (minConfig instanceof AbilityTriggerOnDamageAttribute.Config minAbilityTriggerOnDamageConfig && maxConfig instanceof AbilityTriggerOnDamageAttribute.Config maxAbilityTriggerOnDamageConfig) {
+            return getAbilityOnDamageComponent(minAbilityTriggerOnDamageConfig, maxAbilityTriggerOnDamageConfig);
+        }
+        if (minConfig instanceof RandomGodVaultModifierAttribute.Config minGod && maxConfig instanceof RandomGodVaultModifierAttribute.Config maxGod) {
+            return getRandomGodVaultModifierAttributeComponent(minGod, maxGod);
+        }
+        if (minConfig instanceof EffectTrialAttribute.Config minTrail && maxConfig instanceof EffectTrialAttribute.Config maxTrail) {
+            return getEffectTrailComponent(minTrail, maxTrail);
+        }
+        if (minConfig instanceof RandomVaultModifierAttribute.Config minTemporal && maxConfig instanceof RandomVaultModifierAttribute.Config maxTemporal) {
+
+            var modifierId = minTemporal.getModifier();
+            var modifier = VaultModifierRegistry.getOpt(modifierId).orElse(null);
+            if (modifier == null) {
+                return new TextComponent("modifier " + modifierId + " not found in modifier registry").withStyle(ChatFormatting.RED);
+            }
+            return new TextComponent("+" + (minTemporal.getTime().getMin() / 20) + "s-" + (maxTemporal.getTime().getMax() / 20) + "s of ").append(modifier.getNameComponentFormatted(minTemporal.getCount())).withStyle(atr.getReader().getColoredTextStyle());
         }
         return null;
     }
@@ -103,7 +143,7 @@ public class SpecialModifiers {
 
     }
 
-    static MutableComponent getEffectTrialComponent(EffectTrialAttribute.Config minConfig, EffectTrialAttribute.Config maxConfig){
+    static MutableComponent getEffectTrailComponent(EffectTrialAttribute.Config minConfig, EffectTrialAttribute.Config maxConfig){
 
         var type = VaultGearModifier.AffixType.PREFIX;
 
@@ -121,6 +161,7 @@ public class SpecialModifiers {
         }
     }
 
+    // TODO: this is probably wrong (no max config)
     static MutableComponent getAbilityOnDamageComponent(AbilityTriggerOnDamageAttribute.Config minConfig, AbilityTriggerOnDamageAttribute.Config maxConfig) {
         MutableComponent range = AbilityTriggerOnDamageAttribute.generator().getConfigRangeDisplay(AbilityTriggerOnDamageAttribute.reader(), minConfig);
         if (range == null) return null;
@@ -140,7 +181,7 @@ public class SpecialModifiers {
     /**
      * {@link iskallia.vault.gear.reader.special.ThirdAttackModifierReader}
      */
-    private static <T, C> MutableComponent getThirdAttackComponent(VaultGearAttribute<T> atr, ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers, C minConfig, C maxConfig, ConfigurableAttributeGenerator<T,C> atrGenerator, MutableComponent minConfigDisplay) {
+    private static <T, C> MutableComponent getThirdAttackComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig, ConfigurableAttributeGenerator<T,C> atrGenerator) {
         return new TextComponent("")
             .append(new TextComponent("Every third attack deals "))
             .append((atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig)).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(16755200))))
@@ -163,7 +204,7 @@ public class SpecialModifiers {
     /**
      * {@link iskallia.vault.gear.reader.special.LuckyThornsModifierReader}
      */
-    private static <T> MutableComponent getLuckyThornsComponent(MutableComponent minConfigDisplay, MutableComponent minConfigDisplay1, VaultGearAttribute<T> atr) {
+    private static <T> MutableComponent getLuckyThornsComponent() {
         return new TextComponent("")
             .append((new TextComponent("Thorns ")).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(16755200))))
             .append((new TextComponent("can now trigger ")).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(14901010))))
@@ -174,7 +215,7 @@ public class SpecialModifiers {
     /**
      * {@link iskallia.vault.gear.reader.special.RelentlessStrikeModifierReader}
      */
-    private static <T, C> MutableComponent getRelentlessStrikeComponent(VaultGearAttribute<T> atr, ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers, C minConfig, C maxConfig, ConfigurableAttributeGenerator<T,C> atrGenerator, MutableComponent minConfigDisplay) {
+    private static <T, C> MutableComponent getRelentlessStrikeComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig, ConfigurableAttributeGenerator<T,C> atrGenerator) {
         return new TextComponent("")
             .append(new TextComponent("Attacking a mob increases your attack damage by "))
             .append((atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig)).withStyle(Style.EMPTY.withColor(TextColor.fromRgb(16755200))))
@@ -375,6 +416,18 @@ public class SpecialModifiers {
             String name = skill.getName();
             return new TextComponent("Special " + name + " modification");
         }).orElseGet(() -> (TextComponent) new TextComponent(abilityKey).withStyle(Style.EMPTY.withColor(14076214)));
+    }
+
+    @SuppressWarnings("unchecked")
+    static List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>> getIntTiers(
+        List<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
+        return modifierTiers.stream().map(x -> (SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>) x.getModifierConfiguration()).toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    static List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<FloatRangeConfig, FloatValue>, FloatRangeConfig, FloatValue>> getFloatTiers(
+        List<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
+        return modifierTiers.stream().map(x -> (SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<FloatRangeConfig, FloatValue>, FloatRangeConfig, FloatValue>) x.getModifierConfiguration()).toList();
     }
 
 }

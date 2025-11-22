@@ -1,25 +1,18 @@
-package com.radimous.vhatcaniroll.ui;
+package com.radimous.vhatcaniroll.ui.gear;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.VHatCanIRoll;
 import com.radimous.vhatcaniroll.logic.Items;
-
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import com.radimous.vhatcaniroll.ui.cards.CardRollScreen;
+import com.radimous.vhatcaniroll.ui.gear.inner.*;
 import com.simibubi.create.foundation.config.ui.ConfigScreen;
 import com.simibubi.create.foundation.config.ui.SubMenuConfigScreen;
 import iskallia.vault.VaultMod;
 import iskallia.vault.client.gui.framework.ScreenRenderers;
 import iskallia.vault.client.gui.framework.ScreenTextures;
-import iskallia.vault.client.gui.framework.element.ButtonElement;
-import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
-import iskallia.vault.client.gui.framework.element.LabelElement;
-import iskallia.vault.client.gui.framework.element.NineSliceButtonElement;
-import iskallia.vault.client.gui.framework.element.NineSliceElement;
-import iskallia.vault.client.gui.framework.element.TabElement;
-import iskallia.vault.client.gui.framework.element.TextureAtlasElement;
-import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
+import iskallia.vault.client.gui.framework.element.*;
 import iskallia.vault.client.gui.framework.element.spi.ILayoutElement;
 import iskallia.vault.client.gui.framework.render.ScreenTooltipRenderer;
 import iskallia.vault.client.gui.framework.render.TooltipDirection;
@@ -51,7 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GearModifierScreen extends AbstractElementScreen {
-    //TODO: remove magic numbers
     private InnerGearScreen innerScreen;
     private NineSliceButtonElement<?> minusButton;
     private NineSliceButtonElement<?> plusButton;
@@ -77,21 +69,17 @@ public class GearModifierScreen extends AbstractElementScreen {
                 Config.GEAR_SCREEN_HEIGHT.get())));
 
         // outer background
-        NineSliceElement<?> background = new NineSliceElement<>(
+        this.addElement(new NineSliceElement<>(
             Spatials.positionXY(0, 30).size(this.getGuiSpatial().width(), this.getGuiSpatial().height() - 30),
             ScreenTextures.DEFAULT_WINDOW_BACKGROUND
-        ).layout(this.translateWorldSpatial());
+        ).layout(this.translateWorldSpatial()));
 
         // window title
-        LabelElement<?> windowName = new LabelElement<>(
+        this.windowNameLabel = this.addElement(new LabelElement<>(
             Spatials.positionXY(7, 38).size(this.getGuiSpatial().width() / 2 - 7, 20),
             new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK),
             LabelTextStyle.defaultStyle()
-        ).layout(this.translateWorldSpatial());
-        this.windowNameLabel = windowName;
-
-        this.addElement(background);
-        this.addElement(windowName);
+        ).layout(this.translateWorldSpatial()));
 
         createTabs();
 
@@ -102,26 +90,22 @@ public class GearModifierScreen extends AbstractElementScreen {
         if (ModConfigs.VAULT_GEAR_CONFIG.get(VaultMod.id("sword_mythic")) != null) {
             createMythicButton();
         }
-        createConfigButton();
 
         // inner black window
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
-        this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic).layout(this.translateWorldSpatial());
-        this.addElement(this.innerScreen);
+        this.innerScreen = this.addElement(new RandomModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic).layout(this.translateWorldSpatial()));
 
         // help container will overlay the modifier list
-        this.helpContainer = new HelpContainer(Spatials.copy(this.getGuiSpatial()));
-        createHelpButton(helpContainer);
-        this.addElement(helpContainer);
+        this.helpContainer = this.addElement(new HelpContainer(Spatials.copy(this.getGuiSpatial())));
+        createHelpButton();
 
         createModifierButton();
         createTransmogButton();
         createCraftedModsButton();
         createUniqueGearButton();
         createCardButton();
+        createConfigButton();
     }
-
-    // helper methods
 
     public ItemStack getCurrGear() {
         return Items.getVaultGearItems().get(currIndex);
@@ -149,6 +133,7 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     }
 
+    //<editor-fold desc="Inner Screen Switching" >
     public void switchToTransmog(){
         this.removeElement(this.innerScreen);
         this.modifierCategory = ModifierCategory.NORMAL;
@@ -165,7 +150,7 @@ public class GearModifierScreen extends AbstractElementScreen {
     public void switchToModifiers(){
         this.removeElement(this.innerScreen);
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
-        this.innerScreen = new ModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic).layout(this.translateWorldSpatial());
+        this.innerScreen = new RandomModifierListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear(), mythic).layout(this.translateWorldSpatial());
         this.enableCategoryButtons();
         this.enableLvlButtons();
         this.windowNameLabel.set(new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK));
@@ -198,9 +183,9 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(this.innerScreen);
         ScreenLayout.requestLayout();
     }
+    //</editor-fold>
 
-
-
+    //<editor-fold desc="Button hiding">
     private void enableCategoryButtons(){
         this.modifierCategoryLabel.setVisible(true);
         this.modifierCategoryButton.setVisible(true);
@@ -240,14 +225,11 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.plusButton.setVisible(false);
         this.plusLabel.setVisible(false);
     }
+    //</editor-fold>
 
-    // tabs
-
+    //<editor-fold desc="Tabs">
     /**
      * Get the position where tab should be drawn
-     * @param tabIndex
-     * @param selected
-     * @return
      */
     private IPosition getTabPos(int tabIndex, boolean selected) {
         if (tabIndex < getMaxTopTabCount()){ // top tabs
@@ -259,8 +241,6 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     /**
      * Get the position where item "icon" should be drawn
-     * @param tabIndex
-     * @return
      */
     private ISpatial getItemPos(int tabIndex) {
         if (tabIndex < getMaxTopTabCount()){
@@ -320,9 +300,9 @@ public class GearModifierScreen extends AbstractElementScreen {
     private int getMaxTopTabCount() {
         return (this.imageWidth-10)/30;
     }
+    //</editor-fold>
 
-    // header
-
+    //<editor-fold desc="Header">
     private ScrollableLvlInputElement createLvlInput() {
         ScrollableLvlInputElement inputElement = this.addElement(
             new ScrollableLvlInputElement(Spatials.positionXY(this.getGuiSpatial().width() - 54 - 13, 36).size(26, 12),
@@ -355,14 +335,14 @@ public class GearModifierScreen extends AbstractElementScreen {
     }
 
     private void nextModifierCategory() {
-        if (!(this.innerScreen instanceof ModifierListContainer)) return;
+        if (!(this.innerScreen instanceof RandomModifierListContainer)) return;
         this.modifierCategory = modifierCategory.next();
         updateModifierCategoryButtonLabel();
         updateModifierList(true);
     }
 
     private void previousModifierCategory() {
-        if (!(this.innerScreen instanceof ModifierListContainer)) return;
+        if (!(this.innerScreen instanceof RandomModifierListContainer)) return;
         this.modifierCategory = modifierCategory.previous();
         updateModifierCategoryButtonLabel();
         updateModifierList(true);
@@ -400,8 +380,8 @@ public class GearModifierScreen extends AbstractElementScreen {
             this.removeElement(this.mythicLabel);
         }
         this.mythicLabel = new LabelElement<>(Spatials.positionXY(this.getGuiSpatial().width() - 72 - 13 - 16 + 4, 38),
-            new TextComponent("M").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(mythic ? 15597727 : ChatFormatting.WHITE.getColor()))), LabelTextStyle.defaultStyle()).tooltip(
-                () -> new TextComponent("Mythic").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(mythic ? 15597727 : ChatFormatting.WHITE.getColor())))
+            new TextComponent("M").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(mythic ? 15597727 : 0xFFFFFF))), LabelTextStyle.defaultStyle()).tooltip(
+                () -> new TextComponent("Mythic").withStyle(Style.EMPTY.withColor(TextColor.fromRgb(mythic ? 15597727 : 0xFFFFFF)))
             )
             .layout(this.translateWorldSpatial());
         this.addElement(mythicLabel);
@@ -417,23 +397,12 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(btnMythic);
         this.mythicButton = btnMythic;
     }
+    //</editor-fold>
 
-    private void createConfigButton(){
-        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_HISTORY_TEXTURES, () -> {
-            SubMenuConfigScreen screen = new SubMenuConfigScreen(this, "VHat Can I Roll? Configuration", ModConfig.Type.CLIENT, Config.SPEC, Config.SPEC.getValues());
-            ConfigScreen.modID = VHatCanIRoll.MODID;
-            Minecraft.getInstance().setScreen(screen);
-
-        })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 26);
-        }).tooltip(
-            Tooltips.single(TooltipDirection.LEFT,() -> new TextComponent("Configuration"))
-        );
-    }
-
-    private void createHelpButton(HelpContainer hc) {
+    //<editor-fold desc="Left Buttons">
+    private void createHelpButton() {
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_QUEST_TEXTURES, () -> {
-            hc.setVisible(!hc.isVisible());
+            this.helpContainer.setVisible(!this.helpContainer.isVisible());
         })).layout((screen, gui, parent, world) -> {
             world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 48);
         }).tooltip(
@@ -443,7 +412,7 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     private void createModifierButton() {
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
-            if (!(this.innerScreen instanceof ModifierListContainer))
+            if (!(this.innerScreen instanceof RandomModifierListContainer))
                 switchToModifiers();
         })).layout((screen, gui, parent, world) -> {
             world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50);
@@ -529,9 +498,21 @@ public class GearModifierScreen extends AbstractElementScreen {
         );
     }
 
-    private static final String CARD_ROLL_CODE = "wipcardrolls";
-    private int codeProgress = 0;
+    private void createConfigButton(){
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_HISTORY_TEXTURES, () -> {
+            SubMenuConfigScreen screen = new SubMenuConfigScreen(this, "VHat Can I Roll? Configuration", ModConfig.Type.CLIENT, Config.SPEC, Config.SPEC.getValues());
+            ConfigScreen.modID = VHatCanIRoll.MODID;
+            Minecraft.getInstance().setScreen(screen);
 
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 18).translateY(this.getGuiSpatial().bottom() - 26);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.LEFT,() -> new TextComponent("Configuration"))
+        );
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="Keyboard Controls">
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         // left/right to increase/decrease lvl
@@ -568,36 +549,9 @@ public class GearModifierScreen extends AbstractElementScreen {
                 nextModifierCategory();
             }
         }
-        processCardCode(keyCode);
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
-
-    private void processCardCode(int keyCode) {
-        char typedChar = getCharFromKeyCode(keyCode);
-        if (typedChar == 0) return;
-
-        if (Character.toLowerCase(typedChar) == CARD_ROLL_CODE.charAt(codeProgress)) {
-            codeProgress++;
-
-            if (codeProgress == CARD_ROLL_CODE.length()) {
-                Minecraft.getInstance().setScreen(new CardRollScreen());
-                codeProgress = 0;
-            }
-        } else {
-            codeProgress = 0;
-            if (Character.toLowerCase(typedChar) == CARD_ROLL_CODE.charAt(0)) {
-                codeProgress = 1;
-            }
-        }
-    }
-
-    private char getCharFromKeyCode(int keyCode) {
-        // This depends on your environment — for Minecraft LWJGL:
-        if (keyCode >= 32 && keyCode <= 126) {
-            return (char) keyCode;
-        }
-        return 0;
-    }
+    //</editor-fold>
 
     public static GearModifierScreen openScreenAtIndex(int targetIndex) {
         GearModifierScreen screen = new GearModifierScreen();

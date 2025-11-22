@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.ui.cards;
+package com.radimous.vhatcaniroll.ui.cards.inner;
 
 import com.radimous.vhatcaniroll.logic.CardRolls;
 import iskallia.vault.client.gui.framework.ScreenTextures;
@@ -14,18 +14,19 @@ import net.minecraft.network.chat.TextComponent;
 
 import java.util.List;
 
-public class CardConditionsListContainer extends VerticalScrollClipContainer<CardConditionsListContainer> implements InnerCardScreen {
+public class BoosterPackListContainer extends VerticalScrollClipContainer<BoosterPackListContainer> implements InnerCardScreen {
 
-    public CardConditionsListContainer(ISpatial spatial) {
+    public BoosterPackListContainer(ISpatial spatial) {
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int labelX = 9;
         int labelY = 10;
 
-        List<Component> modifiers = CardRolls.getConditionsList();
+        List<Component> modifiers = CardRolls.getBoosterPackList();
+
         if (modifiers.isEmpty()) {
             LabelElement<?> labelelement = new LabelElement<>(
                 Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15), new TextComponent(
-                "No card conditions found"), LabelTextStyle.defaultStyle()
+                "No booster packs found"), LabelTextStyle.defaultStyle()
             );
             this.addElement(labelelement);
             return;
@@ -70,6 +71,6 @@ public class CardConditionsListContainer extends VerticalScrollClipContainer<Car
 
     @Override
     public InnerCardScreen create(ISpatial spatial) {
-        return new CardConditionsListContainer(spatial);
+        return new BoosterPackListContainer(spatial);
     }
 }

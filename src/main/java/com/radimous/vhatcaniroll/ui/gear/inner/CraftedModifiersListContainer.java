@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.ui;
+package com.radimous.vhatcaniroll.ui.gear.inner;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;

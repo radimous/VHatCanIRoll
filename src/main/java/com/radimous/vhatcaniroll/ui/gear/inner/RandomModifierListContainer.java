@@ -1,10 +1,13 @@
-package com.radimous.vhatcaniroll.ui;
+package com.radimous.vhatcaniroll.ui.gear.inner;
 
+import com.radimous.vhatcaniroll.logic.GroupTextComponent;
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import iskallia.vault.VaultMod;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
+import iskallia.vault.client.gui.framework.render.TooltipDirection;
+import iskallia.vault.client.gui.framework.render.Tooltips;
 import iskallia.vault.client.gui.framework.spatial.Padding;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
@@ -21,7 +24,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -29,9 +31,9 @@ import java.util.Optional;
 
 import com.radimous.vhatcaniroll.logic.Modifiers;
 
-public class ModifierListContainer extends VerticalScrollClipContainer<ModifierListContainer> implements InnerGearScreen {
+public class RandomModifierListContainer extends VerticalScrollClipContainer<RandomModifierListContainer> implements InnerGearScreen {
 
-    public ModifierListContainer(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
+    public RandomModifierListContainer(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int labelX = 9;
         int labelY = 20;
@@ -102,12 +104,22 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
 
         for (Component mc : modifiers) {
             if (mc instanceof TextComponent tc){ // try to make wrapped text
+                TextComponent groupTooltip;
+                if (mc instanceof GroupTextComponent groupTextComponent) {
+                    tc = groupTextComponent.getTextComponent();
+                    groupTooltip = groupTextComponent.getGroupTooltip();
+                } else {
+                    groupTooltip = null;
+                }
                 var newTc = new TextComponent("");
                 for (var sibling: tc.getSiblings()){
                     newTc.append(sibling);
                 }
                 var gtc = new TextComponent(tc.getText()).withStyle(tc.getStyle());
                 LabelElement<?> gcl = new LabelElement<>(Spatials.positionXY(labelX, labelY), gtc, LabelTextStyle.defaultStyle());
+                if (groupTooltip != null) {
+                    gcl.tooltip(Tooltips.single(TooltipDirection.LEFT, () -> groupTooltip));
+                }
                 this.addElement(gcl);
 
                 LabelElement<?> mcl = new LabelElement<>(
@@ -147,6 +159,6 @@ public class ModifierListContainer extends VerticalScrollClipContainer<ModifierL
 
     @Override
     public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
-        return new ModifierListContainer(spatial, lvl, modifierCategory, gearPiece, mythic);
+        return new RandomModifierListContainer(spatial, lvl, modifierCategory, gearPiece, mythic);
     }
 }

@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.ui.cards;
+package com.radimous.vhatcaniroll.ui.cards.inner;
 
 import iskallia.vault.client.gui.framework.element.spi.IElement;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;

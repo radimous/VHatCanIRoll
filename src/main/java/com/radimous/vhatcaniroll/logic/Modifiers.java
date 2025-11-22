@@ -1,61 +1,25 @@
 package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
-import com.radimous.vhatcaniroll.mixin.accessors.EffectConfigAccessor;
+import com.radimous.vhatcaniroll.logic.modifiervalues.ModifierValues;
 import com.radimous.vhatcaniroll.mixin.accessors.VaultGearTierConfigAccessor;
-import iskallia.vault.config.UniqueGearConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
-import iskallia.vault.core.vault.modifier.registry.VaultModifierRegistry;
-import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.gear.attribute.VaultGearAttributeRegistry;
-import iskallia.vault.gear.attribute.VaultGearModifier;
-import iskallia.vault.gear.attribute.ability.AbilityAreaOfEffectPercentAttribute;
-import iskallia.vault.gear.attribute.ability.AbilityLevelAttribute;
-import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityGearAttribute;
-import iskallia.vault.gear.attribute.ability.special.base.SpecialAbilityModification;
-import iskallia.vault.gear.attribute.ability.special.base.template.config.FloatRangeConfig;
-import iskallia.vault.gear.attribute.ability.special.base.template.config.IntRangeConfig;
-import iskallia.vault.gear.attribute.ability.special.base.template.value.FloatValue;
-import iskallia.vault.gear.attribute.ability.special.base.template.value.IntValue;
 import iskallia.vault.gear.attribute.config.BooleanFlagGenerator;
-import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
-import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
-import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
-import iskallia.vault.gear.attribute.custom.effect.EffectGearAttribute;
-import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
-import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
-import iskallia.vault.gear.attribute.talent.RandomVaultModifierAttribute;
-import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
-import iskallia.vault.init.ModConfigs;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.abilityLvlComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getAbilityAoePercentageComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getAbilityOnDamageComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getCloudRangeComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getCustomComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getEffectTrialComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getManaPerLootComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getRandomGodVaultModifierAttributeComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.getSpecialAbilityAttributeComponent;
-import static com.radimous.vhatcaniroll.logic.SpecialModifiers.talentLvlComponent;
 
 /**
  * This is responsible for all the logic of transforming vh config -> list of components needed for the UI
@@ -72,16 +36,6 @@ public class Modifiers {
 
         for (VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup : modifierGroup.keySet()) {
             modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup.get(affixTagGroup), modifierCategory));
-        }
-
-        return modList;
-    }
-
-    public static List<Component> getUniqueModifierList(int lvl, ModifierCategory modifierCategory, Map<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifiers) {
-        ArrayList<Component> modList = new ArrayList<>();
-
-        for (Map.Entry<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifier : modifierIdentifiers.entrySet()) {
-            modList.addAll(getUniqueAffixComponents(lvl, modifierIdentifier, modifierCategory));
         }
 
         return modList;
@@ -161,7 +115,7 @@ public class Modifiers {
             String modGr = modifierTierGroup.getModifierGroup();
 
 
-            MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
+            MutableComponent modComp = ModifierValues.getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
             int weight = modTierListWeight(mTierList);
             if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
@@ -180,7 +134,6 @@ public class Modifiers {
             }
 
 
-
             if (groupCounts.get(modGr) > 1) {
                 groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(modComp);
                 continue;
@@ -196,50 +149,14 @@ public class Modifiers {
         // more than 7 groups is a bit crazy, but just in case
         boolean useNums = groupedModifiers.size() > COLORS.length;
         int i = 0;
-        for (List<Component> modGr: groupedModifiers.values()) {
-            for (Component mod: modGr) {
+        for (Map.Entry<String, List<Component>> modGr: groupedModifiers.entrySet()) {
+            for (Component mod: modGr.getValue()) {
                 MutableComponent full = new TextComponent(useNums ? i + " " : "► ").withStyle(COLORS[i % COLORS.length]);
                 full.append(mod);
-                componentList.add(full);
+                componentList.add(new GroupTextComponent((TextComponent) full, (TextComponent)new TextComponent(modGr.getKey()).withStyle(COLORS[i % COLORS.length])));
             }
             i++;
         }
-        componentList.add(TextComponent.EMPTY);
-        return componentList;
-    }
-
-    /**
-     * Same as getAffixGroupComponents, but for unique gear without chances and groups
-     */
-    public static List<Component> getUniqueAffixComponents(int lvl,Map.Entry<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifier, ModifierCategory modifierCategory) {
-
-        ArrayList<Component> componentList = new ArrayList<>();
-        if (modifierIdentifier.getValue().isEmpty()) {
-            return componentList; // no affix for this type
-        }
-        UniqueGearConfig.AffixTargetType affixTagGroup = modifierIdentifier.getKey();
-        componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
-        for (ResourceLocation modifier : modifierIdentifier.getValue()) {
-            VaultGearTierConfig.ModifierTierGroup modifierTierGroup = ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM).getTierGroup(modifier);
-            if (modifierTierGroup == null) {
-                continue;
-            }
-            ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
-            mTierList = getModifierTiers(lvl, modifierTierGroup, modifierCategory);
-            if (mTierList.isEmpty()) {
-                continue;
-            }
-            MutableComponent modComp = getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
-
-            MutableComponent full = new TextComponent("  ");
-            full.append(modComp);
-            componentList.add(full);
-        }
-
-        if (componentList.size() == 1) { // only header
-            return new ArrayList<>(); // no affixes for this type (all tiers are unobtainable)
-        }
-
         componentList.add(TextComponent.EMPTY);
         return componentList;
     }
@@ -291,188 +208,6 @@ public class Modifiers {
                 && !(x.getModifierConfiguration() instanceof BooleanFlagGenerator.BooleanFlag bf &&
                 !bf.get())) // bool with false :( looking at you, soulbound
             .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    @SuppressWarnings("unchecked") // I don't think proper generics are possible, VaultGearTierConfig#getModifiersForLevel returns List<ModifierTier<?>>
-    public static <T, C> MutableComponent getModifierComponent(VaultGearAttribute<T> atr,
-                                           ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
-        if (modifierTiers.isEmpty()) {
-            return new TextComponent("ERR - EMPTY MODIFIER TIERS");
-        }
-
-        if (atr == null) {
-            return new TextComponent("ERR - NULL ATTRIBUTE");
-        }
-
-        ConfigurableAttributeGenerator<T, C> atrGenerator = (ConfigurableAttributeGenerator<T, C>) atr.getGenerator();
-        if (atrGenerator == null) {
-            return new TextComponent("ERR - NULL ATTRIBUTE GENERATOR");
-        }
-        C minConfig = (C) modifierTiers.get(0).getModifierConfiguration();
-        C maxConfig = (C) modifierTiers.get(modifierTiers.size() - 1).getModifierConfiguration();
-        ResourceLocation atrRegName = atr.getRegistryName();
-        if (atrRegName == null) {
-            return new TextComponent("ERR - NULL REGISTRY NAME");
-        }
-        String atrName = atrRegName.toString();
-
-        MutableComponent minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
-
-        if (minConfig instanceof SpecialAbilityGearAttribute.SpecialAbilityTierConfig<?,?,?> minConfigSpecial) {
-            return getSpecialAbilityAttributeComponent(modifierTiers, minConfigSpecial);
-        }
-
-        var customComponent = getCustomComponent(atr, modifierTiers, minConfig, maxConfig, atrName, atrGenerator, minConfigDisplay);
-        if (customComponent != null) {
-            return customComponent;
-        }
-
-        MutableComponent res = null;
-        if (modifierTiers.size() > 1) {
-            res = rangeComponent(atrName, atr, atrGenerator, minConfig, maxConfig);
-            if (res != null) {
-                Pattern pattern = Pattern.compile("^.*(.+)-(\\1) .*$");
-                Matcher matcher = pattern.matcher(res.getString());
-                if (matcher.matches()) {
-                    String number = matcher.group(1);
-                    res = (MutableComponent) CardRolls.replace(res, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(res.getStyle()));
-                }
-                return res;
-            }
-        }
-        if (minConfigDisplay != null) {
-            res = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
-            if (minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
-                return abilityLvlComponent(res, atr, minConfigAbility);
-            }
-            if (minConfig instanceof TalentLevelAttribute.Config minConfigTalent) {
-                return talentLvlComponent(res, atr, minConfigTalent);
-            }
-            if (minConfig instanceof EffectGearAttribute.Config ) {
-                return minConfigDisplay;
-            }
-
-            if (minConfig instanceof AbilityAreaOfEffectPercentAttribute.Config minConfigA) {
-                return getAbilityAoePercentageComponent(atr, minConfigA, minConfigA);
-            }
-            if (minConfig instanceof ManaPerLootAttribute.Config minManaPerLootConfig) {
-                return getManaPerLootComponent(minManaPerLootConfig, minManaPerLootConfig);
-            }
-            if (minConfig instanceof AbilityTriggerOnDamageAttribute.Config abilityTriggerOnDamageConfig) {
-                return getAbilityOnDamageComponent(abilityTriggerOnDamageConfig, abilityTriggerOnDamageConfig);
-            }
-            if (minConfig instanceof RandomGodVaultModifierAttribute.Config minGod) {
-                return getRandomGodVaultModifierAttributeComponent(minGod, minGod);
-            }
-            if (minConfig instanceof EffectTrialAttribute.Config minTrial) {
-                return getEffectTrialComponent(minTrial, minTrial);
-            }
-            if (minConfig instanceof RandomVaultModifierAttribute.Config minTemporal) {
-
-                var type = VaultGearModifier.AffixType.PREFIX;
-                var modifierId = minTemporal.getModifier();
-                var modifier = VaultModifierRegistry.getOpt(modifierId).orElse(null);
-                if (modifier == null) {
-                    return new TextComponent("modifier " + modifierId + " not found in modifier registry").withStyle(ChatFormatting.RED);
-                }
-                return new TextComponent("+" + (minTemporal.getTime().getMin() / 20) + "s-" + (minTemporal.getTime().getMax() / 20) + "s of ").append(modifier.getNameComponentFormatted(minTemporal.getCount())).withStyle(atr.getReader().getColoredTextStyle());
-            }
-            Pattern pattern = Pattern.compile("^.*(.+)-(\\1) .*$");
-            Matcher matcher = pattern.matcher(res.getString());
-            if (matcher.matches()) {
-                String number = matcher.group(1);
-                res = (MutableComponent) CardRolls.replace(res, number + "-" + number, (TextComponent) new TextComponent(number).withStyle(res.getStyle()));
-            }
-
-            return res;
-        }
-        return new TextComponent("ERR - NULL DISPLAY " + atrName);
-    }
-
-    @SuppressWarnings("unchecked")
-    static List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>> getIntTiers(
-        List<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
-        return modifierTiers.stream().map(x -> (SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<IntRangeConfig, IntValue>, IntRangeConfig, IntValue>) x.getModifierConfiguration()).toList();
-    }
-
-    @SuppressWarnings("unchecked")
-    static List<SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<FloatRangeConfig, FloatValue>, FloatRangeConfig, FloatValue>> getFloatTiers(
-        List<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
-        return modifierTiers.stream().map(x -> (SpecialAbilityGearAttribute.SpecialAbilityTierConfig<SpecialAbilityModification<FloatRangeConfig, FloatValue>, FloatRangeConfig, FloatValue>) x.getModifierConfiguration()).toList();
-    }
-
-    /**
-     * This method handles combining multiple configs into a single component
-     * VH doesn't have method for this, so we need to do it manually
-     * it is using the same logic as VH does when shifting on gear piece to get the range
-     * and combining it with normal display for single component (that has name and color)
-     */
-    private static <T, C> MutableComponent rangeComponent(String atrName, VaultGearAttribute<T> atr,
-    ConfigurableAttributeGenerator<T, C> atrGenerator, C minConfig, C maxConfig) {
-        MutableComponent res = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
-        MutableComponent minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
-        MutableComponent maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);
-
-
-        if (res != null && minConfig instanceof AbilityLevelAttribute.Config minConfigAbility) {
-            return abilityLvlComponent(res, atr, minConfigAbility);
-        }
-
-        if (res != null && minConfig instanceof TalentLevelAttribute.Config minConfigTalent) {
-            return talentLvlComponent(res, atr, minConfigTalent);
-        }
-
-        if ((atrName.equals("the_vault:effect_avoidance") || atrName.equals("the_vault:effect_list_avoidance")) && minConfigDisplay != null) {
-            // res -> "30% - 50%"
-            // single ->  "30% Poison Avoidance"
-            // minRange -> "30%"
-            MutableComponent single = minConfigDisplay.withStyle(atr.getReader().getColoredTextStyle());
-            MutableComponent minRange = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, minConfig);
-            if (minRange != null && res != null) {
-                res.append(single.getString().replace(minRange.getString(), ""));
-                // res -> "30% - 50% Poison Avoidance"
-            }
-        }
-        if (minConfigDisplay != null && maxConfigDisplay != null && (atrName.equals("the_vault:effect_cloud") || atrName.equals("the_vault:effect_cloud_when_hit"))) {
-           return getCloudRangeComponent(minConfigDisplay, maxConfigDisplay, atr);
-        }
-
-        if ((minConfig instanceof AbilityAreaOfEffectPercentAttribute.Config minConfigA) && (maxConfig instanceof AbilityAreaOfEffectPercentAttribute.Config maxConfigA)) {
-            return getAbilityAoePercentageComponent(atr, minConfigA, maxConfigA);
-        }
-
-        if (minConfig instanceof EffectGearAttribute.Config minEffectConfig
-            && maxConfig instanceof EffectGearAttribute.Config
-            && maxConfigDisplay != null) {
-            String effectStr = ((EffectConfigAccessor)minEffectConfig).getAmplifier() + "-" +
-                maxConfigDisplay.getString();
-            return new TextComponent(effectStr).withStyle(atr.getReader().getColoredTextStyle());
-        }
-
-        if (minConfig instanceof ManaPerLootAttribute.Config minManaPerLootConfig && maxConfig instanceof ManaPerLootAttribute.Config maxManaPerLootConfig) {
-            return getManaPerLootComponent(minManaPerLootConfig, maxManaPerLootConfig);
-        }
-
-        if (minConfig instanceof AbilityTriggerOnDamageAttribute.Config minAbilityTriggerOnDamageConfig && maxConfig instanceof AbilityTriggerOnDamageAttribute.Config maxAbilityTriggerOnDamageConfig) {
-            return getAbilityOnDamageComponent(minAbilityTriggerOnDamageConfig, maxAbilityTriggerOnDamageConfig);
-        }
-
-        if (minConfig instanceof RandomGodVaultModifierAttribute.Config minGod && maxConfig instanceof RandomGodVaultModifierAttribute.Config maxGod) {
-            return getRandomGodVaultModifierAttributeComponent(minGod, maxGod);
-        }
-
-        if (minConfig instanceof EffectTrialAttribute.Config minTrial && maxConfig instanceof EffectTrialAttribute.Config maxTrial) {
-            return getEffectTrialComponent(minTrial, maxTrial);
-        }
-
-        if (atrName.equals("the_vault:effect_cloud")){
-            return new TextComponent("Special ability modification");
-        }
-
-        if (res != null) {
-            return atr.getReader().formatConfigDisplay(LogicalSide.CLIENT, res);
-        }
-        return res;
     }
 
     private static int modTierListWeight(List<VaultGearTierConfig.ModifierTier<?>> val) {

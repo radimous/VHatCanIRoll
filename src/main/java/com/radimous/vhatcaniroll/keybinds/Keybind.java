@@ -1,9 +1,11 @@
-package com.radimous.vhatcaniroll;
+package com.radimous.vhatcaniroll.keybinds;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.datafixers.util.Either;
+import com.radimous.vhatcaniroll.Config;
+import com.radimous.vhatcaniroll.VHatCanIRoll;
 import com.radimous.vhatcaniroll.logic.Items;
-import com.radimous.vhatcaniroll.ui.GearModifierScreen;
+import com.radimous.vhatcaniroll.ui.gear.GearModifierScreen;
 
 import iskallia.vault.VaultMod;
 import iskallia.vault.core.vault.influence.VaultGod;

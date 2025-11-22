@@ -1,6 +1,7 @@
 package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
+import com.radimous.vhatcaniroll.logic.modifiervalues.ModifierValues;
 import com.radimous.vhatcaniroll.mixin.accessors.cards.*;
 import iskallia.vault.config.card.BoosterPackConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
@@ -24,13 +25,11 @@ import iskallia.vault.task.renderer.CardTaskRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class CardRolls {
 
@@ -198,7 +197,7 @@ public class CardRolls {
                     for (Map.Entry<Integer, String> configPoolVal: configPool.entrySet()) {
                         var singleTierArray = new ArrayList<VaultGearTierConfig.ModifierTier<?>>();
                         singleTierArray.add(new VaultGearTierConfig.ModifierTier<>(0,0, gearModifierConfig.getConfig(configPoolVal.getKey())));
-                        var modComp = Modifiers.getModifierComponent(atr, singleTierArray);
+                        var modComp = ModifierValues.getModifierComponent(atr, singleTierArray);
                         ret.add(new TextComponent("    T" + configPoolVal.getKey() + ": ").append(modComp));
                     }
 
@@ -245,12 +244,12 @@ public class CardRolls {
                 if (cnt != null) {
                     String roll = processIntroll(cnt.getValue());
                     if (roll != null) {
-                        tt = (MutableComponent) replace(tt, "${count}", new TextComponent(roll));
+                        tt = (MutableComponent) ComponentUtil.replace(tt, "${count}", new TextComponent(roll));
                     }
                 } else {
                     ret.add(new TextComponent("    Count: UNSUPPORTED (null cnt)").withStyle(ChatFormatting.RED));
                 }
-                tt = (MutableComponent) replace(tt, "${task}", (TextComponent) createComponent(taskLootConfigA.getTask()));
+                tt = (MutableComponent) ComponentUtil.replace(tt, "${task}", (TextComponent) createComponent(taskLootConfigA.getTask()));
                 ret.add(new TextComponent("    ").append(tt));
 
             } else if (cardValue instanceof DummyCardModifier) {
@@ -425,8 +424,8 @@ public class CardRolls {
                                 int maxTarget = targetRoll.getMax();
 
                                 String targetString = Objects.equals(minTarget, maxTarget) ? String.valueOf(minTarget) : minTarget + "-" + maxTarget;
-                                tooltip = replace(tooltip, "${current}", new TextComponent("0"));
-                                tooltip = replace(tooltip, "${target}", new TextComponent(targetString));
+                                tooltip = ComponentUtil.replace(tooltip, "${current}", new TextComponent("0"));
+                                tooltip = ComponentUtil.replace(tooltip, "${target}", new TextComponent(targetString));
                             }
                         }
                     }
@@ -457,38 +456,6 @@ public class CardRolls {
             return new TextComponent(str).withStyle(ChatFormatting.GREEN).withStyle(ChatFormatting.ITALIC);
         }
         return new TextComponent(str);
-    }
-
-
-    public static Component replace(Component component, String target, TextComponent replacement) {
-        if (!(component instanceof TextComponent base)) {return component;} else {
-            List<Component> siblings = base.getSiblings();
-            siblings.add(0, base.plainCopy().setStyle(base.getStyle()));
-            for (int result = 0; result < siblings.size(); result++) {
-                Component sibling = siblings.get(result);
-                if (sibling instanceof TextComponent) {
-                    String text = ((TextComponent) sibling).getText();
-                    if (!text.isEmpty()) {
-                        List<Component> parts = new ArrayList<>();
-                        Style styledReplacement = replacement.getStyle() == Style.EMPTY ? sibling.getStyle() : Style.EMPTY;
-                        if (text.equals(target)) {parts.add(replacement.copy().withStyle(styledReplacement));} else {
-                            for (String raw : text.split(Pattern.quote(target))) {
-                                parts.add(new TextComponent(raw).setStyle(sibling.getStyle()));
-                                parts.add(replacement.copy().withStyle(styledReplacement));
-                            }
-                            parts.remove(parts.size() - 1);
-                        }
-                        siblings.remove(result);
-                        for (int j = 0; j < parts.size(); j++) {siblings.add(result, parts.get(parts.size() - j - 1));}
-                    }
-                }
-            }
-            TextComponent result = new TextComponent("");
-            result.setStyle(base.getStyle());
-            for (Component sibling : siblings) {result.append(sibling);}
-
-            return result;
-        }
     }
 
 

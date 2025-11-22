@@ -2,8 +2,8 @@ package com.radimous.vhatcaniroll.ui.cards;
 
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.logic.CardRolls;
-import com.radimous.vhatcaniroll.ui.GearModifierScreen;
-import com.radimous.vhatcaniroll.ui.ModifierListContainer;
+import com.radimous.vhatcaniroll.ui.cards.inner.*;
+import com.radimous.vhatcaniroll.ui.gear.GearModifierScreen;
 import iskallia.vault.client.gui.framework.ScreenRenderers;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.*;
@@ -73,6 +73,7 @@ public class CardRollScreen extends AbstractElementScreen {
         refreshLinkButtons();
     }
 
+    //<editor-fold desc="Screen Switching Buttons">
     private void createGearButton() {
         this.addElement(new ButtonElement<>(Spatials.positionXY(-20, 133), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             Minecraft.getInstance().setScreen(new GearModifierScreen());
@@ -136,7 +137,7 @@ public class CardRollScreen extends AbstractElementScreen {
             new LabelElement<>(Spatials.positionXY(-80, 87), comp, LabelTextStyle.defaultStyle()).layout(this.translateWorldSpatial())
         );
     }
-
+    //</editor-fold>
 
     private void replaceInnerScreen(Supplier<InnerCardScreen> screenSupplier) {
         this.removeElement(this.innerScreen);

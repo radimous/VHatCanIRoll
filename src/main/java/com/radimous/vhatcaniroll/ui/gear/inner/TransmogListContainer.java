@@ -1,4 +1,4 @@
-package com.radimous.vhatcaniroll.ui;
+package com.radimous.vhatcaniroll.ui.gear.inner;
 
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import iskallia.vault.block.TransmogTableBlock;

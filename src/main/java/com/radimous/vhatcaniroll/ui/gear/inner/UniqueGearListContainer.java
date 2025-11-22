@@ -1,14 +1,16 @@
-package com.radimous.vhatcaniroll.ui;
+package com.radimous.vhatcaniroll.ui.gear.inner;
 
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
-import com.radimous.vhatcaniroll.logic.Modifiers;
+import com.radimous.vhatcaniroll.logic.UniqueModifiers;
 import com.radimous.vhatcaniroll.mixin.accessors.UniqueGearConfigAccessor;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.NineSliceElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
+import iskallia.vault.client.gui.framework.render.TooltipDirection;
+import iskallia.vault.client.gui.framework.render.Tooltips;
 import iskallia.vault.client.gui.framework.spatial.Padding;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
@@ -85,7 +87,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             this.addElement(new FakeItemSlotElement<>(Spatials.positionXY(labelX - 4, iconHeight).width(16).height(16), () -> displayStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY));
 
 
-            List<Component> mlist = Modifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
+            List<Component> mlist = UniqueModifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
             for (Component mc : mlist) {
                 if (mc instanceof TextComponent tc){ // try to make wrapped text
                     var newTc = new TextComponent("");

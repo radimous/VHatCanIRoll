@@ -1,5 +1,6 @@
-package com.radimous.vhatcaniroll;
+package com.radimous.vhatcaniroll.keybinds;
 
+import com.radimous.vhatcaniroll.VHatCanIRoll;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
