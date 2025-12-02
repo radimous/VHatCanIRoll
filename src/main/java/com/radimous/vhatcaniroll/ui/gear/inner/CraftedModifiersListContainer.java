@@ -26,10 +26,7 @@ import iskallia.vault.init.ModGearAttributes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
@@ -140,8 +137,13 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
         return new CraftedModifiersListContainer(spatial, lvl, modifierCategory, gearPiece);
     }
 
+    @Override public Component getTitle() {
+        return new TranslatableComponent("vhatcaniroll.screen.title.crafted").withStyle(ChatFormatting.BLACK);
+    }
 
-
+    @Override public boolean enableCategoryButtons() {
+        return false;
+    }
 
     // :)
     private void cookieDialog(){

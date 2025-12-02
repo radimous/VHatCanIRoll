@@ -8,6 +8,7 @@ import iskallia.vault.client.gui.framework.ScreenRenderers;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.*;
 import iskallia.vault.client.gui.framework.element.spi.IElement;
+import iskallia.vault.client.gui.framework.element.spi.ILayoutElement;
 import iskallia.vault.client.gui.framework.render.ScreenTooltipRenderer;
 import iskallia.vault.client.gui.framework.render.TooltipDirection;
 import iskallia.vault.client.gui.framework.render.Tooltips;
@@ -24,18 +25,22 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public class CardRollScreen extends AbstractElementScreen {
-    private final List<IElement> linkElements;
+    private final List<IElement> linkElements = new ArrayList<>();
     private InnerCardScreen innerScreen;
     public CardRollScreen() {
         super(new TextComponent("Cards"), ScreenRenderers.getBuffered(), ScreenTooltipRenderer::create);
+    }
 
-        linkElements = new ArrayList<>();
+    @Override protected void init() {
+        float scroll = this.innerScreen != null ? this.innerScreen.getScroll() : 0;
+        linkElements.clear();
+        this.removeAllElements();
         int w = Config.CARD_SCREEN_WIDTH.get();
         if ((Minecraft.getInstance().getWindow().getWidth() / Minecraft.getInstance().getWindow().getGuiScale()) - 60 < w) {
-          w = (int) ((Minecraft.getInstance().getWindow().getWidth() / Minecraft.getInstance().getWindow().getGuiScale()) - 170);
+            w = (int) ((Minecraft.getInstance().getWindow().getWidth() / Minecraft.getInstance().getWindow().getGuiScale()) - 170);
         }
         this.setGuiSize(Spatials.size(w, 300).height((int) (
             (Minecraft.getInstance().getWindow().getHeight() / Minecraft.getInstance().getWindow().getGuiScale()) *
@@ -53,15 +58,20 @@ public class CardRollScreen extends AbstractElementScreen {
             new TextComponent("Cards").withStyle(ChatFormatting.BLACK),
             LabelTextStyle.defaultStyle()
         ).layout(this.translateWorldSpatial());
-//        this.windowNameLabel = windowName;
         this.addElement(background);
         this.addElement(windowName);
         // inner black window
 
         ISpatial cardRollListSpatial = Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27);
-        innerScreen = new BoosterPackListContainer(cardRollListSpatial).layout(this.translateWorldSpatial());
-        this.addElement(innerScreen);
-
+        if (this.innerScreen == null) {
+            this.innerScreen = this.addElement(new BoosterPackListContainer(cardRollListSpatial).layout(this.translateWorldSpatial()));
+        } else {
+            this.innerScreen = this.addElement(this.innerScreen.create(cardRollListSpatial));
+            if (innerScreen instanceof ILayoutElement<?> layoutElement) {
+                layoutElement.layout(this.translateWorldSpatial());
+            }
+        }
+        this.innerScreen.setScroll(scroll);
 
         createGearButton();
 
@@ -71,6 +81,7 @@ public class CardRollScreen extends AbstractElementScreen {
         createScalersButton();
         createTasksButton();
         refreshLinkButtons();
+        super.init();
     }
 
     //<editor-fold desc="Screen Switching Buttons">
@@ -89,7 +100,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createBoosterPacksButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY( -82, 3), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new BoosterPackListContainer(Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen((spatial) -> new BoosterPackListContainer(Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27)).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left()).translateY(this.getGuiSpatial().top()));
         var comp = new TextComponent("Booster Packs").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -100,7 +111,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createModifiersButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 23), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardModifierListContainer((Spatials.positionXY(7,  20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)), null).layout(translateWorldSpatial()));
+            replaceInnerScreen((spatial) -> new CardModifierListContainer((Spatials.positionXY(7,  20).size(spatial.width() - 14, spatial.height() - 27)), null).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left()).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Modifiers").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -110,7 +121,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createConditionsButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 43), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardConditionsListContainer(Spatials.positionXY(+ 7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen((spatial) -> new CardConditionsListContainer(Spatials.positionXY(+ 7, 20).size(spatial.width() - 14, spatial.height() - 27)).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Conditions").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -120,7 +131,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createScalersButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 63), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardScalersListContainer(Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen((spatial) -> new CardScalersListContainer(Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27)).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Scalers").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -130,7 +141,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createTasksButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 83), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen(() -> new CardTasksListContainer(Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen((spatial) -> new CardTasksListContainer(Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27)).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Tasks").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -139,9 +150,9 @@ public class CardRollScreen extends AbstractElementScreen {
     }
     //</editor-fold>
 
-    private void replaceInnerScreen(Supplier<InnerCardScreen> screenSupplier) {
+    private void replaceInnerScreen(Function<ISpatial,InnerCardScreen> screenSupplier) {
         this.removeElement(this.innerScreen);
-        this.innerScreen = screenSupplier.get();
+        this.innerScreen = screenSupplier.apply(this.getGuiSpatial());
         this.addElement(innerScreen);
         this.refreshLinkButtons();
         ScreenLayout.requestLayout();
@@ -158,7 +169,7 @@ public class CardRollScreen extends AbstractElementScreen {
             for (String pool : CardRolls.getModifierPools()) {
                 if ("start".equals(pool) || "end".equals(pool)) continue;
                 linkElements.add(this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(x, y), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-                    replaceInnerScreen(() -> new CardModifierListContainer((Spatials.positionXY(7, 20).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 27)), pool).layout(translateWorldSpatial()));
+                    replaceInnerScreen((spatial) -> new CardModifierListContainer((Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27)), pool).layout(translateWorldSpatial()));
                 })).layout((screen, gui, parent, world) -> {
                     world.width(80).height(16).translateX(gui.left()).translateY(this.getGuiSpatial().top());
                 }));

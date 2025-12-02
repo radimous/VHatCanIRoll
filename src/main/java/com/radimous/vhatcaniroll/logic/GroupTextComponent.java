@@ -1,15 +1,18 @@
 package com.radimous.vhatcaniroll.logic;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
+
+import java.util.List;
 
 public class GroupTextComponent extends TextComponent {
     private TextComponent original;
-    private TextComponent groupTooltip;
+    private List<Component>  groupTooltip;
     private GroupTextComponent(String p_131286_) {
         super(p_131286_);
     }
 
-    public GroupTextComponent(TextComponent tc, TextComponent groupTooltip) {
+    public GroupTextComponent(TextComponent tc, List<Component> groupTooltip) {
         super(tc.getText());
         original = tc;
         this.groupTooltip = groupTooltip;
@@ -19,7 +22,7 @@ public class GroupTextComponent extends TextComponent {
         return original;
     }
 
-    public TextComponent getGroupTooltip() {
+    public List<Component> getGroupTooltip() {
         return groupTooltip;
     }
 }

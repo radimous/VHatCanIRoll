@@ -15,10 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -132,15 +129,15 @@ public class Modifiers {
             }
             String modGr = modifierTierGroup.getModifierGroup();
 
-
             MutableComponent modComp = ModifierValues.getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
             int weight = modTierListWeight(mTierList);
-            if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
+            boolean weightless = groupCounts.get(modGr) == 1 && (affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.IMPLICIT);
+            if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0 && !weightless) {
                 modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
             }
 
-            if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
+            if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0 && !weightless) {
                 modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
             }
 
@@ -151,7 +148,6 @@ public class Modifiers {
                 }
             }
 
-            //TODO: cross affix here
             if (groupCounts.get(modGr) > 1) {
                 groupedModifiers.computeIfAbsent(modGr, k -> new ArrayList<>()).add(modComp);
                 continue;
@@ -162,7 +158,7 @@ public class Modifiers {
             full.append(modComp);
             if (crossAffixCounts != null && crossAffixCounts.containsKey(modGr)) {
                 full = full.withStyle(ChatFormatting.UNDERLINE);
-                full = new GroupTextComponent((TextComponent) full, new TextComponent("CROSS AFFIX CONFLICT! " + modGr));
+                full = new GroupTextComponent((TextComponent) full, List.of(new TextComponent("CROSS AFFIX CONFLICT! "), new TextComponent(modGr)));
             }
 
             componentList.add(full);
@@ -179,7 +175,14 @@ public class Modifiers {
                 if (crossAffixConflict){
                     full = full.withStyle(ChatFormatting.UNDERLINE);
                 }
-                componentList.add(new GroupTextComponent((TextComponent) full, (TextComponent)new TextComponent((crossAffixConflict?"CROSS AFFIX CONFLICT! ":"")+modGr.getKey()).withStyle(COLORS[i % COLORS.length])));
+                componentList.add(new GroupTextComponent((TextComponent) full,
+                    crossAffixConflict ?
+                        List.of(
+                            new TextComponent("CROSS AFFIX CONFLICT! "),
+                            new TextComponent(modGr.getKey()).withStyle(COLORS[i % COLORS.length])
+                        ) :
+                        List.of(new TextComponent(modGr.getKey()).withStyle(COLORS[i % COLORS.length]))
+                ));
             }
             i++;
         }

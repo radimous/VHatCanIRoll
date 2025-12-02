@@ -17,10 +17,12 @@ import java.util.List;
 
 public class CardModifierListContainer extends VerticalScrollClipContainer<CardModifierListContainer> implements InnerCardScreen {
 
+    String modifierPool;
     public CardModifierListContainer(ISpatial spatial, String modifierPool) {
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int labelX = 9;
         int labelY = 10;
+        this.modifierPool = modifierPool;
 
 
         List<Component> modifiers;
@@ -78,6 +80,6 @@ public class CardModifierListContainer extends VerticalScrollClipContainer<CardM
 
     @Override
     public InnerCardScreen create(ISpatial spatial) {
-        return new CardModifierListContainer(spatial, null);
+        return new CardModifierListContainer(spatial, modifierPool);
     }
 }

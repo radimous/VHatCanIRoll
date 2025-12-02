@@ -81,7 +81,7 @@ public class Config {
             .define("showUnobtainableCrafted", false);
 
         GEAR_SCREEN_HEIGHT = builder
-            .comment("width of the gear screen")
+            .comment("height of the gear screen")
             .defineInRange("screenHeight", 0.95, 0, 1.0);
 
         GEAR_SCREEN_WIDTH = builder
@@ -89,7 +89,7 @@ public class Config {
             .defineInRange("screenWidth", 370, 250, Integer.MAX_VALUE);
 
         CARD_SCREEN_HEIGHT = builder
-            .comment("width of the card screen")
+            .comment("height of the card screen")
             .defineInRange("cardScreenHeight", 0.95, 0, 1.0);
 
         CARD_SCREEN_WIDTH = builder

@@ -9,8 +9,6 @@ import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.NineSliceElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
-import iskallia.vault.client.gui.framework.render.TooltipDirection;
-import iskallia.vault.client.gui.framework.render.Tooltips;
 import iskallia.vault.client.gui.framework.spatial.Padding;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
@@ -26,8 +24,10 @@ import iskallia.vault.init.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -117,6 +117,19 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
                 ScreenTextures.BUTTON_EMPTY));
             labelY += 10;
         }
+        if (goodEntries.isEmpty()) {
+            String itemName = "Item";
+            var regName = gearPiece.getItem().getRegistryName();
+            if (regName != null) {
+                itemName = regName.getPath().replace("_", " ");
+            }
+            itemName = WordUtils.capitalize(itemName);
+
+            this.addElement(new LabelElement<>(
+                Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
+                new TextComponent("No unique " + itemName).withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
+            labelY += 10;
+        }
         if (Config.DEBUG_UNIQUE_GEAR.get()) {
             var badEntries = uniqueRegistry.entrySet().stream().filter(entry -> !matchesItem(gearPiece, entry.getValue())).toList();
             this.addElement(new LabelElement<>(
@@ -169,5 +182,13 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
     @Override
     public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
         return new UniqueGearListContainer(spatial, lvl, modifierCategory, gearPiece);
+    }
+
+    @Override public Component getTitle() {
+        return new TranslatableComponent("vhatcaniroll.screen.title.unique").withStyle(ChatFormatting.BLACK);
+    }
+
+    @Override public boolean enableCategoryButtons() {
+        return false;
     }
 }

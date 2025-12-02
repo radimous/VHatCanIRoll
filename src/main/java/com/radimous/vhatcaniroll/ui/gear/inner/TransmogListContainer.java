@@ -21,12 +21,16 @@ import iskallia.vault.init.ModDynamicModels;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.util.SideOnlyFixer;
 import iskallia.vault.util.function.ObservableSupplier;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.List;
 import java.util.Set;
@@ -50,6 +54,18 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
         DiscoveredModelSelectElement.DiscoveredModelSelectorModel model = new DiscoveredModelSelectElement.DiscoveredModelSelectorModel(
             ObservableSupplier.of(() -> gearPiece, SideOnlyFixer::stackEqualExact), discoveredModelObserverIds, x -> {});
         List<DiscoveredModelSelectElement.TransmogModelEntry> mEntries = model.getEntries();
+        if (mEntries.isEmpty()) {
+            String itemName = "Item";
+            var regName = gearPiece.getItem().getRegistryName();
+            if (regName != null) {
+                itemName = regName.getPath().replace("_", " ");
+            }
+            itemName = WordUtils.capitalize(itemName);
+
+            this.addElement(new LabelElement<>(
+                Spatials.positionXY(labelX, 9).width(this.innerWidth() - labelX).height(15),
+                new TextComponent("No transmogs for " + itemName).withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
+        }
         for (DiscoveredModelSelectElement.TransmogModelEntry x : mEntries) {
             ItemStack displayStack = new ItemStack(gearPiece.getItem());
             VaultGearData gearData = VaultGearData.read(displayStack);
@@ -89,5 +105,17 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
     @Override
     public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
         return new TransmogListContainer(spatial, gearPiece);
+    }
+
+    @Override public Component getTitle() {
+        return new TranslatableComponent("vhatcaniroll.screen.title.transmogs").withStyle(ChatFormatting.BLACK);
+    }
+
+    @Override public boolean enableCategoryButtons() {
+        return false;
+    }
+
+    @Override public boolean enableLevelButtons() {
+        return false;
     }
 }

@@ -1,7 +1,6 @@
 package com.radimous.vhatcaniroll.ui.gear;
 
 import com.radimous.vhatcaniroll.logic.Items;
-import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import iskallia.vault.client.gui.framework.element.ContainerElement;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.spi.ILayoutStrategy;
@@ -57,27 +56,6 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
         ).layout(this.translateWorldSpatial());
         this.addElement(ctrlLabel);
 
-        LabelElement<?> categoryLabelNormal = new LabelElement<>(
-            Spatials.positionXY(spatial.width() + 8 + rightOffset, 52).width(16).height(16),
-            new TextComponent(ModifierCategory.NORMAL.name()).withStyle(ModifierCategory.NORMAL.getStyle()),
-            LabelTextStyle.shadow()
-        ).layout(this.translateWorldSpatial());
-        this.addElement(categoryLabelNormal);
-
-        LabelElement<?> categoryLabelGreater = new LabelElement<>(
-            Spatials.positionXY(spatial.width() + 8 + rightOffset, 62).width(16).height(16),
-            new TextComponent(ModifierCategory.GREATER.name()).withStyle(ModifierCategory.GREATER.getStyle()),
-            LabelTextStyle.shadow()
-        ).layout(this.translateWorldSpatial());
-        this.addElement(categoryLabelGreater);
-
-        LabelElement<?> categoryLabelLegendary = new LabelElement<>(
-            Spatials.positionXY(spatial.width() + 8 + rightOffset, 72).width(16).height(16),
-            new TextComponent(ModifierCategory.LEGENDARY.name()).withStyle(ModifierCategory.LEGENDARY.getStyle()),
-            LabelTextStyle.shadow()
-        ).layout(this.translateWorldSpatial());
-        this.addElement(categoryLabelLegendary);
-
         LabelElement<?> upLabel = new LabelElement<>(
             Spatials.positionXY(spatial.width() - 21, 190).width(16).height(16),
             new TextComponent("↑k").withStyle(ChatFormatting.GOLD),
@@ -104,7 +82,7 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
             """;
 
         String[] array = text.split("\n");
-        int labelY = 140;
+        int labelY = 156;
         for (String s : array) {
             LabelElement<?> textLabel = new LabelElement<>(
                 Spatials.positionXY(-100, labelY).width(20).height(15),

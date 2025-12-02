@@ -8,6 +8,7 @@ import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
 import iskallia.vault.client.gui.framework.render.TooltipDirection;
 import iskallia.vault.client.gui.framework.render.Tooltips;
+import iskallia.vault.client.gui.framework.render.spi.ITooltipRenderFunction;
 import iskallia.vault.client.gui.framework.spatial.Padding;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
@@ -20,10 +21,7 @@ import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.init.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -105,7 +103,7 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
 
         for (Component mc : modifiers) {
             if (mc instanceof TextComponent tc){ // try to make wrapped text
-                TextComponent groupTooltip;
+                List<Component>  groupTooltip;
                 if (mc instanceof GroupTextComponent groupTextComponent) {
                     tc = groupTextComponent.getTextComponent();
                     groupTooltip = groupTextComponent.getGroupTooltip();
@@ -119,7 +117,7 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
                 var gtc = new TextComponent(tc.getText()).withStyle(tc.getStyle());
                 LabelElement<?> gcl = new LabelElement<>(Spatials.positionXY(labelX, labelY), gtc, LabelTextStyle.defaultStyle());
                 if (groupTooltip != null) {
-                    gcl.tooltip(Tooltips.single(TooltipDirection.LEFT, () -> groupTooltip));
+                    gcl.tooltip(Tooltips.shift(ITooltipRenderFunction.NONE,Tooltips.multi(TooltipDirection.LEFT, () -> groupTooltip)));
                 }
                 this.addElement(gcl);
 
@@ -161,5 +159,9 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
     @Override
     public InnerGearScreen create(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece, boolean mythic) {
         return new RandomModifierListContainer(spatial, lvl, modifierCategory, gearPiece, mythic);
+    }
+
+    @Override public Component getTitle() {
+        return new TranslatableComponent("vhatcaniroll.screen.title.random").withStyle(ChatFormatting.BLACK);
     }
 }
