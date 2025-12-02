@@ -45,28 +45,16 @@ public final class Keybind {
 
     private static int holdCounter = 0;
 
+    // defers the tick to tooltip rendering to support most screens
+    private static boolean shouldTickHovered = false;
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) return;
 
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
-
-        if (mc.screen != null) {
-            if (OPEN_MOD_SCREEN_HOVER.isDown()) {
-                if (++holdCounter >= HOLD_THRESHOLD) {
-                    openModifierScreen();
-                    holdCounter = 0;
-                }
-            } else {
-                holdCounter = 0;
-            }
-            return;
-        }
-
+        shouldTickHovered = true;
         if (OPEN_MOD_SCREEN.consumeClick()) {
-            openModifierScreen();
+            openModifierScreen(null);
         }
     }
 
@@ -100,29 +88,29 @@ public final class Keybind {
             }
 
             event.getTooltipElements().add(Either.left(tooltip));
-        }
-    }
 
-    private static ItemStack getHoveredItem(Screen screen) {
-        if(screen instanceof AbstractContainerScreen<?> containerScreen) {
-            Slot slot = containerScreen.getSlotUnderMouse();
-            if(slot != null) {
-                return slot.getItem();
+            if (shouldTickHovered) {
+                shouldTickHovered = false;
+                if (InputConstants.isKeyDown(mc.getWindow().getWindow(), OPEN_MOD_SCREEN_HOVER.getKey().getValue())) {
+                    if (++holdCounter >= HOLD_THRESHOLD) {
+                        openModifierScreen(hoverStack);
+                        holdCounter = 0;
+                    }
+                } else if (holdCounter > 0) {
+                    holdCounter--;
+                }
             }
         }
-
-        return ItemStack.EMPTY;
     }
 
-    private static void openModifierScreen() {
+    private static void openModifierScreen(ItemStack hoverStack) {
         Minecraft mc = Minecraft.getInstance();
 
-        if (mc.screen == null) {
+        if (hoverStack == null) {
             mc.setScreen(new GearModifierScreen());
             return;
         }
 
-        ItemStack hoverStack = getHoveredItem(mc.screen);
         if (!isValidItem(hoverStack.getItem())) {
             return;
         }
