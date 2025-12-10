@@ -68,9 +68,12 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             ItemStack displayStack = new ItemStack(gearPiece.getItem());
             VaultGearData gearData = VaultGearData.read(displayStack);
             gearData.setState(VaultGearState.IDENTIFIED);
-            ResourceLocation model = value.getModel();
-            if (model != null) {
-                gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, model);
+            var models = value.getModels();
+            if (models != null) {
+                var model = models.getRandom().orElse(null);
+                if (model != null) {
+                    gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, model);
+                }
             } else {
                 // jewel colors
                 for (var mod : modifierIdentifiers.entrySet()) {
@@ -148,7 +151,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
                 }
                 this.addElement(new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
-                    new TextComponent("Model: " + value.getModel()).withStyle(ChatFormatting.RED),
+                    new TextComponent("Models: " + value.getModels()).withStyle(ChatFormatting.RED),
                     LabelTextStyle.defaultStyle()));
                 labelY += 16;
             }
@@ -161,14 +164,18 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             return false;
         }
         var regPath = regName.getPath();
-        if (value.getModel() == null) {
+        if (value.getModels() == null) {
             return gearPiece.getItem().equals(ModItems.JEWEL);
         }
-        if (regPath.equals("wand") && value.getModel().toString().equals("the_vault:gear/sword/honey_wand")) {
+        var model = value.getModels().getRandom().orElse(null);
+        if (model == null) {
+            return gearPiece.getItem().equals(ModItems.JEWEL);
+        }
+        if (regPath.equals("wand") && model.toString().equals("the_vault:gear/sword/honey_wand")) {
             // WHO NAMES A SWORD HONEY WAND?????????????????????????????
             return false;
         } // checking for slash before/after would break magnet, because its under the_vault:magnets/
-        return value.getModel().toString().contains(regPath);
+        return model.toString().contains(regPath);
     }
 
     public float getScroll() {

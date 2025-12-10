@@ -2,7 +2,7 @@ package com.radimous.vhatcaniroll.ui.gear.inner;
 
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import iskallia.vault.block.TransmogTableBlock;
-import iskallia.vault.client.ClientDiscoveredEntriesData;
+import iskallia.vault.client.data.ClientDiscoveredEntriesData;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.DiscoveredModelSelectElement;
 import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
