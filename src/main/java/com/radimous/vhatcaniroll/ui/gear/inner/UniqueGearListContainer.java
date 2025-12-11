@@ -31,6 +31,7 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueGearListContainer> implements InnerGearScreen {
@@ -68,27 +69,28 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             ItemStack displayStack = new ItemStack(gearPiece.getItem());
             VaultGearData gearData = VaultGearData.read(displayStack);
             gearData.setState(VaultGearState.IDENTIFIED);
-            var models = value.getModels();
-            if (models != null) {
-                var model = models.getRandom().orElse(null);
-                if (model != null) {
-                    gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, model);
-                }
-            } else {
-                // jewel colors
-                for (var mod : modifierIdentifiers.entrySet()) {
-                    for(ResourceLocation id : mod.getValue()) {
-                        VaultGearModifier<?> modifier = uniqueConfig.generateModifier(id, lvl, new Random());
-                        if (modifier != null) {
-                            mod.getKey().apply(gearData, modifier);
+            gearData.write(displayStack);
+            var startTime = System.currentTimeMillis();
+            this.addElement(new FakeItemSlotElement<>(Spatials.positionXY(labelX - 4, iconHeight).width(16).height(16), () -> {
+                long elapsed = System.currentTimeMillis() - startTime;
+                var models = value.getModels();
+                if (models != null) {
+                    var modelList = models.keySet().stream().filter(Objects::nonNull).toList();
+                    gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, modelList.get((int) ((elapsed / 3000) % modelList.size())));
+                } else {
+                    // jewel colors
+                    for (var mod : modifierIdentifiers.entrySet()) {
+                        for(ResourceLocation id : mod.getValue()) {
+                            VaultGearModifier<?> modifier = uniqueConfig.generateModifier(id, lvl, new Random());
+                            if (modifier != null) {
+                                mod.getKey().apply(gearData, modifier);
+                            }
                         }
                     }
                 }
-            }
-
-            gearData.write(displayStack);
-            this.addElement(new FakeItemSlotElement<>(Spatials.positionXY(labelX - 4, iconHeight).width(16).height(16), () -> displayStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY));
-
+                gearData.write(displayStack);
+                return displayStack;
+            }, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY));
 
             List<Component> mlist = UniqueModifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
             for (Component mc : mlist) {

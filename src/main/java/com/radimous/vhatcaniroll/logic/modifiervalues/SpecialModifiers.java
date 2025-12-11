@@ -1,11 +1,13 @@
 package com.radimous.vhatcaniroll.logic.modifiervalues;
 
-import com.radimous.vhatcaniroll.logic.Modifiers;
+import com.mojang.datafixers.util.Pair;
+import com.radimous.vhatcaniroll.logic.ComponentUtil;
 import com.radimous.vhatcaniroll.mixin.accessors.AbilityFloatValueAttributeReaderInvoker;
 import iskallia.vault.config.gear.VaultGearTierConfig;
 import iskallia.vault.core.vault.modifier.registry.VaultModifierRegistry;
 import iskallia.vault.core.vault.modifier.spi.VaultModifier;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
+import iskallia.vault.gear.attribute.VaultGearAttributeInstance;
 import iskallia.vault.gear.attribute.VaultGearModifier;
 import iskallia.vault.gear.attribute.ability.AbilityAreaOfEffectPercentAttribute;
 import iskallia.vault.gear.attribute.ability.AbilityLevelAttribute;
@@ -20,17 +22,23 @@ import iskallia.vault.gear.attribute.ability.special.base.template.config.FloatR
 import iskallia.vault.gear.attribute.ability.special.base.template.config.IntRangeConfig;
 import iskallia.vault.gear.attribute.ability.special.base.template.value.FloatValue;
 import iskallia.vault.gear.attribute.ability.special.base.template.value.IntValue;
-import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
+import iskallia.vault.gear.attribute.config.*;
 import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
 import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
+import iskallia.vault.gear.attribute.custom.ability.ArcaneNovaOnHitAttribute;
 import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
+import iskallia.vault.gear.attribute.custom.loot.AbilityCastOnLootAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
 import iskallia.vault.gear.attribute.talent.RandomVaultModifierAttribute;
 import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
+import iskallia.vault.gear.reader.FloatValueModifierReader;
+import iskallia.vault.gear.reader.IntegerValueModifierReader;
 import iskallia.vault.gear.reader.VaultGearModifierReader;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
+import iskallia.vault.skill.ability.AbilityType;
 import iskallia.vault.skill.base.Skill;
+import iskallia.vault.util.StringUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.effect.MobEffect;
@@ -67,12 +75,53 @@ public class SpecialModifiers {
         if (atrName.equals("the_vault:lucky_thorns")) {
             return getLuckyThornsComponent();
         }
-        if (atrName.equals("the_vault:phoenix")){
-            return getPhoenixComponent(atr, minConfig, maxConfig, atrGenerator);
+
+        if (atrName.equals("the_vault:on_kill_heal") || atrName.equals("the_vault:block_heal") ) {
+            if (minConfig instanceof PairAttributeGenerator.Config<?,?> pairAttributeGenerator) {
+                var minPair =  atrGenerator.getMinimumValue(List.of(minConfig, maxConfig)).orElse(null) instanceof Pair pair ? (Pair<Float, Float>) pair : null ;
+                var maxPair = atrGenerator.getMaximumValue(List.of(minConfig, maxConfig)).orElse(null) instanceof Pair pair ? (Pair<Float, Float>) pair : null ;
+                var minChance = minPair.getFirst();
+                var maxChance = maxPair.getFirst();
+                var minHP = minPair.getSecond();
+                var maxHP = maxPair.getSecond();
+
+                MutableComponent component = new TextComponent("").withStyle(Style.EMPTY.withColor(14901010));
+                float minHearts = minHP / 2.0F;
+                float maxHearts = maxHP / 2.0F;
+                String heartWord = maxHearts == 1.0F ? "heart" : "hearts";
+
+                String chances;
+                if (minChance.equals(maxChance)) {
+                    chances = DECIMAL_FORMAT.format(minChance * 100.0F) + "%";
+                } else {
+                    chances = DECIMAL_FORMAT.format(minChance * 100.0F) + "%-" + DECIMAL_FORMAT.format(maxChance * 100.0F) + "%";
+                }
+
+                String hearts;
+                if (minHearts == maxHearts) {
+                    hearts = DECIMAL_FORMAT.format(minHearts) + " " + heartWord;
+                } else {
+                    hearts = DECIMAL_FORMAT.format(minHearts) + "-" + DECIMAL_FORMAT.format(maxHearts) + " "+ heartWord;
+                }
+
+                if (atrName.equals("the_vault:block_heal")) {
+                    component.append(new TextComponent(chances).withStyle(ChatFormatting.YELLOW));
+                    component.append(new TextComponent(" chance to gain "));
+                    component.append(new TextComponent(hearts).withStyle(ChatFormatting.YELLOW));
+                    component.append(new TextComponent(" when successfully landing a block"));
+                } else if (atrName.equals("the_vault:on_kill_heal")) {
+                    component.append(new TextComponent(chances).withStyle(ChatFormatting.YELLOW));
+                    component.append(new TextComponent(" chance to gain "));
+                    component.append(new TextComponent(hearts).withStyle(ChatFormatting.YELLOW));
+                    component.append(new TextComponent(" when killing a mob, you can no longer gain health from any other sources"));
+                }
+
+                return component;
+            }
         }
 
         // custom based on attribute class
-        var customClassComponent = getCustomClassComponent(atr, minConfig, maxConfig);
+        var customClassComponent = getCustomClassComponent(atr, minConfig, maxConfig, atrGenerator);
         if (customClassComponent != null) {
             return customClassComponent;
         }
@@ -89,7 +138,7 @@ public class SpecialModifiers {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T, C> MutableComponent getCustomClassComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig) {
+    private static <T, C> MutableComponent getCustomClassComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig,  ConfigurableAttributeGenerator<T, C> atrGenerator) {
         if (minConfig == null || maxConfig == null) {
             return null;
         }
@@ -106,12 +155,19 @@ public class SpecialModifiers {
         if (minConfig instanceof AbilityTriggerOnDamageAttribute.Config minAbilityTriggerOnDamageConfig && maxConfig instanceof AbilityTriggerOnDamageAttribute.Config maxAbilityTriggerOnDamageConfig) {
             return getAbilityOnDamageComponent(minAbilityTriggerOnDamageConfig, maxAbilityTriggerOnDamageConfig);
         }
+        if (minConfig instanceof AbilityCastOnLootAttribute.Config minAbilityCastOnLootConfig && maxConfig instanceof AbilityCastOnLootAttribute.Config maxAbilityCastOnLootConfig) {
+            return getAbilityCastOnLootComponent(minAbilityCastOnLootConfig, maxAbilityCastOnLootConfig);
+        }
         if (minConfig instanceof RandomGodVaultModifierAttribute.Config minGod && maxConfig instanceof RandomGodVaultModifierAttribute.Config maxGod) {
             return getRandomGodVaultModifierAttributeComponent(minGod, maxGod);
         }
         if (minConfig instanceof EffectTrialAttribute.Config minTrail && maxConfig instanceof EffectTrialAttribute.Config maxTrail) {
             return getEffectTrailComponent(minTrail, maxTrail);
         }
+        if (minConfig instanceof ArcaneNovaOnHitAttribute.Config minArcane && maxConfig instanceof ArcaneNovaOnHitAttribute.Config maxArcane) {
+            return getArcaneNovaComponent(atr, minArcane, maxArcane);
+        }
+
         if (minConfig instanceof RandomVaultModifierAttribute.Config minTemporal && maxConfig instanceof RandomVaultModifierAttribute.Config maxTemporal) {
 
             var modifierId = minTemporal.getModifier();
@@ -121,7 +177,42 @@ public class SpecialModifiers {
             }
             return new TextComponent("+" + (minTemporal.getTime().getMin() / 20) + "s-" + (maxTemporal.getTime().getMax() / 20) + "s of ").append(modifier.getNameComponentFormatted(minTemporal.getCount())).withStyle(atr.getReader().getColoredTextStyle());
         }
+        if (minConfig instanceof IntegerAttributeGenerator.Range) {
+            return getIntegerValueComponent(atr, minConfig, maxConfig, atrGenerator);
+        }
+        if (minConfig instanceof FloatAttributeGenerator.Range) {
+            var range = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
+            if (range == null) return null;
+            var reader = atr.getReader();
+            if (reader instanceof FloatValueModifierReader floatReader) {
+                var inst = new VaultGearAttributeInstance<>(atr, (T)(Object)42069F);
+                var fl = floatReader.getValueDisplay(42069F);
+                var kk = reader.getDisplay(inst, VaultGearModifier.AffixType.PREFIX);
+                if (fl != null){
+                    return (MutableComponent) ComponentUtil.replace(kk, fl.getString(), (TextComponent) range);
+                }
+            }
+            return null;
+        }
         return null;
+    }
+
+    private static <T>  MutableComponent getArcaneNovaComponent(VaultGearAttribute<T> atr, ArcaneNovaOnHitAttribute.Config minArcane,
+                                                                     ArcaneNovaOnHitAttribute.Config maxArcane) {
+        var minHits = minArcane.getHitsRequired().getMin();
+        var maxHits = maxArcane.getHitsRequired().getMax();
+        String minVal = new DecimalFormat("0.##").format(minArcane.getPercentAbilityPower().getMin() * 100.0F) + "%";
+        String maxVal = new DecimalFormat("0.##").format(maxArcane.getPercentAbilityPower().getMax() * 100.0F) + "%";
+        String minRadius = new DecimalFormat("0.#").format(minArcane.getRadius().getMin());
+        String maxRadius = new DecimalFormat("0.#").format(maxArcane.getRadius().getMax());
+        return (new TextComponent(""))
+            .append((new TextComponent("Every ")).withStyle(atr.getReader().getColoredTextStyle()))
+            .append((new TextComponent(minHits + "-" + maxHits)).withStyle(Style.EMPTY.withColor(ModConfigs.COLORS.getColor("uniqueHighlight"))))
+            .append((new TextComponent(" hits unleash an Arcane nova dealing ")).withStyle(atr.getReader().getColoredTextStyle()))
+            .append(new TextComponent(minVal + "-" + maxVal).withStyle(Style.EMPTY.withColor(ModConfigs.COLORS.getColor("uniqueHighlight"))))
+            .append((new TextComponent(" of your Ability Power in a ")).withStyle(atr.getReader().getColoredTextStyle()))
+            .append((new TextComponent(minRadius + "-" + maxRadius).withStyle(Style.EMPTY.withColor(ModConfigs.COLORS.getColor("uniqueHighlight"))))
+                .append((new TextComponent(" block radius")).withStyle(atr.getReader().getColoredTextStyle())));
     }
 
     static MutableComponent getRandomGodVaultModifierAttributeComponent(RandomGodVaultModifierAttribute.Config minConfig, RandomGodVaultModifierAttribute.Config maxConfig) {
@@ -161,9 +252,8 @@ public class SpecialModifiers {
         }
     }
 
-    // TODO: this is probably wrong (no max config)
     static MutableComponent getAbilityOnDamageComponent(AbilityTriggerOnDamageAttribute.Config minConfig, AbilityTriggerOnDamageAttribute.Config maxConfig) {
-        MutableComponent range = AbilityTriggerOnDamageAttribute.generator().getConfigRangeDisplay(AbilityTriggerOnDamageAttribute.reader(), minConfig);
+        MutableComponent range = AbilityTriggerOnDamageAttribute.generator().getConfigRangeDisplay(AbilityTriggerOnDamageAttribute.reader(), minConfig, maxConfig);
         if (range == null) return null;
         var rangeSiblings = range.getSiblings();
         MutableComponent abilityName = new TextComponent(ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityId()).map(Skill::getName).orElse(""));
@@ -174,6 +264,22 @@ public class SpecialModifiers {
             .append(" chance to cast a level ")
             .append(new TextComponent(rangeSiblings.get(3).getContents()).withStyle(Style.EMPTY.withColor(16755200)).append(rangeSiblings.get(4).getContents()).append(rangeSiblings.get(5).getContents()))
             .append(" ")
+            .append(abilityName.withStyle(Style.EMPTY.withColor(color)));
+
+    }
+
+    static MutableComponent getAbilityCastOnLootComponent(AbilityCastOnLootAttribute.Config minConfig, AbilityCastOnLootAttribute.Config maxConfig) {
+        MutableComponent range = AbilityCastOnLootAttribute.generator().getConfigRangeDisplay(AbilityCastOnLootAttribute.reader(), minConfig, maxConfig);
+        if (range == null) return null;
+        var rangeSiblings = range.getSiblings();
+        MutableComponent abilityName = new TextComponent(ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityId()).map(Skill::getName).orElse(""));
+        var color = 14901010;
+        return new TextComponent("").withStyle(Style.EMPTY.withColor(color))
+            .append("Looting has a ")
+            .append(new TextComponent(((TextComponent)range).getText() +rangeSiblings.get(0).getString()+rangeSiblings.get(1).getString()).withStyle(Style.EMPTY.withColor(16755200)))
+            .append(" chance to cast a level ")
+            .append(new TextComponent(rangeSiblings.get(3).getContents()).withStyle(Style.EMPTY.withColor(16755200)).append(rangeSiblings.get(4).getContents()).append(rangeSiblings.get(5).getContents()))
+            .append(new TextComponent(" "))
             .append(abilityName.withStyle(Style.EMPTY.withColor(color)));
 
     }
@@ -190,15 +296,19 @@ public class SpecialModifiers {
 
     }
 
-    private static <T, C> MutableComponent getPhoenixComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig, ConfigurableAttributeGenerator<T,C> atrGenerator) {
+    private static <T, C> MutableComponent getIntegerValueComponent(VaultGearAttribute<T> atr, C minConfig, C maxConfig, ConfigurableAttributeGenerator<T,C> atrGenerator) {
         var range = atrGenerator.getConfigRangeDisplay(atr.getReader(), minConfig, maxConfig);
         if (range == null) return null;
-
-        return new TextComponent("")
-            .append((new TextComponent("+Revives you instantly, and heals you fully if you die inside a vault. This effect can occur ")))
-            .append(range.withStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW)))
-            .append(new TextComponent(" times per vault."))
-            .setStyle(ModGearAttributes.PHOENIX.getReader().getColoredTextStyle());
+        var reader = atr.getReader();
+        if (reader instanceof IntegerValueModifierReader intReader) {
+            var inst = new VaultGearAttributeInstance<>(atr, (T)(Object)42069);
+            var in = intReader.getValueDisplay(42069);
+            var kk = reader.getDisplay(inst, VaultGearModifier.AffixType.PREFIX);
+            if (in != null) {
+                return (MutableComponent) ComponentUtil.replace(kk, in.getString(), (TextComponent) range);
+            }
+        }
+        return null;
     }
 
     /**
@@ -330,6 +440,11 @@ public class SpecialModifiers {
         abComp.append(" to level of ");
         if (minConfig.getAbilityKey().equals("all_abilities")){
             return abComp.append(new TextComponent("All Abilities").withStyle(Style.EMPTY.withColor(14076214)));
+        }
+        if (AbilityType.matches(minConfig.getAbilityKey())) {
+            return abComp.append("all ")
+                .append(new TextComponent(StringUtils.convertToTitleCase(minConfig.getAbilityKey())).withStyle(Style.EMPTY.withColor(14076214)))
+                .append(" abilities");
         }
         Optional<Skill> optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
         if (optSkill.isEmpty()) {

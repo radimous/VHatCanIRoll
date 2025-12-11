@@ -484,7 +484,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
         VaultGearData gearData = VaultGearData.read(chestplateStack);
         gearData.setState(VaultGearState.IDENTIFIED);
-        gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, new ResourceLocation("the_vault:gear/armor/flamingo/chestplate"));
+        gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, ResourceLocation.parse("the_vault:gear/armor/flamingo/chestplate"));
         gearData.write(chestplateStack);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)

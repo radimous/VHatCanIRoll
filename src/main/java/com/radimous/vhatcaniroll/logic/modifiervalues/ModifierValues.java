@@ -32,18 +32,19 @@ public class ModifierValues {
             return new TextComponent("ERR - NULL ATTRIBUTE").withStyle(ChatFormatting.RED);
         }
 
-        ConfigurableAttributeGenerator<T, C> atrGenerator = (ConfigurableAttributeGenerator<T, C>) atr.getGenerator();
-        if (atrGenerator == null) {
-            return new TextComponent("ERR - NULL ATTRIBUTE GENERATOR").withStyle(ChatFormatting.RED);
-        }
-        C minConfig = (C) modifierTiers.get(0).getModifierConfiguration();
-        C maxConfig = (C) modifierTiers.get(modifierTiers.size() - 1).getModifierConfiguration();
-
         ResourceLocation atrRegName = atr.getRegistryName();
         if (atrRegName == null) {
             return new TextComponent("ERR - NULL REGISTRY NAME").withStyle(ChatFormatting.RED);
         }
         String atrName = atrRegName.toString();
+
+        ConfigurableAttributeGenerator<T, C> atrGenerator = (ConfigurableAttributeGenerator<T, C>) atr.getGenerator();
+        if (atrGenerator == null) {
+            return new TextComponent("ERR - NULL ATTRIBUTE GENERATOR - " + atrName).withStyle(ChatFormatting.RED);
+        }
+
+        C minConfig = (C) modifierTiers.get(0).getModifierConfiguration();
+        C maxConfig = (C) modifierTiers.get(modifierTiers.size() - 1).getModifierConfiguration();
 
         MutableComponent minConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), minConfig);
         MutableComponent maxConfigDisplay = atrGenerator.getConfigDisplay(atr.getReader(), maxConfig);

@@ -32,18 +32,18 @@ public class Items {
 
     public static List<ItemStack> getVHGearItems() {
         return List.of(
-            withTransmog(new ItemStack(ModItems.SWORD), new ResourceLocation("the_vault:gear/sword/sword_0")),
-            withTransmog(new ItemStack(ModItems.AXE), new ResourceLocation("the_vault:gear/axe/axe_0")),
-            withTransmog(new ItemStack(ModItems.HELMET), new ResourceLocation("the_vault:gear/armor/gladiator_dark/helmet")),
-            withTransmog(new ItemStack(ModItems.CHESTPLATE), new ResourceLocation("the_vault:gear/armor/magmatic/chestplate")),
-            withTransmog(new ItemStack(ModItems.LEGGINGS), new ResourceLocation("the_vault:gear/armor/reinforced_platemail_dark/leggings")),
-            withTransmog(new ItemStack(ModItems.BOOTS), new ResourceLocation("the_vault:gear/armor/gladiator_dark/boots")),
-            withTransmog(new ItemStack(ModItems.FOCUS), new ResourceLocation("the_vault:gear/focus/tatteredtome")),
-            withTransmog(new ItemStack(ModItems.SHIELD), new ResourceLocation("the_vault:gear/shield/gold_plated")),
-            withTransmog(new ItemStack(ModItems.WAND), new ResourceLocation("the_vault:gear/wand/lunar")),
-            withTransmog(new ItemStack(ModItems.MAGNET), new ResourceLocation("the_vault:magnets/magnet_1")),
-            withTransmog(new ItemStack(ModItems.JEWEL), new ResourceLocation("the_vault:gear/jewel/sword_0")),
-            withTransmog(new ItemStack(ModItems.VAULT_NECKLACE), new ResourceLocation("the_vault:gear/necklace/default")),
+            withTransmog(new ItemStack(ModItems.SWORD), ResourceLocation.parse("the_vault:gear/sword/sword_0")),
+            withTransmog(new ItemStack(ModItems.AXE), ResourceLocation.parse("the_vault:gear/axe/axe_0")),
+            withTransmog(new ItemStack(ModItems.HELMET), ResourceLocation.parse("the_vault:gear/armor/gladiator_dark/helmet")),
+            withTransmog(new ItemStack(ModItems.CHESTPLATE), ResourceLocation.parse("the_vault:gear/armor/magmatic/chestplate")),
+            withTransmog(new ItemStack(ModItems.LEGGINGS), ResourceLocation.parse("the_vault:gear/armor/reinforced_platemail_dark/leggings")),
+            withTransmog(new ItemStack(ModItems.BOOTS), ResourceLocation.parse("the_vault:gear/armor/gladiator_dark/boots")),
+            withTransmog(new ItemStack(ModItems.FOCUS), ResourceLocation.parse("the_vault:gear/focus/tatteredtome")),
+            withTransmog(new ItemStack(ModItems.SHIELD), ResourceLocation.parse("the_vault:gear/shield/gold_plated")),
+            withTransmog(new ItemStack(ModItems.WAND), ResourceLocation.parse("the_vault:gear/wand/lunar")),
+            withTransmog(new ItemStack(ModItems.MAGNET), ResourceLocation.parse("the_vault:magnets/magnet_1")),
+            withTransmog(new ItemStack(ModItems.JEWEL), ResourceLocation.parse("the_vault:gear/jewel/sword_0")),
+            withTransmog(new ItemStack(ModItems.VAULT_NECKLACE), ResourceLocation.parse("the_vault:gear/necklace/default")),
             godCharm(new ItemStack(ModItems.VAULT_GOD_CHARM), VaultGod.IDONA, VaultGearRarity.COMMON),
             godCharm(new ItemStack(ModItems.VAULT_GOD_CHARM), VaultGod.TENOS, VaultGearRarity.RARE),
             godCharm(new ItemStack(ModItems.VAULT_GOD_CHARM), VaultGod.VELARA, VaultGearRarity.EPIC),
@@ -68,7 +68,7 @@ public class Items {
                 try {
                     String woldFieldName = woldFieldTransmogs.getLeft();
                     Item item = (Item) woldItemClass.getField(woldFieldName).get(null);
-                    woldItems.add(withTransmog(new ItemStack(item), new ResourceLocation(woldFieldTransmogs.getRight())));
+                    woldItems.add(withTransmog(new ItemStack(item), ResourceLocation.parse(woldFieldTransmogs.getRight())));
                 } catch (IllegalArgumentException | SecurityException | NoSuchFieldException |
                          IllegalAccessException ignored) {
                     // no-op
