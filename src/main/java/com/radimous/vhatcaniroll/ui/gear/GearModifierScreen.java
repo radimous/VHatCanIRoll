@@ -604,4 +604,10 @@ public class GearModifierScreen extends AbstractElementScreen {
         updateMythicLabel();
         updateModifierList(true);
     }
+
+    public void scrollToUnique(ResourceLocation model) {
+        if (innerScreen instanceof UniqueGearListContainer uniqueGearListContainer) {
+            uniqueGearListContainer.scrollToUnique(model);
+        }
+    }
 }

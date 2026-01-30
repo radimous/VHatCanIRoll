@@ -189,6 +189,7 @@ dependencies {
 
 //    compileOnly fg.deobf('local:wolds-vaults-official-mod:0.19.0')
 //    compileOnly fg.deobf("curse.maven:vault-hunters-api-1118899:6471174")
+    compileOnly fg.deobf("curse.maven:wolds-vaults-official-mod-958799:7221672")
 
     if (wolds) {
         runtimeOnly fg.deobf('local:wolds-vaults-official-mod:0.19.0')

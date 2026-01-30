@@ -301,6 +301,7 @@ public class SpecialModifiers {
         if (range == null) return null;
         var reader = atr.getReader();
         if (reader instanceof IntegerValueModifierReader intReader) {
+            @SuppressWarnings("unchecked")
             var inst = new VaultGearAttributeInstance<>(atr, (T)(Object)42069);
             var in = intReader.getValueDisplay(42069);
             var kk = reader.getDisplay(inst, VaultGearModifier.AffixType.PREFIX);

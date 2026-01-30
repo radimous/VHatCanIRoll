@@ -26,23 +26,23 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.text.WordUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueGearListContainer> implements InnerGearScreen {
 
+    Map<ResourceLocation, Integer> scrollPositions = new HashMap<>();
+    int maxHeight = 1;
     public UniqueGearListContainer(ISpatial spatial, int lvl, ModifierCategory modifierCategory, ItemStack gearPiece) {
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int labelX = 9;
-        int labelY = 9;
+        int labelY = 7;
 
         Map<ResourceLocation, UniqueGearConfig.Entry> uniqueRegistry = ((UniqueGearConfigAccessor) ModConfigs.UNIQUE_GEAR).getRegistry();
-        var goodEntries = uniqueRegistry.entrySet().stream().filter(x -> matchesItem(gearPiece, x.getValue())).toList();
+        var goodEntries = uniqueRegistry.entrySet().stream().filter(entry -> gearPiece.getItem() ==  entry.getValue().getItem()).toList();
 
         var uniqueConfig = ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM);
 
@@ -71,11 +71,12 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             gearData.setState(VaultGearState.IDENTIFIED);
             gearData.write(displayStack);
             var startTime = System.currentTimeMillis();
+            var models = value.getModels();
+            scrollPositions.put(value.getId(), iconHeight);
+            List<ResourceLocation> modelList = models == null ? null : models.keySet().stream().filter(Objects::nonNull).toList();
             this.addElement(new FakeItemSlotElement<>(Spatials.positionXY(labelX - 4, iconHeight).width(16).height(16), () -> {
                 long elapsed = System.currentTimeMillis() - startTime;
-                var models = value.getModels();
-                if (models != null) {
-                    var modelList = models.keySet().stream().filter(Objects::nonNull).toList();
+                if (modelList != null) {
                     gearData.createOrReplaceAttributeValue(ModGearAttributes.GEAR_MODEL, modelList.get((int) ((elapsed / 3000) % modelList.size())));
                 } else {
                     // jewel colors
@@ -121,6 +122,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
                 Spatials.positionXY(0, labelY).width(this.innerWidth()).height(3),
                 ScreenTextures.BUTTON_EMPTY));
             labelY += 10;
+            maxHeight = labelY;
         }
         if (goodEntries.isEmpty()) {
             String itemName = "Item";
@@ -136,7 +138,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
             labelY += 10;
         }
         if (Config.DEBUG_UNIQUE_GEAR.get()) {
-            var badEntries = uniqueRegistry.entrySet().stream().filter(entry -> !matchesItem(gearPiece, entry.getValue())).toList();
+            var badEntries = uniqueRegistry.entrySet().stream().filter(entry -> gearPiece.getItem() == entry.getValue().getItem()).toList();
             this.addElement(new LabelElement<>(
                 Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
                 new TextComponent("[DEBUG] BAD ENTRIES:").withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
@@ -160,26 +162,6 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
         }
     }
 
-    private boolean matchesItem(ItemStack gearPiece, UniqueGearConfig.Entry value) {
-        var regName = gearPiece.getItem().getRegistryName();
-        if (regName == null) {
-            return false;
-        }
-        var regPath = regName.getPath();
-        if (value.getModels() == null) {
-            return gearPiece.getItem().equals(ModItems.JEWEL);
-        }
-        var model = value.getModels().getRandom().orElse(null);
-        if (model == null) {
-            return gearPiece.getItem().equals(ModItems.JEWEL);
-        }
-        if (regPath.equals("wand") && model.toString().equals("the_vault:gear/sword/honey_wand")) {
-            // WHO NAMES A SWORD HONEY WAND?????????????????????????????
-            return false;
-        } // checking for slash before/after would break magnet, because its under the_vault:magnets/
-        return model.toString().contains(regPath);
-    }
-
     public float getScroll() {
         return this.verticalScrollBarElement.getValue();
     }
@@ -199,5 +181,17 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
 
     @Override public boolean enableCategoryButtons() {
         return false;
+    }
+
+    public void scrollToUnique(ResourceLocation uniqueId) {
+        Integer pos = scrollPositions.get(uniqueId);
+        if (pos == null) {
+            return;
+        }
+        int scrollPos = Math.max(0, pos - 3);
+        int maxScroll = Math.max(1, maxHeight - innerHeight());
+
+        float scrollRatio = (float) scrollPos / maxScroll;
+        setScroll(Mth.clamp(scrollRatio, 0, 1));
     }
 }

@@ -144,6 +144,7 @@ public final class Keybind {
 
         if(hoverData.getFirstValue(ModGearAttributes.GEAR_UNIQUE_POOL).isPresent()) {
             modifierScreen.switchToUnique();
+            hoverData.getFirstValue(ModGearAttributes.GEAR_UNIQUE_POOL).ifPresent(modifierScreen::scrollToUnique);
         }
 
         if (VaultMod.id("map").equals(hoverStack.getItem().getRegistryName())){
