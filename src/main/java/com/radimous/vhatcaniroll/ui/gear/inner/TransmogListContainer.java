@@ -52,7 +52,8 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
         Set<ResourceLocation> discoveredModelIds = ClientDiscoveredEntriesData.Models.getDiscoveredModels();
         ObservableSupplier<Set<ResourceLocation>> discoveredModelObserverIds = ClientDiscoveredEntriesData.Models.getObserverModels();
         DiscoveredModelSelectElement.DiscoveredModelSelectorModel model = new DiscoveredModelSelectElement.DiscoveredModelSelectorModel(
-            ObservableSupplier.of(() -> gearPiece, SideOnlyFixer::stackEqualExact), discoveredModelObserverIds, x -> {});
+            // TODO: fix the suppliers
+            ObservableSupplier.of(() -> gearPiece, SideOnlyFixer::stackEqualExact), discoveredModelObserverIds, () -> (it, rl) -> true , (rl, b) -> {});
         List<DiscoveredModelSelectElement.TransmogModelEntry> mEntries = model.getEntries();
         if (mEntries.isEmpty()) {
             String itemName = "Item";

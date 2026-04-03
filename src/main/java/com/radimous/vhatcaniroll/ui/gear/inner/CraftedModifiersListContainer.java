@@ -183,7 +183,7 @@ public class CraftedModifiersListContainer extends VerticalScrollClipContainer<C
     private void cookie(){
         AtomicInteger counter = new AtomicInteger(0);
             var slot = new ScaledFakeItemSlotElement<>(Spatials.positionXY(innerWidth()/2, innerHeight()/2), () -> new ItemStack(Items.COOKIE), () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY,8*16,8*16, 8f);
-        slot.whenClicked(counter::getAndIncrement);
+        slot.whenClicked(isDisabled -> counter.getAndIncrement());
         this.addElement(slot);
         this.addElement(new CookieLabelElement(Spatials.positionXY(innerWidth()/2, innerHeight()/2 - 70).width(18).height(18), counter::get, LabelTextStyle.defaultStyle().border4().center()));
     }
