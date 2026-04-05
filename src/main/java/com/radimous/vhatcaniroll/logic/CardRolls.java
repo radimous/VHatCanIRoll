@@ -2,6 +2,7 @@ package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.logic.modifiervalues.ModifierValues;
+import com.radimous.vhatcaniroll.mixin.accessors.cards.GreedCardModifierConfigAccessor;
 import com.radimous.vhatcaniroll.mixin.accessors.cards.*;
 import iskallia.vault.config.card.BoosterPackConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
@@ -9,12 +10,10 @@ import iskallia.vault.core.card.CardCondition;
 import iskallia.vault.core.card.CardEntry;
 import iskallia.vault.core.card.CardProperty;
 import iskallia.vault.core.card.CardScaler;
-import iskallia.vault.core.card.modifier.card.CardModifier;
-import iskallia.vault.core.card.modifier.card.DummyCardModifier;
-import iskallia.vault.core.card.modifier.card.GearCardModifier;
-import iskallia.vault.core.card.modifier.card.TaskLootCardModifier;
+import iskallia.vault.core.card.modifier.card.*;
 import iskallia.vault.core.util.WeightedList;
 import iskallia.vault.core.world.loot.entry.ItemLootEntry;
+import iskallia.vault.core.world.roll.FloatRoll;
 import iskallia.vault.core.world.roll.IntRoll;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.init.ModConfigs;
@@ -251,6 +250,21 @@ public class CardRolls {
                 }
                 tt = (MutableComponent) ComponentUtil.replace(tt, "${task}", (TextComponent) createComponent(taskLootConfigA.getTask()));
                 ret.add(new TextComponent("    ").append(tt));
+
+            } else if (cardValue instanceof GreedCardModifier greedCardModifier) {
+                GreedCardModifier.Config greedCardConfig = greedCardModifier.getConfig();
+                var greedCardConfigA = (GreedCardModifierConfigAccessor)greedCardConfig;
+
+                float mpMin = greedCardConfigA.getMultiplierPool().values().stream().map(FloatRoll::getMin).min(Float::compare).orElse(-1F);
+                float mpMax = greedCardConfigA.getMultiplierPool().values().stream().map(FloatRoll::getMax).max(Float::compare).orElse(-1F);
+                ret.add(new TextComponent("    Neighbors: " + greedCardConfigA.getTargetNeighborTypes()));
+                ret.add(new TextComponent("    Multiplier: " + mpMin + " - " + mpMax));
+                if (greedCardConfigA.getTargetColorFilter() != null) {
+                    ret.add(new TextComponent("    Colors: " + greedCardConfigA.getTargetColorFilter()));
+                }
+                if (greedCardConfigA.getTargetGroupFilter() != null) {
+                    ret.add(new TextComponent("    Groups: " + greedCardConfigA.getTargetGroupFilter()));
+                }
 
             } else if (cardValue instanceof DummyCardModifier) {
                 // WHY IS THIS EVEN A THING

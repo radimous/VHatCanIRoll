@@ -101,6 +101,11 @@ minecraft {
             property 'forge.enabledGameTestNamespaces', mod_id
         }
 
+        clientWolds {
+            parent runs.client
+            property 'wolds', 'true'
+        }
+
         server {
             property 'forge.enabledGameTestNamespaces', mod_id
             args '--nogui'

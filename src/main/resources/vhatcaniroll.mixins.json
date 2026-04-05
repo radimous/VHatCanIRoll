@@ -12,6 +12,7 @@
     "accessors.cards.CardScalerFilterConfigAccessor",
     "accessors.cards.CardScalersConfigAccessor",
     "accessors.cards.CardTasksConfigAccessor",
+    "accessors.cards.GreedCardModifierConfigAccessor",
     "accessors.cards.TaskLootCardModifierConfigAccessor"
   ],
   "client": [
