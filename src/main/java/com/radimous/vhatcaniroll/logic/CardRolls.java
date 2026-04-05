@@ -30,6 +30,8 @@ import net.minecraft.world.item.ItemStack;
 import java.text.DecimalFormat;
 import java.util.*;
 
+import static com.radimous.vhatcaniroll.VHatCanIRoll.ERROR_STYLE;
+
 public class CardRolls {
 
     public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.##");
@@ -130,7 +132,7 @@ public class CardRolls {
         var modPools = modifiers.getPools();
         var poolVal = modPools.get(modifierPool);
         if (poolVal == null) {
-            ret.add(new TextComponent("modifier pool " + modifierPool + " not found").withStyle(ChatFormatting.RED));
+            ret.add(new TextComponent("modifier pool " + modifierPool + " not found").withStyle(ERROR_STYLE));
         }
         var modVals = modifiers.getValues();
 
@@ -146,7 +148,7 @@ public class CardRolls {
                 ret.add(rollCmp);
             }
             if (cardConfig == null) {
-                ret.add(new TextComponent("  ERR: config for "+cardId + " card is null").withStyle(ChatFormatting.RED));
+                ret.add(new TextComponent("  ERR: config for "+cardId + " card is null").withStyle(ERROR_STYLE));
                 continue;
             }
             var cardColor = cardConfig.colors;
@@ -214,20 +216,20 @@ public class CardRolls {
                             if (item.getKey() instanceof ItemLootEntry itemLootEntry) {
                                 ret.add(new TextComponent("    Loot: ").append(itemLootEntry.getItem().getName(new ItemStack(itemLootEntry.getItem()))));
                             } else {
-                                ret.add(new TextComponent("    Loot: UNSUPPORTED (non Item loot)").withStyle(ChatFormatting.RED));
+                                ret.add(new TextComponent("    Loot: UNSUPPORTED (non Item loot)").withStyle(ERROR_STYLE));
                             }
                         } else {
-                            ret.add(new TextComponent("    Loot: UNSUPPORTED (single NULL)").withStyle(ChatFormatting.RED));
+                            ret.add(new TextComponent("    Loot: UNSUPPORTED (single NULL)").withStyle(ERROR_STYLE));
                         }
                     } else {
-                        ret.add(new TextComponent("    Loot: UNSUPPORTED (not a single item)").withStyle(ChatFormatting.RED));
+                        ret.add(new TextComponent("    Loot: UNSUPPORTED (not a single item)").withStyle(ERROR_STYLE));
                     }
                     if (taskLootConfigA.getCount().size() == 1) {
                         var cnt = taskLootConfigA.getCount().entrySet().stream().findFirst().orElse(null);
                         if (cnt != null) {
                             ret.add(new TextComponent("    Count: " + processIntroll(cnt.getValue())));
                         } else {
-                            ret.add(new TextComponent("    Count: UNSUPPORTED (null cnt)").withStyle(ChatFormatting.RED));
+                            ret.add(new TextComponent("    Count: UNSUPPORTED (null cnt)").withStyle(ERROR_STYLE));
                         }
                     } else {
                         ret.add(new TextComponent("    Count:"));
@@ -246,7 +248,7 @@ public class CardRolls {
                         tt = (MutableComponent) ComponentUtil.replace(tt, "${count}", new TextComponent(roll));
                     }
                 } else {
-                    ret.add(new TextComponent("    Count: UNSUPPORTED (null cnt)").withStyle(ChatFormatting.RED));
+                    ret.add(new TextComponent("    Count: UNSUPPORTED (null cnt)").withStyle(ERROR_STYLE));
                 }
                 tt = (MutableComponent) ComponentUtil.replace(tt, "${task}", (TextComponent) createComponent(taskLootConfigA.getTask()));
                 ret.add(new TextComponent("    ").append(tt));
@@ -269,7 +271,7 @@ public class CardRolls {
             } else if (cardValue instanceof DummyCardModifier) {
                 // WHY IS THIS EVEN A THING
             } else {
-                ret.add(new TextComponent("    UNKNOWN CARD VALUE: "+ cardValue).withStyle(ChatFormatting.RED));
+                ret.add(new TextComponent("    UNKNOWN CARD VALUE: "+ cardValue).withStyle(ERROR_STYLE));
             }
             ret.add(new TextComponent(""));
 
@@ -453,7 +455,7 @@ public class CardRolls {
                     }
                     ret.add(tt);
                 } else {
-                    ret.add(new TextComponent("   UNKNOWN TASK TYPE" + task).withStyle(ChatFormatting.RED));
+                    ret.add(new TextComponent("   UNKNOWN TASK TYPE" + task).withStyle(ERROR_STYLE));
                 }
             }
             ret.add(new TextComponent(""));

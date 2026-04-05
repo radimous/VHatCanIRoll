@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "vhatcaniroll.refmap.json",
   "mixins": [
+    "accessors.DoubleRangeAccessor",
+    "accessors.FloatRangeAccessor",
     "accessors.cards.BoosterPackConfigCardConfigAccessor",
     "accessors.cards.CardConditionAccessor",
     "accessors.cards.CardConditionFilterConfigAccessor",

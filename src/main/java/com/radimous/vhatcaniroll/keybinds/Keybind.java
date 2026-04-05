@@ -6,21 +6,25 @@ import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.VHatCanIRoll;
 import com.radimous.vhatcaniroll.logic.Items;
 import com.radimous.vhatcaniroll.ui.gear.GearModifierScreen;
-
 import iskallia.vault.VaultMod;
+import iskallia.vault.config.gear.VaultEtchingConfig;
 import iskallia.vault.core.vault.influence.VaultGod;
+import iskallia.vault.gear.VaultGearType;
+import iskallia.vault.gear.attribute.VaultGearAttributeInstance;
 import iskallia.vault.gear.data.VaultGearData;
 import iskallia.vault.gear.item.VaultGearItem;
+import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.item.gear.VaultCharmItem;
 import iskallia.vault.item.tool.ToolItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.network.chat.*;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -117,6 +121,7 @@ public final class Keybind {
 
         VaultGearData hoverData = VaultGearData.read(hoverStack);
         Optional<VaultGod> hoverGodCharm = hoverData.getFirstValue(ModGearAttributes.CHARM_VAULT_GOD);
+        boolean isEtching = hoverData.getFirstValue(ModGearAttributes.ETCHING).isPresent();
 
         List<ItemStack> vaultGearItems = Items.getVaultGearItems();
 
@@ -133,6 +138,21 @@ public final class Keybind {
                         }
                     }
 
+                    if (isEtching) {
+                        VaultGearType type = tabItem.getItem() instanceof VaultGearItem gear ? gear.getGearType(tabItem) : null;
+                        ResourceLocation etchingId = hoverData.getAttributes(ModGearAttributes.ETCHING).findFirst().map(VaultGearAttributeInstance::getValue).orElse(null);
+                        if (type != null && etchingId != null) {
+                            VaultEtchingConfig.EtchingEntry entry = ModConfigs.ETCHINGS.getEtchingConfig(etchingId);
+                            if (entry != null) {
+                                for (var g : entry.getTypeGroups()) {
+                                    if (ModConfigs.ETCHINGS.getGroup(g).contains(type)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     return hoverStack.getItem().equals(tabItem.getItem());
                 })
                 .findFirst()
@@ -142,9 +162,14 @@ public final class Keybind {
 
         modifierScreen.setLevelInput(hoverData.getItemLevel());
 
-        if(hoverData.getFirstValue(ModGearAttributes.GEAR_UNIQUE_POOL).isPresent()) {
+        if (hoverData.getFirstValue(ModGearAttributes.GEAR_UNIQUE_POOL).isPresent()) {
             modifierScreen.switchToUnique();
             hoverData.getFirstValue(ModGearAttributes.GEAR_UNIQUE_POOL).ifPresent(modifierScreen::scrollToUnique);
+        }
+
+        if (isEtching) {
+            modifierScreen.switchToEtching();
+            hoverData.getFirstValue(ModGearAttributes.ETCHING).ifPresent(modifierScreen::scrollToEtching);
         }
 
         if (VaultMod.id("map").equals(hoverStack.getItem().getRegistryName())){

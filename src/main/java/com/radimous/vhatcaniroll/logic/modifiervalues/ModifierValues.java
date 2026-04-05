@@ -17,6 +17,7 @@ import net.minecraftforge.fml.LogicalSide;
 
 import java.util.ArrayList;
 
+import static com.radimous.vhatcaniroll.VHatCanIRoll.ERROR_STYLE;
 import static com.radimous.vhatcaniroll.logic.modifiervalues.SpecialModifiers.*;
 
 public class ModifierValues {
@@ -25,22 +26,22 @@ public class ModifierValues {
     public static <T, C> MutableComponent getModifierComponent(VaultGearAttribute<T> atr,
                                                                ArrayList<VaultGearTierConfig.ModifierTier<?>> modifierTiers) {
         if (modifierTiers.isEmpty()) {
-            return new TextComponent("ERR - EMPTY MODIFIER TIERS").withStyle(ChatFormatting.RED);
+            return new TextComponent("ERR - EMPTY MODIFIER TIERS").withStyle(ERROR_STYLE);
         }
 
         if (atr == null) {
-            return new TextComponent("ERR - NULL ATTRIBUTE").withStyle(ChatFormatting.RED);
+            return new TextComponent("ERR - NULL ATTRIBUTE").withStyle(ERROR_STYLE);
         }
 
         ResourceLocation atrRegName = atr.getRegistryName();
         if (atrRegName == null) {
-            return new TextComponent("ERR - NULL REGISTRY NAME").withStyle(ChatFormatting.RED);
+            return new TextComponent("ERR - NULL REGISTRY NAME").withStyle(ERROR_STYLE);
         }
         String atrName = atrRegName.toString();
 
         ConfigurableAttributeGenerator<T, C> atrGenerator = (ConfigurableAttributeGenerator<T, C>) atr.getGenerator();
         if (atrGenerator == null) {
-            return new TextComponent("ERR - NULL ATTRIBUTE GENERATOR - " + atrName).withStyle(ChatFormatting.RED);
+            return new TextComponent("ERR - NULL ATTRIBUTE GENERATOR - " + atrName).withStyle(ERROR_STYLE);
         }
 
         C minConfig = (C) modifierTiers.get(0).getModifierConfiguration();
@@ -92,7 +93,7 @@ public class ModifierValues {
             }
             return ComponentUtil.simplifyMatchingValues(res);
         }
-        return new TextComponent("ERR - NULL DISPLAY " + atrName);
+        return new TextComponent("ERR - NULL DISPLAY " + atrName).withStyle(ERROR_STYLE);
     }
 
 

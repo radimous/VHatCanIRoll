@@ -31,6 +31,7 @@ import iskallia.vault.init.ModConfigs;
 import iskallia.vault.init.ModGearAttributes;
 import iskallia.vault.init.ModItems;
 import iskallia.vault.item.BoosterPackItem;
+import iskallia.vault.item.gear.EtchingItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Style;
@@ -43,6 +44,7 @@ import net.minecraftforge.fml.config.ModConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class GearModifierScreen extends AbstractElementScreen {
     private InnerGearScreen innerScreen;
@@ -131,6 +133,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         createTransmogButton();
         createCraftedModsButton();
         createUniqueGearButton();
+        createEtchingButton();
         createCardButton();
         createConfigButton();
         super.init();
@@ -216,6 +219,16 @@ public class GearModifierScreen extends AbstractElementScreen {
         updateModifierCategoryButtonLabel();
         ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
         this.innerScreen = this.addElement(new CraftedModifiersListContainer(modListSpatial, lvlInput.getValue(), modifierCategory, getCurrGear()).layout(this.translateWorldSpatial()));
+        updateHeader(this.innerScreen);
+        ScreenLayout.requestLayout();
+    }
+
+    public void switchToEtching(){
+        this.removeElement(this.innerScreen);
+        this.modifierCategory = ModifierCategory.NORMAL;
+        updateModifierCategoryButtonLabel();
+        ISpatial modListSpatial = Spatials.positionXY(7, 50).size(this.getGuiSpatial().width() - 14, this.getGuiSpatial().height() - 57);
+        this.innerScreen = this.addElement(new EtchingListContainer(modListSpatial, getCurrGear()).layout(this.translateWorldSpatial()));
         updateHeader(this.innerScreen);
         ScreenLayout.requestLayout();
     }
@@ -340,11 +353,10 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     //<editor-fold desc="Header">
     private ScrollableLvlInputElement createLvlInput() {
-        ScrollableLvlInputElement inputElement = this.addElement(
+        ScrollableLvlInputElement inputElement =
             new ScrollableLvlInputElement(Spatials.positionXY(this.getGuiSpatial().width() - 54 - 13, 36).size(26, 12),
                 Minecraft.getInstance().font)
-                .layout(this.translateWorldSpatial())
-        );
+                .layout(this.translateWorldSpatial());
         inputElement.onTextChanged(s -> updateModifierList(true));
         return inputElement;
     }
@@ -512,7 +524,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             Minecraft.getInstance().setScreen(new CardRollScreen());
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 150);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Cards"))
         );
@@ -520,6 +532,32 @@ public class GearModifierScreen extends AbstractElementScreen {
         BoosterPackItem.setId(boosterPackStack, VaultMod.sId("default"));
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 150))
+        );
+    }
+
+    private void createEtchingButton() {
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
+            if (!(this.innerScreen instanceof EtchingListContainer))
+                switchToEtching();
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Etchings"))
+        );
+
+        final ItemStack etchingStack;
+        ResourceLocation etchingId = ModConfigs.ETCHINGS.getEtchingIds().stream().findAny().orElse(null);
+
+        if (etchingId != null) {
+            var entry = ModConfigs.ETCHINGS.getEtchingConfig(etchingId);
+            etchingStack = entry != null ? EtchingItem.create(etchingId, entry, new Random(), 1).orElse(new ItemStack(ModItems.ETCHING)) : new ItemStack(ModItems.ETCHING);
+        } else {
+            etchingStack = new ItemStack(ModItems.ETCHING);
+        }
+
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> etchingStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
                 .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130))
         );
     }
@@ -605,9 +643,15 @@ public class GearModifierScreen extends AbstractElementScreen {
         updateModifierList(true);
     }
 
-    public void scrollToUnique(ResourceLocation model) {
+    public void scrollToUnique(ResourceLocation id) {
         if (innerScreen instanceof UniqueGearListContainer uniqueGearListContainer) {
-            uniqueGearListContainer.scrollToUnique(model);
+            uniqueGearListContainer.scrollToUnique(id);
+        }
+    }
+
+    public void scrollToEtching(ResourceLocation id) {
+        if (innerScreen instanceof EtchingListContainer etchingListContainer) {
+            etchingListContainer.scrollToEtching(id);
         }
     }
 }

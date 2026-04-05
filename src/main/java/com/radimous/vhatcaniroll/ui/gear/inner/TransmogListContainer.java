@@ -35,6 +35,7 @@ import org.apache.commons.lang3.text.WordUtils;
 import java.util.List;
 import java.util.Set;
 
+import static com.radimous.vhatcaniroll.VHatCanIRoll.ERROR_STYLE;
 import static iskallia.vault.client.gui.framework.ScreenTextures.BUTTON_EMPTY;
 import static iskallia.vault.client.gui.framework.ScreenTextures.BUTTON_EMPTY_DISABLED;
 
@@ -65,7 +66,7 @@ public class TransmogListContainer extends VerticalScrollClipContainer<TransmogL
 
             this.addElement(new LabelElement<>(
                 Spatials.positionXY(labelX, 9).width(this.innerWidth() - labelX).height(15),
-                new TextComponent("No transmogs for " + itemName).withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
+                new TextComponent("No transmogs for " + itemName).withStyle(ERROR_STYLE), LabelTextStyle.defaultStyle()));
         }
         for (DiscoveredModelSelectElement.TransmogModelEntry x : mEntries) {
             ItemStack displayStack = new ItemStack(gearPiece.getItem());

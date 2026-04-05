@@ -82,7 +82,7 @@ public class HelpContainer extends ContainerElement<HelpContainer> {
             """;
 
         String[] array = text.split("\n");
-        int labelY = 156;
+        int labelY = 176;
         for (String s : array) {
             LabelElement<?> textLabel = new LabelElement<>(
                 Spatials.positionXY(-100, labelY).width(20).height(15),

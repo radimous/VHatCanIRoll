@@ -32,6 +32,8 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import java.util.*;
 
+import static com.radimous.vhatcaniroll.VHatCanIRoll.ERROR_STYLE;
+
 public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueGearListContainer> implements InnerGearScreen {
 
     Map<ResourceLocation, Integer> scrollPositions = new HashMap<>();
@@ -134,19 +136,19 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
 
             this.addElement(new LabelElement<>(
                 Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
-                new TextComponent("No unique " + itemName).withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
+                new TextComponent("No unique " + itemName).withStyle(ERROR_STYLE), LabelTextStyle.defaultStyle()));
             labelY += 10;
         }
         if (Config.DEBUG_UNIQUE_GEAR.get()) {
             var badEntries = uniqueRegistry.entrySet().stream().filter(entry -> gearPiece.getItem() == entry.getValue().getItem()).toList();
             this.addElement(new LabelElement<>(
                 Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
-                new TextComponent("[DEBUG] BAD ENTRIES:").withStyle(ChatFormatting.RED), LabelTextStyle.defaultStyle()));
+                new TextComponent("[DEBUG] BAD ENTRIES:").withStyle(ERROR_STYLE), LabelTextStyle.defaultStyle()));
             labelY += 10;
             for (Map.Entry<ResourceLocation, UniqueGearConfig.Entry> entry : badEntries) {
                 this.addElement(new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
-                    new TextComponent("ID: " + entry.getKey().toString()).withStyle(ChatFormatting.RED),
+                    new TextComponent("ID: " + entry.getKey().toString()).withStyle(ERROR_STYLE),
                     LabelTextStyle.defaultStyle()));
                 labelY += 10;
                 UniqueGearConfig.Entry value = entry.getValue();
@@ -155,7 +157,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
                 }
                 this.addElement(new LabelElement<>(
                     Spatials.positionXY(labelX, labelY).width(this.innerWidth() - labelX).height(15),
-                    new TextComponent("Models: " + value.getModels()).withStyle(ChatFormatting.RED),
+                    new TextComponent("Models: " + value.getModels()).withStyle(ERROR_STYLE),
                     LabelTextStyle.defaultStyle()));
                 labelY += 16;
             }

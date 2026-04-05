@@ -107,6 +107,28 @@ tasks.register("getVaultConfigs") {
     dependsOn "moveToRun"
 }
 
+tasks.register("removeVaultConfigs") {
+    group = "Vault Configs"
+    doLast {
+
+        def runConfig = file("${runDir}/config")
+        def runDefaults = file("${runDir}/defaultconfigs")
+
+        runDir.mkdirs()
+
+        if (runConfig.exists()) {
+            println "Deleting ${runConfig}"
+            delete runConfig
+        }
+
+        if (runDefaults.exists()) {
+            println "Deleting ${runDefaults}"
+            delete runDefaults
+        }
+    }
+}
+
+
 // Remove modded items from configs to remove error screens in dev env
 
 def filterByAllowedNamespaces = inputMap -> {

@@ -53,6 +53,8 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.radimous.vhatcaniroll.VHatCanIRoll.ERROR_STYLE;
+
 
 /**
  * This handles very ugly parts
@@ -173,7 +175,7 @@ public class SpecialModifiers {
             var modifierId = minTemporal.getModifier();
             var modifier = VaultModifierRegistry.getOpt(modifierId).orElse(null);
             if (modifier == null) {
-                return new TextComponent("modifier " + modifierId + " not found in modifier registry").withStyle(ChatFormatting.RED);
+                return new TextComponent("modifier " + modifierId + " not found in modifier registry").withStyle(ERROR_STYLE);
             }
             return new TextComponent("+" + (minTemporal.getTime().getMin() / 20) + "s-" + (maxTemporal.getTime().getMax() / 20) + "s of ").append(modifier.getNameComponentFormatted(minTemporal.getCount())).withStyle(atr.getReader().getColoredTextStyle());
         }
@@ -449,7 +451,7 @@ public class SpecialModifiers {
         }
         Optional<Skill> optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
         if (optSkill.isEmpty()) {
-            return abComp.append(new TextComponent("ABILITY NOT FOUND - id="+minConfig.getAbilityKey()).withStyle(ChatFormatting.RED));
+            return abComp.append(new TextComponent("ABILITY NOT FOUND - id="+minConfig.getAbilityKey()).withStyle(ERROR_STYLE));
         }
         String abName = optSkill.get().getName();
         abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
@@ -482,7 +484,7 @@ public class SpecialModifiers {
         }
         Optional<Skill> optSkill = ModConfigs.TALENTS.getTalentById(minConfig.getTalent());
         if (optSkill.isEmpty()) {
-            return talComp.append(new TextComponent("TALENT NOT FOUND - id="+minConfig.getTalent()).withStyle(ChatFormatting.RED));
+            return talComp.append(new TextComponent("TALENT NOT FOUND - id="+minConfig.getTalent()).withStyle(ERROR_STYLE));
         }
         String talName = optSkill.get().getName();
         talComp.append(new TextComponent(talName).withStyle(Style.EMPTY.withColor(14076214)));

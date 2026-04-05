@@ -24,6 +24,7 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue SHOW_UNOBTAINABLE_CRAFTED;
     public static final ForgeConfigSpec.BooleanValue DEBUG_UNIQUE_GEAR;
     public static final ForgeConfigSpec.BooleanValue DEBUG_CARDS;
+    public static final ForgeConfigSpec.BooleanValue DEBUG_ETCHINGS;
     public static final ForgeConfigSpec.BooleanValue SHOW_HOVER_TOOLTIP;
     // string instead of enum, because forge would remove enum values that are not present in the enum
     // (this could cause problems if mods are extending the enum - like wold's)
@@ -62,6 +63,9 @@ public class Config {
         DEBUG_CARDS = builder
             .comment("debug cards")
             .define("debugCards", false);
+        DEBUG_ETCHINGS = builder
+            .comment("debug etchings")
+            .define("debugEtchings", false);
         builder.pop();
 
         SHOW_ABILITY_ENHANCEMENTS = builder
