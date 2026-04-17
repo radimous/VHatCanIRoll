@@ -27,7 +27,7 @@ public class Modifiers {
         new ChatFormatting[]{ChatFormatting.RED, ChatFormatting.GREEN, ChatFormatting.BLUE, ChatFormatting.YELLOW,
             ChatFormatting.LIGHT_PURPLE, ChatFormatting.AQUA, ChatFormatting.WHITE};
 
-    public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory) {
+    public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory, boolean header) {
         Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup =
             ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
 
@@ -35,7 +35,21 @@ public class Modifiers {
 
         for (VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup : modifierGroup.keySet()) {
             getConflictingGroupModifiers(affixTagGroup, modifierGroup);
-            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup.get(affixTagGroup), getConflictingGroupModifiers(affixTagGroup, modifierGroup), modifierCategory));
+            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup.get(affixTagGroup), getConflictingGroupModifiers(affixTagGroup, modifierGroup), modifierCategory, header));
+        }
+
+        return modList;
+    }
+
+    public static List<Component> getModifierList(int lvl, VaultGearTierConfig cfg, ModifierCategory modifierCategory, boolean header, VaultGearTierConfig.ModifierAffixTagGroup... groups) {
+        Map<VaultGearTierConfig.ModifierAffixTagGroup, VaultGearTierConfig.AttributeGroup> modifierGroup =
+            ((VaultGearTierConfigAccessor) cfg).getModifierGroup();
+
+        ArrayList<Component> modList = new ArrayList<>();
+
+        for (VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup : groups) {
+            getConflictingGroupModifiers(affixTagGroup, modifierGroup);
+            modList.addAll(getAffixGroupComponents(lvl, affixTagGroup, modifierGroup.get(affixTagGroup), getConflictingGroupModifiers(affixTagGroup, modifierGroup), modifierCategory, header));
         }
 
         return modList;
@@ -56,10 +70,15 @@ public class Modifiers {
     public static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
                                                           VaultGearTierConfig.AttributeGroup modifierGroups,
                                                           @Nullable VaultGearTierConfig.AttributeGroup conflictingGroupModifiers,
-                                                          ModifierCategory modifierCategory) {
+                                                          ModifierCategory modifierCategory,
+                                                          boolean header) {
 
         ArrayList<Component> componentList = new ArrayList<>();
         if (!Config.SHOW_ABILITY_ENHANCEMENTS.get() && affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.ABILITY_ENHANCEMENT)) {
+            return componentList;
+        }
+        if (!Config.SHOW_CRAFTED_MODIFIERS.get() &&
+            (affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX) || affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX))) {
             return componentList;
         }
 
@@ -113,7 +132,9 @@ public class Modifiers {
             return componentList;
         }
 
-        componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+        if (header) {
+            componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+        }
 
         if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));

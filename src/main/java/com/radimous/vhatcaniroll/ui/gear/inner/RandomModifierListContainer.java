@@ -51,7 +51,7 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
             } else {
                 VaultGod god = godOpt.get();
                 modifiers = Modifiers.getAffixGroupComponents(lvl, VaultGearTierConfig.ModifierAffixTagGroup.PREFIX,  ModConfigs.VAULT_CHARM.getModifierGroup(god),
-                    null, ModifierCategory.NORMAL);
+                    null, ModifierCategory.NORMAL, true);
                 LabelElement<?> itemNamePerRep = new LabelElement<>(
                     Spatials.positionXY(itemName.right(), 5).width(this.innerWidth() - labelX).height(15), new TextComponent("  values scale with " + god.getName() + " reputation")
                     .withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.DARK_GRAY), LabelTextStyle.defaultStyle()
@@ -89,7 +89,7 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
         }
         if (optCfg.isPresent()) {
             VaultGearTierConfig cfg = optCfg.get();
-            modifiers = Modifiers.getModifierList(lvl, cfg, modifierCategory);
+            modifiers = Modifiers.getModifierList(lvl, cfg, modifierCategory, true);
         }
 
         if (modifiers == null || modifiers.isEmpty()) {
@@ -123,7 +123,7 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
 
                 LabelElement<?> mcl = new LabelElement<>(
                     Spatials.positionXY(labelX + gcl.width(), labelY).width(this.innerWidth() - labelX - gcl.width()),
-                    Spatials.width(this.innerWidth() - labelX * 2).height(9),
+                    Spatials.width(this.innerWidth() - labelX * 2 - 6).height(9),
                     newTc, LabelTextStyle.wrap());
                 this.addElement(mcl);
                 labelY += Math.max(mcl.getTextStyle().calculateLines(newTc, mcl.width()) * 10, 10);

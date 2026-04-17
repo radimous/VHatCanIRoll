@@ -8,6 +8,7 @@ import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import com.radimous.vhatcaniroll.ui.VHCIRTextures;
 import com.radimous.vhatcaniroll.ui.cards.CardRollScreen;
 import com.radimous.vhatcaniroll.ui.gear.inner.*;
+import com.radimous.vhatcaniroll.ui.greedquests.GreedQuestScreen;
 import com.simibubi.create.foundation.config.ui.ConfigScreen;
 import com.simibubi.create.foundation.config.ui.SubMenuConfigScreen;
 import iskallia.vault.VaultMod;
@@ -63,6 +64,7 @@ public class GearModifierScreen extends AbstractElementScreen {
     private NineSliceButtonElement<?> mythicButton;
     private HelpContainer helpContainer;
     private LabelElement<?> windowNameLabel;
+    private int btnHeight = 50;
 
     private int currIndex = 0;
     private final List<TabElement<?>> tabs = new ArrayList<>();
@@ -77,9 +79,10 @@ public class GearModifierScreen extends AbstractElementScreen {
         float scroll = this.innerScreen != null ? this.innerScreen.getScroll() : 0;
         Integer level = this.lvlInput != null ? this.lvlInput.getValue() : null;
         boolean helpVisible = this.helpContainer != null ? this.helpContainer.isVisible() : false;
-
         this.removeAllElements();
         tabs.clear();
+
+        btnHeight = 50;
         this.setGuiSize(Spatials.size(Config.GEAR_SCREEN_WIDTH.get(), 300).height((int) (
             (Minecraft.getInstance().getWindow().getHeight() / Minecraft.getInstance().getWindow().getGuiScale()) *
                 Config.GEAR_SCREEN_HEIGHT.get())));
@@ -130,9 +133,11 @@ public class GearModifierScreen extends AbstractElementScreen {
         createHelpButton();
 
         createModifierButton();
-        createTransmogButton();
-        createCraftedModsButton();
         createUniqueGearButton();
+        if (Config.SHOW_CRAFTED_MODIFIERS.get()) {
+            createCraftedModsButton();
+        }
+        createTransmogButton();
         createEtchingButton();
         createCardButton();
         createConfigButton();
@@ -449,11 +454,13 @@ public class GearModifierScreen extends AbstractElementScreen {
 
     //<editor-fold desc="Left Buttons">
     private void createModifierButton() {
+        int height = btnHeight; // lambda will capture this
+        btnHeight += 20;
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof RandomModifierListContainer))
                 switchToModifiers();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.random"))
         );
@@ -461,16 +468,18 @@ public class GearModifierScreen extends AbstractElementScreen {
         ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 50))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
         );
     }
 
     private void createUniqueGearButton() {
+        int height = btnHeight;
+        btnHeight += 20;
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof UniqueGearListContainer))
                 switchToUnique();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 70);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.unique"))
         );
@@ -480,16 +489,18 @@ public class GearModifierScreen extends AbstractElementScreen {
         gearData.write(chestplateStack);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 70))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
         );
     }
 
     private void createTransmogButton() {
+        int height = btnHeight;
+        btnHeight += 20;
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof TransmogListContainer))
                 switchToTransmog();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 90);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.transmogs"))
         );
@@ -500,31 +511,35 @@ public class GearModifierScreen extends AbstractElementScreen {
         gearData.write(chestplateStack);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 90))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
         );
     }
 
     private void createCraftedModsButton() {
+        int height = btnHeight;
+        btnHeight += 20;
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof CraftedModifiersListContainer))
                 switchToCrafted();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 110);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.crafted"))
         );
         ItemStack workbenchStack = new ItemStack(ModBlocks.MODIFIER_WORKBENCH);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> workbenchStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 110))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
         );
     }
 
     private void createCardButton() {
+        int height = btnHeight;
+        btnHeight += 20;
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             Minecraft.getInstance().setScreen(new CardRollScreen());
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 150);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Cards"))
         );
@@ -532,16 +547,36 @@ public class GearModifierScreen extends AbstractElementScreen {
         BoosterPackItem.setId(boosterPackStack, VaultMod.sId("default"));
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 150))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
+        );
+        btnHeight += 20;
+    }
+
+    private void createGreedQuestButton() {
+        int height = btnHeight;
+        btnHeight += 20;
+        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
+            Minecraft.getInstance().setScreen(new GreedQuestScreen());
+        })).layout((screen, gui, parent, world) -> {
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
+        }).tooltip(
+            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Greed"))
+        );
+        ItemStack boosterPackStack = new ItemStack(ModItems.GREED_COIN);
+        this.addElement(
+            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
         );
     }
 
     private void createEtchingButton() {
+        int height = btnHeight;
+        btnHeight += 20;
         this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
             if (!(this.innerScreen instanceof EtchingListContainer))
                 switchToEtching();
         })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130);
+            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Etchings"))
         );
@@ -558,7 +593,7 @@ public class GearModifierScreen extends AbstractElementScreen {
 
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> etchingStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + 130))
+                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
         );
     }
 
@@ -623,8 +658,38 @@ public class GearModifierScreen extends AbstractElementScreen {
                 nextModifierCategory();
             }
         }
+        processGreedCode(keyCode);
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
+
+
+    private static final String GREED_STRING = "greed";
+    private int greedProgress = 0;
+    private void processGreedCode(int keyCode) {
+        char typedChar = getCharFromKeyCode(keyCode);
+        if (typedChar == 0) return;
+
+        if (Character.toLowerCase(typedChar) == GREED_STRING.charAt(greedProgress)) {
+            greedProgress++;
+            if (greedProgress == GREED_STRING.length()) {
+                Minecraft.getInstance().setScreen(new GreedQuestScreen());
+                greedProgress = 0;
+            }
+        } else {
+            greedProgress = 0;
+            if (Character.toLowerCase(typedChar) == GREED_STRING.charAt(0)) {
+                greedProgress = 1;
+            }
+        }
+    }
+
+    private char getCharFromKeyCode(int keyCode) {
+        if (keyCode >= 32 && keyCode <= 126) {
+            return (char) keyCode;
+        }
+        return 0;
+    }
+
     //</editor-fold>
 
     public static GearModifierScreen openScreenAtIndex(int targetIndex) {

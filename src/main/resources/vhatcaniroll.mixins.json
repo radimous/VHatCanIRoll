@@ -4,28 +4,31 @@
   "package": "com.radimous.vhatcaniroll.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "vhatcaniroll.refmap.json",
-  "mixins": [
+  "mixins": [],
+  "client": [
+    "MixinArtisanStationScreen",
+    "MixinIntegrationJEI",
+    "MixinModifierListElement",
+    "MixinVaultSealerScreen",
+    "StatisticsElementContainerScreenMixin",
+    "accessors.AbilityFloatValueAttributeReaderInvoker",
     "accessors.DoubleRangeAccessor",
+    "accessors.EffectConfigAccessor",
     "accessors.FloatRangeAccessor",
+    "accessors.UniqueGearConfigAccessor",
+    "accessors.VaultGearTierConfigAccessor",
     "accessors.cards.BoosterPackConfigCardConfigAccessor",
+    "accessors.cards.BoosterPackEntryAccessor",
     "accessors.cards.CardConditionAccessor",
+    "accessors.cards.CardConditionConfigAccessor",
     "accessors.cards.CardConditionFilterConfigAccessor",
     "accessors.cards.CardConditionsConfigAccessor",
+    "accessors.cards.CardScalerConfigAccessor",
     "accessors.cards.CardScalerFilterConfigAccessor",
     "accessors.cards.CardScalersConfigAccessor",
     "accessors.cards.CardTasksConfigAccessor",
     "accessors.cards.GreedCardModifierConfigAccessor",
     "accessors.cards.TaskLootCardModifierConfigAccessor"
-  ],
-  "client": [
-    "StatisticsElementContainerScreenMixin",
-    "accessors.AbilityFloatValueAttributeReaderInvoker",
-    "accessors.EffectConfigAccessor",
-    "accessors.UniqueGearConfigAccessor",
-    "accessors.VaultGearTierConfigAccessor",
-    "accessors.cards.BoosterPackEntryAccessor",
-    "accessors.cards.CardConditionConfigAccessor",
-    "accessors.cards.CardScalerConfigAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
