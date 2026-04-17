@@ -28,7 +28,11 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue SHOW_HOVER_TOOLTIP;
     // string instead of enum, because forge would remove enum values that are not present in the enum
     // (this could cause problems if mods are extending the enum - like wold's)
-    public static final ForgeConfigSpec.ConfigValue<List<String>> AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
+    public static final ForgeConfigSpec.BooleanValue REPLACE_ARTISAN_MODIFIER_LIST;
+    public static final ForgeConfigSpec.IntValue ARTISAN_MODIFIER_LIST_WIDTH;
+    public static final ForgeConfigSpec.IntValue SEALER_MODIFIER_LIST_WIDTH;
+    public static final ForgeConfigSpec.BooleanValue SHOW_CRAFTED_MODIFIERS;
 
 
     static {
@@ -53,7 +57,7 @@ public class Config {
             .define("QOLHuntersConflictResolution", true);
         AFFIX_TAG_GROUP_CHANCE_BLACKLIST = builder
             .comment("vhcir won't show chance/weight for affixes in these groups")
-            .define("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()));
+            .defineList("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()), obj -> true);
         MAX_LEVEL_OVERRIDE = builder
             .comment("override max level")
             .defineInRange("maxLevelOverride", -1, -1, Integer.MAX_VALUE);
@@ -112,6 +116,20 @@ public class Config {
                 .comment("show hold [key] to view rolls tooltip")
                 .define("showHoverTooltip", true);
 
+        REPLACE_ARTISAN_MODIFIER_LIST = builder
+                .comment("replace artisan station modifier list with VHat Can I Roll? version")
+                .define("replaceArtisanModifierList", false);
+
+        ARTISAN_MODIFIER_LIST_WIDTH = builder
+                .comment("width of the artisan modifier list")
+                .defineInRange("artisanModifierListWidth", 157, 100, Integer.MAX_VALUE);
+
+        SEALER_MODIFIER_LIST_WIDTH = builder
+                .comment("width of the sealer modifier list")
+                .defineInRange("sealerModifierListWidth", 157, 100, Integer.MAX_VALUE);
+        SHOW_CRAFTED_MODIFIERS = builder
+                .comment("show crafted modifiers (no longer obtainable in the base pack)")
+                .define("showCraftedModifiers", false);
         SPEC = builder.build();
     }
 }

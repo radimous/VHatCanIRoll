@@ -24,6 +24,7 @@ import iskallia.vault.task.renderer.CardTaskRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 
@@ -259,15 +260,58 @@ public class CardRolls {
 
                 float mpMin = greedCardConfigA.getMultiplierPool().values().stream().map(FloatRoll::getMin).min(Float::compare).orElse(-1F);
                 float mpMax = greedCardConfigA.getMultiplierPool().values().stream().map(FloatRoll::getMax).max(Float::compare).orElse(-1F);
-                ret.add(new TextComponent("    Neighbors: " + greedCardConfigA.getTargetNeighborTypes()));
-                ret.add(new TextComponent("    Multiplier: " + mpMin + " - " + mpMax));
-                if (greedCardConfigA.getTargetColorFilter() != null) {
+                if (Config.DEBUG_CARDS.get()) {
+                    ret.add(new TextComponent("    Max Tier: " + greedCardConfig.maxTier));
+                    ret.add(new TextComponent("    Neighbors: " + greedCardConfigA.getTargetNeighborTypes()));
+                    ret.add(new TextComponent("    Multiplier: " + mpMin + " - " + mpMax));
                     ret.add(new TextComponent("    Colors: " + greedCardConfigA.getTargetColorFilter()));
-                }
-                if (greedCardConfigA.getTargetGroupFilter() != null) {
                     ret.add(new TextComponent("    Groups: " + greedCardConfigA.getTargetGroupFilter()));
                 }
+                MutableComponent text = new TextComponent("x" + String.format("%.1f", mpMin)).setStyle(Style.EMPTY.withColor(14329120));;
+                text.append(new TextComponent("-"));
+                text.append(new TextComponent("x" + String.format("%.1f", mpMax)).setStyle(Style.EMPTY.withColor(14329120)));
+                text.append(new TextComponent(" to ").withStyle(ChatFormatting.GRAY));
 
+                List<Component> filterParts = new ArrayList<>();
+                if (greedCardConfigA.getTargetColorFilter() != null && !greedCardConfigA.getTargetColorFilter().isEmpty()) {
+                    greedCardConfigA.getTargetColorFilter()
+                        .stream()
+                        .map(CardEntry.Color::getColoredText)
+                        .reduce((c1, c2) -> new TextComponent("").append(c1).append(new TextComponent("/").withStyle(ChatFormatting.GRAY)).append(c2))
+                        .ifPresent(filterParts::add);
+                }
+
+                if (greedCardConfigA.getTargetGroupFilter() != null && !greedCardConfigA.getTargetGroupFilter().isEmpty()) {
+                    greedCardConfigA.getTargetGroupFilter()
+                        .stream()
+                        .map(s -> new TextComponent(s).withStyle(ChatFormatting.WHITE))
+                        .reduce((c1, c2) -> new TextComponent("").append(c1).append(new TextComponent("/").withStyle(ChatFormatting.GRAY)).append(c2))
+                        .ifPresent(filterParts::add);
+                }
+
+                for (int i = 0; i < filterParts.size(); i++) {
+                    text.append(filterParts.get(i));
+                    if (i < filterParts.size() - 1) {
+                        text.append(new TextComponent(" ").withStyle(ChatFormatting.GRAY));
+                    }
+                }
+
+                if (filterParts.isEmpty()) {
+                    text.append(new TextComponent("Cards").withStyle(ChatFormatting.WHITE));
+                } else {
+                    text.append(new TextComponent(" Cards").withStyle(ChatFormatting.GRAY));
+                }
+
+                if (!((GreedCardModifierConfigAccessor) greedCardConfig).getTargetNeighborTypes().isEmpty()) {
+                    text.append(new TextComponent(" ").withStyle(ChatFormatting.GRAY));
+                    ((GreedCardModifierConfigAccessor) greedCardConfig).getTargetNeighborTypes()
+                        .stream()
+                        .map(type -> type.getText().withStyle(ChatFormatting.WHITE))
+                        .reduce((c1, c2) -> new TextComponent("").append(c1).append(new TextComponent("/").withStyle(ChatFormatting.GRAY)).append(c2))
+                        .ifPresent(text::append);
+                }
+
+                ret.add(new TextComponent("    ").append(text));
             } else if (cardValue instanceof DummyCardModifier) {
                 // WHY IS THIS EVEN A THING
             } else {

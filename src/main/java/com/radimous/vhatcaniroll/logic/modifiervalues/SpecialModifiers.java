@@ -22,10 +22,14 @@ import iskallia.vault.gear.attribute.ability.special.base.template.config.FloatR
 import iskallia.vault.gear.attribute.ability.special.base.template.config.IntRangeConfig;
 import iskallia.vault.gear.attribute.ability.special.base.template.value.FloatValue;
 import iskallia.vault.gear.attribute.ability.special.base.template.value.IntValue;
-import iskallia.vault.gear.attribute.config.*;
+import iskallia.vault.gear.attribute.config.ConfigurableAttributeGenerator;
+import iskallia.vault.gear.attribute.config.FloatAttributeGenerator;
+import iskallia.vault.gear.attribute.config.IntegerAttributeGenerator;
+import iskallia.vault.gear.attribute.config.PairAttributeGenerator;
 import iskallia.vault.gear.attribute.custom.RandomGodVaultModifierAttribute;
 import iskallia.vault.gear.attribute.custom.ability.AbilityTriggerOnDamageAttribute;
 import iskallia.vault.gear.attribute.custom.ability.ArcaneNovaOnHitAttribute;
+import iskallia.vault.gear.attribute.custom.ability.BroodmotherWebAttribute;
 import iskallia.vault.gear.attribute.custom.effect.EffectTrialAttribute;
 import iskallia.vault.gear.attribute.custom.loot.AbilityCastOnLootAttribute;
 import iskallia.vault.gear.attribute.custom.loot.ManaPerLootAttribute;
@@ -41,6 +45,7 @@ import iskallia.vault.skill.base.Skill;
 import iskallia.vault.util.StringUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
@@ -168,6 +173,32 @@ public class SpecialModifiers {
         }
         if (minConfig instanceof ArcaneNovaOnHitAttribute.Config minArcane && maxConfig instanceof ArcaneNovaOnHitAttribute.Config maxArcane) {
             return getArcaneNovaComponent(atr, minArcane, maxArcane);
+        }
+        if (minConfig instanceof BroodmotherWebAttribute.Config minBroodmother && maxConfig instanceof BroodmotherWebAttribute.Config maxBroodmother) {
+
+            var minChance = minBroodmother.getChance().getMin();
+            var maxChance = maxBroodmother.getChance().getMax();
+
+            var minAD = minBroodmother.getPercentAttackDamage().getMin();
+            var maxAD = maxBroodmother.getPercentAttackDamage().getMax();
+
+
+
+            var coloredStyle = Style.EMPTY.withColor(14901010);
+            var highlightStyle = Style.EMPTY.withColor(ModConfigs.COLORS.getColor("uniqueHighlight"));
+            var tc = new TextComponent("")
+                .append(new TextComponent("+").withStyle(coloredStyle))
+                .append(new TextComponent("Successful blocks have a ").withStyle(coloredStyle))
+                .append(new TextComponent(DECIMAL_FORMAT.format(minChance * 100.0F) + "%").withStyle(highlightStyle))
+                .append(new TextComponent("-").withStyle(highlightStyle))
+                .append(new TextComponent(DECIMAL_FORMAT.format(maxChance * 100.0F) + "%").withStyle(highlightStyle))
+                .append(new TextComponent(" chance to release a web nova dealing ").withStyle(coloredStyle))
+                .append(new TextComponent(DECIMAL_FORMAT.format(minAD * 100.0F) + "%").withStyle(highlightStyle))
+                .append(new TextComponent("-").withStyle(highlightStyle))
+                .append(new TextComponent(DECIMAL_FORMAT.format(maxAD * 100.0F) + "%").withStyle(highlightStyle))
+                .append(new TextComponent(" Attack Damage and slowing mobs hit").withStyle(coloredStyle));
+
+            return tc;
         }
 
         if (minConfig instanceof RandomVaultModifierAttribute.Config minTemporal && maxConfig instanceof RandomVaultModifierAttribute.Config maxTemporal) {
@@ -361,8 +392,23 @@ public class SpecialModifiers {
         VaultGearModifierReader<T> reader = atr.getReader();
         MutableComponent minValueDisplay = new TextComponent(new DecimalFormat("0.#").format(Math.abs(min * 100.0F)) + "%");
         MutableComponent maxValueDisplay = new TextComponent(new DecimalFormat("0.#").format(Math.abs(max * 100.0F)) + "%");
+
+        ResourceLocation reg = atr.getRegistryName();
+        if (reg == null) {
+            return new TextComponent("ERR - NULL REGISTRY NAME").withStyle(ERROR_STYLE);
+        }
+        String regName = reg.toString();
+        String abilityAdjustmentType = regName;
+        if ("the_vault:ability_area_of_effect_percent".equals(regName) || "the_vault:ability_area_of_effect_flat".equals(regName) ) {
+            abilityAdjustmentType = "Area of Effect";
+        } else if ("the_vault:ability_cooldown_percent".equals(regName) || "the_vault:ability_cooldown_flat".equals(regName)) {
+            abilityAdjustmentType = "Cooldown";
+        } else if ("the_vault:ability_mana_cost_percent".equals(regName) || "the_vault:ability_mana_cost_flat".equals(regName)) {
+            abilityAdjustmentType = "Mana Cost";
+        }
+
         boolean positive = min > 0;
-        MutableComponent areaCmp = new TextComponent("Area Of Effect").withStyle(Style.EMPTY.withColor(ModConfigs.COLORS.getColor("areaOfEffect")));
+        MutableComponent areaCmp = new TextComponent(abilityAdjustmentType).withStyle(Style.EMPTY.withColor(ModConfigs.COLORS.getColor("areaOfEffect")));
         String cdInfo;
         if (positive) {
             cdInfo = " more ";
@@ -370,12 +416,16 @@ public class SpecialModifiers {
             cdInfo = " less ";
         }
 
+        int baseColor = 11842740;
+        int abilityColor = 14076214;
+        int valueColor = 6082075;
+
         return new TextComponent("")
             .append(VaultGearModifier.AffixType.IMPLICIT.getAffixPrefixComponent(true)
-                .withStyle(Style.EMPTY.withColor(6082075)))
-            .append(minValueDisplay.withStyle(Style.EMPTY.withColor(6082075)))
-            .append(new TextComponent("-").withStyle(Style.EMPTY.withColor(6082075)))
-            .append(maxValueDisplay.withStyle(Style.EMPTY.withColor(6082075)))
+                .withStyle(Style.EMPTY.withColor(baseColor)))
+            .append(minValueDisplay.withStyle(Style.EMPTY.withColor(valueColor)))
+            .append(new TextComponent("-").withStyle(Style.EMPTY.withColor(valueColor)))
+            .append(maxValueDisplay.withStyle(Style.EMPTY.withColor(valueColor)))
             .append(cdInfo)
             .append(areaCmp)
             .append(" of ")

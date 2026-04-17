@@ -73,7 +73,7 @@ public class EtchingListContainer extends VerticalScrollClipContainer<EtchingLis
             LabelElement<?> nameLabel = new LabelElement<>(
                 Spatials.positionXY(labelX + 20, labelY).width(this.innerWidth() - labelX).height(15),
                 Spatials.positionXY(labelX + 20, labelY).width(this.innerWidth() - labelX).height(15),
-                new TextComponent(entry.getName()).withStyle(Style.EMPTY.withColor(entry.getComponentColor())).append(new TextComponent("  GT"+entry.getMinGreedTier() + "+").withStyle(ChatFormatting.DARK_GRAY)), LabelTextStyle.defaultStyle()
+                new TextComponent(entry.getName()).withStyle(Style.EMPTY.withColor(entry.getComponentColor())).append(new TextComponent("  Greed Tier "+entry.getMinGreedTier() + "+").withStyle(ChatFormatting.DARK_GRAY)), LabelTextStyle.defaultStyle()
             );
             this.addElement(nameLabel);
             labelY += 20;

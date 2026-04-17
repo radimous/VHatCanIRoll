@@ -108,7 +108,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
 
                     LabelElement<?> mcl = new LabelElement<>(
                         Spatials.positionXY(labelX + gcl.width(), labelY).width(this.innerWidth() - labelX - gcl.width()),
-                        Spatials.width(this.innerWidth() - labelX * 2).height(9),
+                        Spatials.width(this.innerWidth() - labelX * 2 - 6).height(9),
                         newTc, LabelTextStyle.wrap());
                     this.addElement(mcl);
                     labelY += Math.max(mcl.getTextStyle().calculateLines(newTc, mcl.width()) * 10, 10);
