@@ -1,0 +1,6 @@
+- added ability to replace vanilla modifier list with my own in the artisan station
+- added possible rolls to the gear sealer
+- crafted modifiers are now hidden by default because they are not obtainable in the base game
+- improved displaying of greed card modifiers to match how they look in-game
+- fixed some unique attributes not displaying correctly
+- added greed quest and challenges list (hidden because I don't want to spoil the challenges - type "greed" to show it)
