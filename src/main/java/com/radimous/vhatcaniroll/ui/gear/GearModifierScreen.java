@@ -526,7 +526,7 @@ public class GearModifierScreen extends AbstractElementScreen {
         }).tooltip(
             Tooltips.single(TooltipDirection.LEFT, () -> new TranslatableComponent("vhatcaniroll.screen.title.crafted"))
         );
-        ItemStack workbenchStack = new ItemStack(ModBlocks.MODIFIER_WORKBENCH);
+        ItemStack workbenchStack = new ItemStack(ModBlocks.SEALER_BLOCK);
         this.addElement(
             new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> workbenchStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
                 .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
