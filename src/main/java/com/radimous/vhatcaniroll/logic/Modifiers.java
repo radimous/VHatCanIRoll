@@ -136,11 +136,11 @@ public class Modifiers {
             componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
         }
 
-        if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
+        if (Config.SHOW_GEAR_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0) {
             componentList.add(new TextComponent("Total Weight: " + totalWeight).withStyle(ChatFormatting.BOLD));
         }
 
-        Map<String, List<Component>> groupedModifiers = new HashMap<>();
+        Map<String, List<Component>> groupedModifiers = new LinkedHashMap<>();
         for (VaultGearTierConfig.ModifierTierGroup modifierTierGroup :modifierGroups) {
             ArrayList<VaultGearTierConfig.ModifierTier<?>> mTierList;
 
@@ -154,15 +154,15 @@ public class Modifiers {
 
             int weight = modTierListWeight(mTierList);
             boolean weightless = groupCounts.get(modGr) == 1 && (affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.BASE_ATTRIBUTES || affixTagGroup == VaultGearTierConfig.ModifierAffixTagGroup.IMPLICIT);
-            if (Config.SHOW_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0 && !weightless) {
+            if (Config.SHOW_GEAR_WEIGHT.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0 && !weightless) {
                 modComp.append(new TextComponent(" w"+weight).withStyle(ChatFormatting.GRAY));
             }
 
-            if (Config.SHOW_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0 && !weightless) {
+            if (Config.SHOW_GEAR_CHANCE.get() && shouldShowWeight(modifierCategory, affixTagGroup) && totalWeight > 0 && !weightless) {
                 modComp.append(new TextComponent(String.format(" %.2f%%", ((double) weight * 100 / totalWeight))).withStyle(ChatFormatting.GRAY));
             }
 
-            if (Config.SHOW_CHANCE.get() && !boolWeights.isEmpty()) {
+            if (Config.SHOW_GEAR_CHANCE.get() && !boolWeights.isEmpty()) {
                 Pair<Integer, Integer> boolWeight = boolWeights.get(modifierTierGroup.getAttribute());
                 if (boolWeight != null) {
                     modComp.append(new TextComponent(String.format(" %.2f%%", ((double) boolWeight.left() * 100 / (boolWeight.left() + boolWeight.right())))).withStyle(ChatFormatting.GRAY));

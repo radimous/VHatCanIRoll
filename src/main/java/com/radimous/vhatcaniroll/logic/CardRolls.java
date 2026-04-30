@@ -469,7 +469,7 @@ public class CardRolls {
             var poolValues = pool.getValue();
             ret.add(new TextComponent(poolKey));
             boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolValues);
-            boolean showChance = Config.SHOW_CHANCE.get() && !equalWeight(poolValues);
+            boolean showChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(poolValues);
             for (var poolValue: poolValues.entrySet()) {
                 Task task = taskValues.get(poolValue.getKey());
                 if (task.getRenderer() instanceof CardTaskRenderer cardTaskRenderer) {

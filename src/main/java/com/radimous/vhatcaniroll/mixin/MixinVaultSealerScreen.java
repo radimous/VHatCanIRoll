@@ -1,5 +1,6 @@
 package com.radimous.vhatcaniroll.mixin;
 
+import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.ui.sealer.SealerButton;
 import com.radimous.vhatcaniroll.ui.sealer.SealerModifierListElement;
 import iskallia.vault.client.gui.framework.ScreenTextures;
@@ -38,6 +39,8 @@ public abstract class MixinVaultSealerScreen extends AbstractElementContainerScr
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void addModifierList(VaultSealerContainer container, Inventory inventory, Component title, CallbackInfo ci) {
+        if (!Config.SEALER_MODIFIER_LIST.get()) return;
+
         this.vHatCanIRoll$modifierListElement = new SealerModifierListElement<>(Spatials.positionXY(187, 18).size(100, 159));
         this.vHatCanIRoll$modifierListElement.layout((screen, gui, parent, world) -> {
             world.translateXY(gui);
@@ -63,6 +66,8 @@ public abstract class MixinVaultSealerScreen extends AbstractElementContainerScr
 
     @Inject(method = "containerTick", at = @At("TAIL"), remap = true)
     private void tick(CallbackInfo ci) {
+        if (!Config.SEALER_MODIFIER_LIST.get()) return;
+
         ItemStack currentGearStack = this.getMenu().getGearInputSlot().getItem();
         if (currentGearStack.isEmpty() && !this.getMenu().getOutputSlot().getItem().isEmpty()) {
             currentGearStack = this.getMenu().getOutputSlot().getItem();

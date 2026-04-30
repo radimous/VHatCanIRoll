@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 public class UniqueModifiers {
-    public static List<Component> getUniqueModifierList(int lvl, ModifierCategory modifierCategory, Map<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifiers) {
+    public static List<Component> getUniqueModifierList(int lvl, ModifierCategory modifierCategory, Map<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifiers, boolean header, boolean endWithEmptyLine) {
         ArrayList<Component> modList = new ArrayList<>();
 
         for (Map.Entry<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifier : modifierIdentifiers.entrySet()) {
-            modList.addAll(getUniqueAffixComponents(lvl, modifierIdentifier, modifierCategory));
+            modList.addAll(getUniqueAffixComponents(lvl, modifierIdentifier, modifierCategory, header, endWithEmptyLine));
         }
 
         return modList;
@@ -29,14 +29,17 @@ public class UniqueModifiers {
     /**
      * Same as getAffixGroupComponents, but for unique gear without chances and groups
      */
-    public static List<Component> getUniqueAffixComponents(int lvl,Map.Entry<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifier, ModifierCategory modifierCategory) {
+    public static List<Component> getUniqueAffixComponents(int lvl,Map.Entry<UniqueGearConfig.AffixTargetType, List<ResourceLocation>> modifierIdentifier, ModifierCategory modifierCategory, boolean header, boolean padding) {
 
         ArrayList<Component> componentList = new ArrayList<>();
         if (modifierIdentifier.getValue().isEmpty()) {
             return componentList; // no affix for this type
         }
-        UniqueGearConfig.AffixTargetType affixTagGroup = modifierIdentifier.getKey();
-        componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+        if (header) {
+            UniqueGearConfig.AffixTargetType affixTagGroup = modifierIdentifier.getKey();
+            componentList.add(new TextComponent(affixTagGroup.toString().replace("_", " ")).withStyle(ChatFormatting.BOLD));
+        }
+
         for (ResourceLocation modifier : modifierIdentifier.getValue()) {
             VaultGearTierConfig.ModifierTierGroup modifierTierGroup = ModConfigs.VAULT_GEAR_CONFIG.get(VaultGearTierConfig.UNIQUE_ITEM).getTierGroup(modifier);
             if (modifierTierGroup == null) {
@@ -50,16 +53,18 @@ public class UniqueModifiers {
             MutableComponent
                 modComp = ModifierValues.getModifierComponent(VaultGearAttributeRegistry.getAttribute(modifierTierGroup.getAttribute()),mTierList);
 
-            MutableComponent full = new TextComponent("  ");
+            MutableComponent full = new TextComponent(padding ? "  " : "");
             full.append(modComp);
             componentList.add(full);
         }
 
-        if (componentList.size() == 1) { // only header
+        if (header && componentList.size() == 1) { // only header
             return new ArrayList<>(); // no affixes for this type (all tiers are unobtainable)
         }
 
-        componentList.add(TextComponent.EMPTY);
+        if (padding) {
+            componentList.add(TextComponent.EMPTY);
+        }
         return componentList;
     }
 }

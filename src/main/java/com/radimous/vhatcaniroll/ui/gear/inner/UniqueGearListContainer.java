@@ -95,7 +95,7 @@ public class UniqueGearListContainer extends VerticalScrollClipContainer<UniqueG
                 return displayStack;
             }, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY));
 
-            List<Component> mlist = UniqueModifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers);
+            List<Component> mlist = UniqueModifiers.getUniqueModifierList(lvl, modifierCategory, modifierIdentifiers, true, true);
             for (Component mc : mlist) {
                 if (mc instanceof TextComponent tc){ // try to make wrapped text
                     var newTc = new TextComponent("");
