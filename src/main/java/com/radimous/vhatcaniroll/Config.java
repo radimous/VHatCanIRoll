@@ -16,10 +16,10 @@ public class Config {
     public static final ForgeConfigSpec.DoubleValue CARD_SCREEN_HEIGHT;
     public static final ForgeConfigSpec.IntValue CARD_SCREEN_WIDTH;
     public static final ForgeConfigSpec.BooleanValue SHOW_ABILITY_ENHANCEMENTS;
-    public static final ForgeConfigSpec.BooleanValue SHOW_WEIGHT;
+    public static final ForgeConfigSpec.BooleanValue SHOW_GEAR_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CARD_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CARD_CHANCE;
-    public static final ForgeConfigSpec.BooleanValue SHOW_CHANCE;
+    public static final ForgeConfigSpec.BooleanValue SHOW_GEAR_CHANCE;
     public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
     public static final ForgeConfigSpec.BooleanValue SHOW_UNOBTAINABLE_CRAFTED;
     public static final ForgeConfigSpec.BooleanValue DEBUG_UNIQUE_GEAR;
@@ -31,14 +31,16 @@ public class Config {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> AFFIX_TAG_GROUP_CHANCE_BLACKLIST;
     public static final ForgeConfigSpec.BooleanValue REPLACE_ARTISAN_MODIFIER_LIST;
     public static final ForgeConfigSpec.IntValue ARTISAN_MODIFIER_LIST_WIDTH;
+    public static final ForgeConfigSpec.BooleanValue SEALER_MODIFIER_LIST;
     public static final ForgeConfigSpec.IntValue SEALER_MODIFIER_LIST_WIDTH;
     public static final ForgeConfigSpec.BooleanValue SHOW_CRAFTED_MODIFIERS;
+    public static final ForgeConfigSpec.BooleanValue REPLACE_UNIQUE_CODEX_TOOLTIP;
 
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
-      builder.push("BUTTON");
+      builder.push("Button");
         VAULT_SCREEN_BUTTON = builder
             .comment("open VHat can I roll? from vault screen")
             .define("vaultScreenButton", true);
@@ -51,7 +53,7 @@ public class Config {
             .defineInRange("buttonPositionY", 109, Integer.MIN_VALUE, Integer.MAX_VALUE);
         builder.pop();
 
-        builder.push("DEBUG");
+        builder.push("Debug");
         QOL_HUNTERS_CONFLICT_RESOLUTION = builder
             .comment("QOL Hunters conflict resolution (shouldn't be disabled unless it causes issues)")
             .define("QOLHuntersConflictResolution", true);
@@ -72,22 +74,22 @@ public class Config {
             .define("debugEtchings", false);
         builder.pop();
 
-        SHOW_ABILITY_ENHANCEMENTS = builder
-            .comment("show ability enhancements")
-            .define("showAbilityEnhancements", false);
-
-        SHOW_WEIGHT = builder
-            .comment("show gear roll weight")
-            .define("showWeight", false);
-
-        SHOW_CHANCE = builder
-            .comment("show gear roll chance")
-            .define("showChance", true);
-
+        builder.push("Hidden Categories");
         SHOW_UNOBTAINABLE_CRAFTED = builder
             .comment("show unobtainable crafted modifiers (above current lvl)")
             .define("showUnobtainableCrafted", false);
 
+        SHOW_CRAFTED_MODIFIERS = builder
+            .comment("show crafted modifiers (no longer obtainable in the base pack)")
+            .define("showCraftedModifiers", false);
+
+        SHOW_ABILITY_ENHANCEMENTS = builder
+            .comment("show ability enhancements")
+            .define("showAbilityEnhancements", false);
+        builder.pop();
+
+
+        builder.push("UI Size");
         GEAR_SCREEN_HEIGHT = builder
             .comment("height of the gear screen")
             .defineInRange("screenHeight", 0.95, 0, 1.0);
@@ -103,6 +105,17 @@ public class Config {
         CARD_SCREEN_WIDTH = builder
             .comment("width of the card screen")
             .defineInRange("cardScreenWidth", 450, 250, Integer.MAX_VALUE);
+        builder.pop();
+
+        builder.push("Weights & Chances");
+        SHOW_GEAR_WEIGHT = builder
+            .comment("show gear roll weight")
+            .define("showGearWeight", false);
+
+        SHOW_GEAR_CHANCE = builder
+            .comment("show gear roll chance")
+            .define("showGearChance", true);
+
 
         SHOW_CARD_WEIGHT = builder
             .comment("show card roll weight")
@@ -112,24 +125,35 @@ public class Config {
             .comment("show card roll chance")
             .define("showCardChance", true);
 
+        builder.pop();
+
+
+        builder.push("Integration");
+        REPLACE_ARTISAN_MODIFIER_LIST = builder
+            .comment("replace artisan station modifier list with VHat Can I Roll? version")
+            .define("replaceArtisanModifierList", false);
+
+        ARTISAN_MODIFIER_LIST_WIDTH = builder
+            .comment("width of the artisan modifier list")
+            .defineInRange("artisanModifierListWidth", 157, 100, Integer.MAX_VALUE);
+
+        SEALER_MODIFIER_LIST_WIDTH = builder
+            .comment("width of the sealer modifier list")
+            .defineInRange("sealerModifierListWidth", 157, 100, Integer.MAX_VALUE);
+
+        SEALER_MODIFIER_LIST = builder
+            .comment("adds modifier list to the gear sealer")
+            .define("sealerModifierList", true);
+
+        REPLACE_UNIQUE_CODEX_TOOLTIP = builder
+            .comment("replace unique codex tooltip")
+            .define("replaceUniqueCodexTooltip", true);
+        builder.pop();
+
         SHOW_HOVER_TOOLTIP = builder
                 .comment("show hold [key] to view rolls tooltip")
                 .define("showHoverTooltip", true);
 
-        REPLACE_ARTISAN_MODIFIER_LIST = builder
-                .comment("replace artisan station modifier list with VHat Can I Roll? version")
-                .define("replaceArtisanModifierList", false);
-
-        ARTISAN_MODIFIER_LIST_WIDTH = builder
-                .comment("width of the artisan modifier list")
-                .defineInRange("artisanModifierListWidth", 157, 100, Integer.MAX_VALUE);
-
-        SEALER_MODIFIER_LIST_WIDTH = builder
-                .comment("width of the sealer modifier list")
-                .defineInRange("sealerModifierListWidth", 157, 100, Integer.MAX_VALUE);
-        SHOW_CRAFTED_MODIFIERS = builder
-                .comment("show crafted modifiers (no longer obtainable in the base pack)")
-                .define("showCraftedModifiers", false);
         SPEC = builder.build();
     }
 }

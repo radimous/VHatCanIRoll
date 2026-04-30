@@ -501,7 +501,7 @@ public class SpecialModifiers {
         }
         Optional<Skill> optSkill = ModConfigs.ABILITIES.getAbilityById(minConfig.getAbilityKey());
         if (optSkill.isEmpty()) {
-            return abComp.append(new TextComponent("ABILITY NOT FOUND - id="+minConfig.getAbilityKey()).withStyle(ERROR_STYLE));
+            return abComp.append(new TextComponent(minConfig.getAbilityKey()).withStyle(Style.EMPTY.withColor(14076214)));
         }
         String abName = optSkill.get().getName();
         abComp.append(new TextComponent(abName).withStyle(Style.EMPTY.withColor(14076214)));
@@ -534,7 +534,7 @@ public class SpecialModifiers {
         }
         Optional<Skill> optSkill = ModConfigs.TALENTS.getTalentById(minConfig.getTalent());
         if (optSkill.isEmpty()) {
-            return talComp.append(new TextComponent("TALENT NOT FOUND - id="+minConfig.getTalent()).withStyle(ERROR_STYLE));
+            return talComp.append(new TextComponent(minConfig.getTalent()).withStyle(Style.EMPTY.withColor(14076214)));
         }
         String talName = optSkill.get().getName();
         talComp.append(new TextComponent(talName).withStyle(Style.EMPTY.withColor(14076214)));

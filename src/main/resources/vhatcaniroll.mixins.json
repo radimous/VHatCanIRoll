@@ -9,6 +9,7 @@
     "MixinArtisanStationScreen",
     "MixinIntegrationJEI",
     "MixinModifierListElement",
+    "MixinUniqueCodexScreen",
     "MixinVaultSealerScreen",
     "StatisticsElementContainerScreenMixin",
     "accessors.AbilityFloatValueAttributeReaderInvoker",

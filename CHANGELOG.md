@@ -1,1 +1,1 @@
-- compat with remastered jar
+- replace unique codex tooltip with VHCIR
