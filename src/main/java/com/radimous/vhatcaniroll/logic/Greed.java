@@ -78,7 +78,14 @@ public class Greed {
         List<GreedChallengeEntry> challenges = ModConfigs.GREED_TRADER.getChallenges();
         for (var challenge : challenges) {
 
-            String greedTier = challenge.getMinTier() == challenge.getMaxTier() ? String.valueOf(challenge.getMinTier()) : challenge.getMinTier() + "-" + challenge.getMaxTier();
+            String greedTier;
+            if (challenge.getMinTier() == challenge.getMaxTier()) {
+                greedTier = String.valueOf(challenge.getMinTier());
+            } else if (challenge.getMaxTier() == -1) {
+                greedTier = challenge.getMinTier() + "+";
+            } else {
+                greedTier = challenge.getMinTier() + "-" + challenge.getMaxTier();
+            }
             ret.add(new TextComponent("challenge_crystal_id:" + challenge.getChallengeCrystalId()).withStyle(ChatFormatting.DARK_GRAY));
             ret.add(new TextComponent(challenge.getDisplayName()).append(new TextComponent(" Greed Tier " + greedTier).withStyle(ChatFormatting.DARK_GRAY)).withStyle(ChatFormatting.GOLD));
             ret.add(new TextComponent(challenge.getDescription()));
