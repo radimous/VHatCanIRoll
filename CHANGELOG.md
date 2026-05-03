@@ -1,1 +1,1 @@
-- replace unique codex tooltip with VHCIR
+- fix greed tier display
