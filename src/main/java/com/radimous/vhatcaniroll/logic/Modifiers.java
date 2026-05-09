@@ -68,7 +68,7 @@ public class Modifiers {
     }
 
     public static List<Component> getAffixGroupComponents(int lvl, VaultGearTierConfig.ModifierAffixTagGroup affixTagGroup,
-                                                          VaultGearTierConfig.AttributeGroup modifierGroups,
+                                                          @Nullable VaultGearTierConfig.AttributeGroup modifierGroups,
                                                           @Nullable VaultGearTierConfig.AttributeGroup conflictingGroupModifiers,
                                                           ModifierCategory modifierCategory,
                                                           boolean header) {
@@ -81,7 +81,9 @@ public class Modifiers {
             (affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX) || affixTagGroup.equals(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX))) {
             return componentList;
         }
-
+        if (modifierGroups == null) {
+            return componentList;
+        }
 
         Map<String, Integer> groupCounts = countGroups(lvl, modifierGroups, modifierCategory);
         Map<String, Integer> crossAffixCounts = conflictingGroupModifiers == null ? null : countGroups(lvl, conflictingGroupModifiers, modifierCategory);

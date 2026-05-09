@@ -91,6 +91,10 @@ public class SealerModifierListElement<E extends SealerModifierListElement<E>> e
         int labelY = 0;
         int labelX = 2;
         List<Component> modifierComponents = Modifiers.getModifierList(itemLevel, config, ModifierCategory.NORMAL,false, VaultGearTierConfig.ModifierAffixTagGroup.CORRUPTED_IMPLICIT);
+        if (modifierComponents.isEmpty()) {
+            LabelElement<?> label = new LabelElement<>(Spatials.positionXY(4, 4), (new TextComponent("No modifiers available")).withStyle(Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(true)), LabelTextStyle.defaultStyle());
+            innerContainerElement.getElementStore().addElement(label);
+        }
         for (Component mc : modifierComponents) {
             if (mc instanceof TextComponent tc) { // try to make wrapped text
                 List<Component> groupTooltip;
