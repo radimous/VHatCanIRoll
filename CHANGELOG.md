@@ -1,1 +1,1 @@
-- fix greed tier display
+- fixed crash when placing jewel in the gear sealer
