@@ -152,7 +152,7 @@ public class CardRollScreen extends AbstractElementScreen {
 
     private void createDeckCoresButton() {
         this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 103), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            replaceInnerScreen((spatial) -> new DeckCoresListContainer(Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27)).layout(translateWorldSpatial()));
+            replaceInnerScreen((spatial) -> new DeckCoresListContainer(Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27), null).layout(translateWorldSpatial()));
         })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
         var comp = new TextComponent("Deck Cores").withStyle(ChatFormatting.BLACK);
         this.addElement(
@@ -188,6 +188,23 @@ public class CardRollScreen extends AbstractElementScreen {
                 linkElements.add(this.addElement(
                     new LabelElement<>(Spatials.positionXY(x + 2, y + 4), comp, LabelTextStyle.defaultStyle())
                         .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left()).translateY(this.getGuiSpatial().top()))
+                ));
+                y += 20;
+            }
+        }
+
+        if (this.innerScreen instanceof DeckCoresListContainer) {
+            for (String pool : CardRolls.getDeckCorePools()) {
+                if ("start".equals(pool) || "end".equals(pool)) continue;
+                linkElements.add(this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(x, y), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
+                    replaceInnerScreen((spatial) -> new DeckCoresListContainer((Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27)), pool).layout(translateWorldSpatial()));
+                })).layout((screen, gui, parent, world) -> {
+                    world.width(80).height(16).translateX(gui.left()).translateY(this.getGuiSpatial().top());
+                }));
+                var comp = new TextComponent(pool).withStyle(ChatFormatting.BLACK);
+                linkElements.add(this.addElement(
+                        new LabelElement<>(Spatials.positionXY(x + 2, y + 4), comp, LabelTextStyle.defaultStyle())
+                                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left()).translateY(this.getGuiSpatial().top()))
                 ));
                 y += 20;
             }

@@ -1,37 +1,41 @@
 package com.radimous.vhatcaniroll.ui.cards.inner;
 
 import com.radimous.vhatcaniroll.logic.CardRolls;
-import com.radimous.vhatcaniroll.ui.UIUtil;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
 import iskallia.vault.client.gui.framework.element.LabelElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
-import iskallia.vault.client.gui.framework.element.spi.IElement;
 import iskallia.vault.client.gui.framework.render.TooltipDirection;
 import iskallia.vault.client.gui.framework.spatial.Padding;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
 import iskallia.vault.init.ModItems;
-import iskallia.vault.item.DeckSocketItem;
-import iskallia.vault.item.core.DataInitializationItem;
-import iskallia.vault.item.crystal.CrystalData;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class DeckCoresListContainer extends VerticalScrollClipContainer<DeckCoresListContainer> implements InnerCardScreen {
 
-    public DeckCoresListContainer(ISpatial spatial) {
+    String modifierPool;
+
+    public DeckCoresListContainer(ISpatial spatial, String modifierPool) {
         super(spatial, Padding.ZERO, ScreenTextures.INSET_BLACK_BACKGROUND);
         int labelX = 9;
         int labelY = 10;
+        this.modifierPool = modifierPool;
 
-        List<Component> modifiers = CardRolls.getDeckCoresList();
+        List<Component> modifiers;
+        if (modifierPool == null) {
+            modifiers = List.of(new TextComponent("Select deck core pool from the list on the right => ").withStyle(ChatFormatting.YELLOW));
+        } else {
+            modifiers = CardRolls.getDeckCoresList(modifierPool);
+        }
+
 
         if (modifiers.isEmpty()) {
             LabelElement<?> labelelement = new LabelElement<>(
@@ -94,6 +98,6 @@ public class DeckCoresListContainer extends VerticalScrollClipContainer<DeckCore
 
     @Override
     public InnerCardScreen create(ISpatial spatial) {
-        return new DeckCoresListContainer(spatial);
+        return new DeckCoresListContainer(spatial, modifierPool);
     }
 }

@@ -1,9 +1,7 @@
 package com.radimous.vhatcaniroll.logic;
 
 import com.radimous.vhatcaniroll.Config;
-import com.radimous.vhatcaniroll.VHatCanIRoll;
 import com.radimous.vhatcaniroll.logic.modifiervalues.ModifierValues;
-import com.radimous.vhatcaniroll.mixin.accessors.cards.GreedCardModifierConfigAccessor;
 import com.radimous.vhatcaniroll.mixin.accessors.cards.*;
 import iskallia.vault.config.card.BoosterPackConfig;
 import iskallia.vault.config.gear.VaultGearTierConfig;
@@ -12,9 +10,10 @@ import iskallia.vault.core.card.CardEntry;
 import iskallia.vault.core.card.CardProperty;
 import iskallia.vault.core.card.CardScaler;
 import iskallia.vault.core.card.modifier.card.*;
+import iskallia.vault.core.card.modifier.deck.BountyDeckModifier;
 import iskallia.vault.core.card.modifier.deck.DeckModifier;
 import iskallia.vault.core.card.modifier.deck.DummyDeckModifier;
-import iskallia.vault.core.data.adapter.array.ArrayAdapter;
+import iskallia.vault.core.card.modifier.deck.SlotDeckModifier;
 import iskallia.vault.core.util.WeightedList;
 import iskallia.vault.core.world.loot.entry.ItemLootEntry;
 import iskallia.vault.core.world.roll.FloatRoll;
@@ -512,7 +511,15 @@ public class CardRolls {
         return ret;
     }
 
-    public static List<Component> getDeckCoresList() {
+
+    public static Collection<String> getDeckCorePools() {
+        var modifiers = (DeckModifiersConfigAccessor) ModConfigs.DECK_MODIFIERS;
+        var modPools = modifiers.getPools();
+        return Collections.unmodifiableCollection(modPools.keySet());
+    }
+
+
+    public static List<Component> getDeckCoresList(String modifierPool) {
         List<Component> ret = new ArrayList<>();
 
         ret.add(new TextComponent("DECK CORES").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.AQUA));
@@ -521,54 +528,98 @@ public class CardRolls {
         var modifiers = (DeckModifiersConfigAccessor)ModConfigs.DECK_MODIFIERS;
         var modifierPools = modifiers.getPools();
         var modifierValues  = modifiers.getValues();
-        for (var pool: modifierPools.entrySet()) {
-            var poolKey = pool.getKey();
-            var poolValues = pool.getValue();
-            ret.add(new TextComponent(poolKey.replace("_", " ")).withStyle(ChatFormatting.GREEN));
-            ret.add(new TextComponent(""));
-            boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolValues);
-            boolean showChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(poolValues);
-            for (var poolValue: poolValues.entrySet()) {
-                DeckModifier<?> modifier = modifierValues.get(poolValue.getKey());
-                DeckModifier.Config config = modifier.getConfig();
-                String modelId = modifier.getModelId();
-                String id = modifier.getId();
-                String name = modifier.getName();
-                int color = modifier.getColour();
-                ret.add(new TextComponent("    Model: " + modelId));
-                if (Config.DEBUG_CARDS.get()) ret.add(new TextComponent("    ID: " + id));
-                ret.add(new TextComponent("    " + name).withStyle(Style.EMPTY.withColor(color)));
-//                ret.add(new TextComponent("Color: " + color));
-                if (config instanceof DummyDeckModifier.Config dummy) {
-                    ret.add(new TextComponent("    " + "DUMMY"));
 
-                }
-                Component ttipComponent = null;
-                try {
-                    List<Component> ttips = new ArrayList<>();
-                    modifier.addText(ttips, 0, TooltipFlag.Default.NORMAL, 0);
-                    ttipComponent = ComponentUtil.replace(ttips.get(0), "-100.0%", new TextComponent("-100%"));
-                } catch (Exception e) {
-                    System.out.println("ERR" + e.getMessage());
-                }
+        var poolValues = modifierPools.get(modifierPool);
+        ret.add(new TextComponent(modifierPool));
+        ret.add(new TextComponent(""));
+        boolean showWeight = Config.SHOW_CARD_WEIGHT.get() && !equalWeight(poolValues);
+        boolean showChance = Config.SHOW_CARD_CHANCE.get() && !equalWeight(poolValues);
 
-                if (config.modifierRolls.size() == 2 && config.modifierRolls.containsKey("lesser") && config.modifierRolls.containsKey("greater")) {
-                    ret.add(new TextComponent("     " + "Lesser: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatroll( config.modifierRolls.get("lesser").roll)))));
-                    ret.add(new TextComponent("     " + "Normal: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatroll(config.modifierRoll)))));
-                    ret.add(new TextComponent("     " + "Greater: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatroll( config.modifierRolls.get("greater").roll)))));
+        for (var poolValue: poolValues.entrySet()) {
+            DeckModifier<?> modifier = modifierValues.get(poolValue.getKey());
+            DeckModifier.Config config = modifier.getConfig();
+            String modelId = modifier.getModelId();
+            String id = modifier.getId();
+            String name = modifier.getName();
+            int color = modifier.getColour();
+            ret.add(new TextComponent("    Model: " + modelId));
+            if (Config.DEBUG_CARDS.get()) ret.add(new TextComponent("    ID: " + id));
+            ret.add(new TextComponent("    " + name).withStyle(Style.EMPTY.withColor(color)));
+            if (config instanceof DummyDeckModifier.Config dummy) {
+                ret.add(new TextComponent("    " + "DUMMY"));
 
-                } else {
-                    ret.add(new TextComponent("     " + "Normal: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatroll(config.modifierRoll)))));
-                    for (var mr: config.modifierRolls.entrySet()) {
-                        ret.add(new TextComponent("     " + mr.getKey() +": ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatroll(mr.getValue().roll)))));
-                    }
-                }
-                if (config.selectedRollId != null) ret.add(new TextComponent("    Selected Roll: " + config.selectedRollId));
-
-                ret.add(new TextComponent(""));
             }
+            Component ttipComponent = null;
+            try {
+                List<Component> ttips = new ArrayList<>();
+                modifier.addText(ttips, 0, TooltipFlag.Default.NORMAL, 0);
+                ttipComponent = ComponentUtil.replace(ttips.get(0), "-100.0%", new TextComponent("-100%"));
+            } catch (Exception e) {
+                System.out.println("ERR" + e.getMessage());
+            }
+
+            if (config.modifierRolls.size() == 2 && config.modifierRolls.containsKey("lesser") && config.modifierRolls.containsKey("greater")) {
+                ret.add(new TextComponent("     " + "Lesser: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRolls.get("lesser").roll)))));
+                ret.add(new TextComponent("     " + "Normal: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRoll)))));
+                ret.add(new TextComponent("     " + "Greater: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRolls.get("greater").roll)))));
+
+            } else if (config instanceof BountyDeckModifier.Config bountyConfig) {
+                boolean moreThanOne = bountyConfig.bountyRolls.containsKey("lesser") || bountyConfig.bountyRolls.containsKey("greater");
+                if (bountyConfig.bountyRolls.containsKey("lesser")) {
+                    String tierIncreaseL = processFloatroll(bountyConfig.bountyRolls.get("lesser").getCrateTierIncrease(bountyConfig.crateTierIncrease));
+                    String resourceCardsRequiredL = processIntroll(bountyConfig.bountyRolls.get("lesser").getResourceCardsRequired(bountyConfig.resourceCardsRequired));
+                    MutableComponent comp = new TextComponent("     " + "Lesser: ").append(new TextComponent("+").withStyle(ChatFormatting.GRAY).append((new TextComponent(tierIncreaseL)).withStyle(ChatFormatting.WHITE)).append(" Crate Tiers Completing a vault with at least ").append((new TextComponent(resourceCardsRequiredL)).withStyle(ChatFormatting.WHITE)).append(" Resource Cards"));
+                    ret.add(comp);
+                }
+                String tierIncrease = processFloatroll(bountyConfig.crateTierIncrease);
+                String resourceCardsRequired = processIntroll(bountyConfig.resourceCardsRequired);
+                MutableComponent comp = new TextComponent("     " + (moreThanOne ? "Normal: " : "")).append(new TextComponent("+").withStyle(ChatFormatting.GRAY).append((new TextComponent(tierIncrease)).withStyle(ChatFormatting.WHITE)).append(" Crate Tiers Completing a vault with at least ").append((new TextComponent(resourceCardsRequired)).withStyle(ChatFormatting.WHITE)).append(" Resource Cards"));
+                ret.add(comp);
+                if (bountyConfig.bountyRolls.containsKey("greater")) {
+                    String tierIncreaseG = processFloatroll(bountyConfig.bountyRolls.get("greater").getCrateTierIncrease(bountyConfig.crateTierIncrease));
+                    String resourceCardsRequiredG = processIntroll(bountyConfig.bountyRolls.get("greater").getResourceCardsRequired(bountyConfig.resourceCardsRequired));
+                    MutableComponent compG = new TextComponent("     " + "Greater: ").append(new TextComponent("+").withStyle(ChatFormatting.GRAY).append((new TextComponent(tierIncreaseG)).withStyle(ChatFormatting.WHITE)).append(" Crate Tiers Completing a vault with at least ").append((new TextComponent(resourceCardsRequiredG)).withStyle(ChatFormatting.WHITE)).append(" Resource Cards"));
+                    ret.add(compG);
+                }
+            } else if (config instanceof SlotDeckModifier.Config slotConfig) {
+
+                boolean moreThanOne = slotConfig.slotRolls.containsKey("lesser") || slotConfig.slotRolls.containsKey("greater");
+                if (slotConfig.slotRolls.containsKey("lesser")) {
+                    String slotRollL = processIntroll(slotConfig.slotRolls.get("lesser").getSlotRoll(slotConfig.slotRoll));
+                    Component colorRequiredL = coloredSet(slotConfig.slotRolls.get("lesser").getRequiredColors(slotConfig.requiredColors));
+                    Set<String> groupsRequiredL = slotConfig.slotRolls.get("lesser").getRequiredGroups(slotConfig.requiredGroups);
+                    MutableComponent comp = new TextComponent("     " + "Lesser: ").append((new TextComponent("+")).withStyle(ChatFormatting.GRAY).append((new TextComponent(processFloatrollPercent(config.modifierRoll))).withStyle(ChatFormatting.WHITE)).append(new TextComponent(" efficiency for ")).append((new TextComponent(slotRollL + " ")).withStyle(ChatFormatting.WHITE)));
+                    comp.append(colorRequiredL).append(groupsRequiredL.toString());
+                    comp.append(" cards");
+                    ret.add(comp);
+                }
+                String slotRoll = processIntroll(slotConfig.slotRoll);
+                Component colorRequired = coloredSet(slotConfig.requiredColors);
+                Set<String> groupsRequired = slotConfig.requiredGroups;
+                MutableComponent comp = new TextComponent("     " + (moreThanOne ? "Normal: " : "")).append((new TextComponent("+")).withStyle(ChatFormatting.GRAY).append((new TextComponent(processFloatrollPercent(config.modifierRoll))).withStyle(ChatFormatting.WHITE)).append(new TextComponent(" efficiency for ")).append((new TextComponent(slotRoll + " ")).withStyle(ChatFormatting.WHITE)));
+                comp.append(colorRequired).append(groupsRequired.toString());
+                comp.append(" cards");
+                ret.add(comp);
+                if (slotConfig.slotRolls.containsKey("greater")) {
+                    String slotRollG = processIntroll(slotConfig.slotRolls.get("greater").getSlotRoll(slotConfig.slotRoll));
+                    Component colorRequiredG = coloredSet(slotConfig.slotRolls.get("greater").getRequiredColors(slotConfig.requiredColors));
+                    Set<String> groupsRequiredG = slotConfig.slotRolls.get("greater").getRequiredGroups(slotConfig.requiredGroups);
+                    MutableComponent compG = new TextComponent("     " + "Greater: ").append((new TextComponent("+")).withStyle(ChatFormatting.GRAY).append((new TextComponent(processFloatrollPercent(config.modifierRoll))).withStyle(ChatFormatting.WHITE)).append(new TextComponent(" efficiency for ")).append((new TextComponent(slotRollG + " ")).withStyle(ChatFormatting.WHITE)));
+                    compG.append(colorRequiredG).append(groupsRequiredG.toString());
+                    compG.append(" cards");
+                    ret.add(compG);
+                }
+            } else {
+                ret.add(new TextComponent("     ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRoll)))));
+                for (var mr: config.modifierRolls.entrySet()) {
+                    ret.add(new TextComponent("     " + mr.getKey() +": ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(mr.getValue().roll)))));
+                }
+            }
+            if (config.selectedRollId != null) ret.add(new TextComponent("    Selected Roll: " + config.selectedRollId));
+
             ret.add(new TextComponent(""));
         }
+
         return ret;
     }
 
@@ -617,7 +668,7 @@ public class CardRolls {
         return "UNSUPPORTED INT ROLL " + intRoll;
     }
 
-    private static String processFloatroll(FloatRoll floatRoll) {
+    private static String processFloatrollPercent(FloatRoll floatRoll) {
         if (floatRoll == null) {
             return null;
         }
@@ -632,6 +683,22 @@ public class CardRolls {
         }
         return "UNSUPPORTED FLOAT ROLL " + floatRoll;
     }
+    private static String processFloatroll(FloatRoll floatRoll) {
+        if (floatRoll == null) {
+            return null;
+        }
+        if (floatRoll instanceof FloatRoll.Constant constant) {
+            return DECIMAL_FORMAT.format(constant.getCount());
+        }
+        if (floatRoll instanceof FloatRoll.Uniform uniform) {
+            if (uniform.getMin() == uniform.getMax()) {
+                return DECIMAL_FORMAT.format(uniform.getMin());
+            }
+            return DECIMAL_FORMAT.format(uniform.getMin()) + "-" + DECIMAL_FORMAT.format(uniform.getMax());
+        }
+        return "UNSUPPORTED FLOAT ROLL " + floatRoll;
+    }
+
 
     private static TextComponent formatInlineWeightedList(WeightedList<?> weightedList){
         if (weightedList == null) {
