@@ -609,6 +609,8 @@ public class CardRolls {
                     compG.append(" cards");
                     ret.add(compG);
                 }
+            } else if (Wolds.cardRoll(ret, config)){
+                // handled in the cardRoll method
             } else {
                 ret.add(new TextComponent("     ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRoll)))));
                 for (var mr: config.modifierRolls.entrySet()) {
