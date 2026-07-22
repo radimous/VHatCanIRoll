@@ -4,7 +4,9 @@
   "package": "com.radimous.vhatcaniroll.mixin",
   "compatibilityLevel": "JAVA_8",
   "refmap": "vhatcaniroll.refmap.json",
-  "mixins": [],
+  "mixins": [
+    "accessors.cards.DeckModifiersConfigAccessor"
+  ],
   "client": [
     "MixinArtisanStationScreen",
     "MixinIntegrationJEI",

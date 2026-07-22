@@ -80,6 +80,7 @@ public class CardRollScreen extends AbstractElementScreen {
         createConditionsButton();
         createScalersButton();
         createTasksButton();
+        createDeckCoresButton();
         refreshLinkButtons();
         super.init();
     }
@@ -146,6 +147,16 @@ public class CardRollScreen extends AbstractElementScreen {
         var comp = new TextComponent("Tasks").withStyle(ChatFormatting.BLACK);
         this.addElement(
             new LabelElement<>(Spatials.positionXY(-80, 87), comp, LabelTextStyle.defaultStyle()).layout(this.translateWorldSpatial())
+        );
+    }
+
+    private void createDeckCoresButton() {
+        this.addElement(new NineSliceButtonElement<>(Spatials.positionXY(-82, 103), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
+            replaceInnerScreen((spatial) -> new DeckCoresListContainer(Spatials.positionXY(7, 20).size(spatial.width() - 14, spatial.height() - 27)).layout(translateWorldSpatial()));
+        })).layout((screen, gui, parent, world) -> world.width(80).height(16).translateX(gui.left() ).translateY(this.getGuiSpatial().top() ));
+        var comp = new TextComponent("Deck Cores").withStyle(ChatFormatting.BLACK);
+        this.addElement(
+                new LabelElement<>(Spatials.positionXY(-80, 107), comp, LabelTextStyle.defaultStyle()).layout(this.translateWorldSpatial())
         );
     }
     //</editor-fold>

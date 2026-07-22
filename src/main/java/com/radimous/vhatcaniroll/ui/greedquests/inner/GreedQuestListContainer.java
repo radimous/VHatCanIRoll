@@ -59,7 +59,6 @@ public class GreedQuestListContainer extends VerticalScrollClipContainer<GreedQu
                     newTc.append(sibling);
                 }
 
-                System.out.println(labelX + " " + labelY + " " + this.innerWidth());
                 LabelElement<?> mcl = new LabelElement<>(
                     Spatials.positionXY(labelX + whiteSpaceWidth , labelY).width(this.innerWidth() - labelX - whiteSpaceWidth),
                     Spatials.width(this.innerWidth() - labelX * 2 - whiteSpaceWidth).height(9),
@@ -98,7 +97,6 @@ public class GreedQuestListContainer extends VerticalScrollClipContainer<GreedQu
                             Spatials.positionXY(labelX, labelY).width(16).height(16), () -> stack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY, 16, 16)
                             .tooltip(
                                 (tooltipRenderer, poseStack, mouseX, mouseY, tooltipFlag) -> {
-                                    System.out.println(mouseX + " " + mouseY);
                                     tooltipRenderer.renderTooltip(poseStack, stack, mouseX, mouseY,TooltipDirection.RIGHT);
                                     return true;
                                 }
