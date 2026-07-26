@@ -1,9 +1,6 @@
 package com.radimous.vhatcaniroll.logic;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +12,7 @@ public class ComponentUtil {
     private static final Pattern MATCHING_VALUES = Pattern.compile("^.*(.+)-(\\1) .*$");
 
     public static Component replace(Component component, String target, TextComponent replacement) {
-        if (!(component instanceof TextComponent base)) {return component;} else {
+        if (component instanceof TextComponent base) {
             List<Component> siblings = base.getSiblings();
             siblings.add(0, base.plainCopy().setStyle(base.getStyle()));
             for (int result = 0; result < siblings.size(); result++) {
@@ -25,23 +22,51 @@ public class ComponentUtil {
                     if (!text.isEmpty()) {
                         List<Component> parts = new ArrayList<>();
                         Style styledReplacement = replacement.getStyle() == Style.EMPTY ? sibling.getStyle() : Style.EMPTY;
-                        if (text.equals(target)) {parts.add(replacement.copy().withStyle(styledReplacement));} else {
+                        if (text.equals(target)) {
+                            parts.add(replacement.copy().withStyle(styledReplacement));
+                        } else {
                             for (String raw : text.split(Pattern.quote(target))) {
                                 parts.add(new TextComponent(raw).setStyle(sibling.getStyle()));
                                 parts.add(replacement.copy().withStyle(styledReplacement));
                             }
                             parts.remove(parts.size() - 1);
                         }
+
+                        if (!sibling.getSiblings().isEmpty() && parts.get(parts.size() - 1) instanceof MutableComponent last) {
+                            for (Component nestedChild : sibling.getSiblings()) {
+                                last.append(nestedChild);
+                            }
+                        }
+
                         siblings.remove(result);
-                        for (int j = 0; j < parts.size(); j++) {siblings.add(result, parts.get(parts.size() - j - 1));}
+                        for (int j = 0; j < parts.size(); j++) {
+                            siblings.add(result, parts.get(parts.size() - j - 1));
+                        }
                     }
                 }
             }
             TextComponent result = new TextComponent("");
             result.setStyle(base.getStyle());
-            for (Component sibling : siblings) {result.append(sibling);}
+            for (Component sibling : siblings) {
+                result.append(sibling);
+            }
 
             return result;
+        } else if (component instanceof TranslatableComponent trCmp) {
+            var args = trCmp.getArgs().clone();
+            for (int i = 0; i < args.length; i++) {
+                if (args[i] instanceof String strArg) {
+                    args[i] = (strArg).replace(target, replacement.getText());
+                }
+            }
+            var res = new TranslatableComponent(trCmp.getKey(), args);
+            for (var sibling : trCmp.getSiblings()) {
+                res.append(sibling);
+            }
+            res.setStyle(trCmp.getStyle());
+            return res;
+        } else {
+            return component;
         }
     }
 

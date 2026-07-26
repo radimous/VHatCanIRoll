@@ -132,8 +132,9 @@ dependencies {
     implementation fg.deobf("curse.maven:jei-238222:4351311")
 
 
-    implementation fg.deobf("curse.maven:sophisticated-core-618298:4489807")
-    implementation fg.deobf("curse.maven:sophisticated-backpacks-422301:4515363")
+    implementation fg.deobf("curse.maven:sophisticated-core-618298:5296312")
+    implementation fg.deobf("curse.maven:sophisticated-backpacks-422301:5654080")
+    implementation fg.deobf("curse.maven:sophisticated-storage-619320:5809745")
 
     compileOnly fg.deobf("local:wolds-vaults-official-mod-vhcir-stub:0.32.0")
 }

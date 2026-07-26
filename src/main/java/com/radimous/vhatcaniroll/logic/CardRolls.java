@@ -544,10 +544,10 @@ public class CardRolls {
             int color = modifier.getColour();
             ret.add(new TextComponent("    Model: " + modelId));
             if (Config.DEBUG_CARDS.get()) ret.add(new TextComponent("    ID: " + id));
+            if (Config.DEBUG_CARDS.get()) ret.add(new TextComponent("    Type: " + modifier.getClass().getSimpleName()));
             ret.add(new TextComponent("    " + name).withStyle(Style.EMPTY.withColor(color)));
             if (config instanceof DummyDeckModifier.Config dummy) {
                 ret.add(new TextComponent("    " + "DUMMY"));
-
             }
             Component ttipComponent = null;
             try {
@@ -557,12 +557,14 @@ public class CardRolls {
             } catch (Exception e) {
                 System.out.println("ERR" + e.getMessage());
             }
+            if (ttipComponent == null) {
+                ret.add(new TextComponent("ERR - NULL TOOLTIP COMPONENT").withStyle(ERROR_STYLE));
+                ret.add(new TextComponent(""));
+                continue;
+            }
 
-            if (config.modifierRolls.size() == 2 && config.modifierRolls.containsKey("lesser") && config.modifierRolls.containsKey("greater")) {
-                ret.add(new TextComponent("     " + "Lesser: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRolls.get("lesser").roll)))));
-                ret.add(new TextComponent("     " + "Normal: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRoll)))));
-                ret.add(new TextComponent("     " + "Greater: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRolls.get("greater").roll)))));
-
+            if (Wolds.cardRoll(ret, modifier, config, ttipComponent)){
+                // handled in the cardRoll method
             } else if (config instanceof BountyDeckModifier.Config bountyConfig) {
                 boolean moreThanOne = bountyConfig.bountyRolls.containsKey("lesser") || bountyConfig.bountyRolls.containsKey("greater");
                 if (bountyConfig.bountyRolls.containsKey("lesser")) {
@@ -581,36 +583,44 @@ public class CardRolls {
                     MutableComponent compG = new TextComponent("     " + "Greater: ").append(new TextComponent("+").withStyle(ChatFormatting.GRAY).append((new TextComponent(tierIncreaseG)).withStyle(ChatFormatting.WHITE)).append(" Crate Tiers Completing a vault with at least ").append((new TextComponent(resourceCardsRequiredG)).withStyle(ChatFormatting.WHITE)).append(" Resource Cards"));
                     ret.add(compG);
                 }
-            } else if (config instanceof SlotDeckModifier.Config slotConfig) {
-
+            } else if (config instanceof SlotDeckModifier.Config slotConfig && config.getClass() == SlotDeckModifier.Config.class) { // class check to ski wolds cores that extend the config
                 boolean moreThanOne = slotConfig.slotRolls.containsKey("lesser") || slotConfig.slotRolls.containsKey("greater");
                 if (slotConfig.slotRolls.containsKey("lesser")) {
                     String slotRollL = processIntroll(slotConfig.slotRolls.get("lesser").getSlotRoll(slotConfig.slotRoll));
                     Component colorRequiredL = coloredSet(slotConfig.slotRolls.get("lesser").getRequiredColors(slotConfig.requiredColors));
-                    Set<String> groupsRequiredL = slotConfig.slotRolls.get("lesser").getRequiredGroups(slotConfig.requiredGroups);
+                    String groupsRequiredL = slotConfig.slotRolls.get("lesser").getRequiredGroups(slotConfig.requiredGroups).toString();
+                    if ("[]".equals(groupsRequiredL)) groupsRequiredL = "";
+                    if ("[]".equals(colorRequiredL.getString())) colorRequiredL = new TextComponent("");
                     MutableComponent comp = new TextComponent("     " + "Lesser: ").append((new TextComponent("+")).withStyle(ChatFormatting.GRAY).append((new TextComponent(processFloatrollPercent(config.modifierRoll))).withStyle(ChatFormatting.WHITE)).append(new TextComponent(" efficiency for ")).append((new TextComponent(slotRollL + " ")).withStyle(ChatFormatting.WHITE)));
-                    comp.append(colorRequiredL).append(groupsRequiredL.toString());
+                    comp.append(colorRequiredL).append(groupsRequiredL);
                     comp.append(" cards");
                     ret.add(comp);
                 }
                 String slotRoll = processIntroll(slotConfig.slotRoll);
                 Component colorRequired = coloredSet(slotConfig.requiredColors);
-                Set<String> groupsRequired = slotConfig.requiredGroups;
+                String groupsRequired = slotConfig.requiredGroups.toString();
+                if ("[]".equals(groupsRequired)) groupsRequired = "";
+                if ("[]".equals(colorRequired.getString())) colorRequired = new TextComponent("");
                 MutableComponent comp = new TextComponent("     " + (moreThanOne ? "Normal: " : "")).append((new TextComponent("+")).withStyle(ChatFormatting.GRAY).append((new TextComponent(processFloatrollPercent(config.modifierRoll))).withStyle(ChatFormatting.WHITE)).append(new TextComponent(" efficiency for ")).append((new TextComponent(slotRoll + " ")).withStyle(ChatFormatting.WHITE)));
-                comp.append(colorRequired).append(groupsRequired.toString());
+                comp.append(colorRequired).append(groupsRequired);
                 comp.append(" cards");
                 ret.add(comp);
                 if (slotConfig.slotRolls.containsKey("greater")) {
                     String slotRollG = processIntroll(slotConfig.slotRolls.get("greater").getSlotRoll(slotConfig.slotRoll));
                     Component colorRequiredG = coloredSet(slotConfig.slotRolls.get("greater").getRequiredColors(slotConfig.requiredColors));
-                    Set<String> groupsRequiredG = slotConfig.slotRolls.get("greater").getRequiredGroups(slotConfig.requiredGroups);
+                    String groupsRequiredG = slotConfig.slotRolls.get("greater").getRequiredGroups(slotConfig.requiredGroups).toString();
+                    if ("[]".equals(groupsRequiredG)) groupsRequiredG = "";
+                    if ("[]".equals(colorRequiredG.getString())) colorRequiredG = new TextComponent("");
                     MutableComponent compG = new TextComponent("     " + "Greater: ").append((new TextComponent("+")).withStyle(ChatFormatting.GRAY).append((new TextComponent(processFloatrollPercent(config.modifierRoll))).withStyle(ChatFormatting.WHITE)).append(new TextComponent(" efficiency for ")).append((new TextComponent(slotRollG + " ")).withStyle(ChatFormatting.WHITE)));
-                    compG.append(colorRequiredG).append(groupsRequiredG.toString());
+                    compG.append(colorRequiredG).append(groupsRequiredG);
                     compG.append(" cards");
                     ret.add(compG);
                 }
-            } else if (Wolds.cardRoll(ret, config)){
-                // handled in the cardRoll method
+            } else if (config.modifierRolls.size() == 2 && config.modifierRolls.containsKey("lesser") && config.modifierRolls.containsKey("greater")) {
+                ret.add(new TextComponent("     " + "Lesser: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRolls.get("lesser").roll)))));
+                ret.add(new TextComponent("     " + "Normal: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRoll)))));
+                ret.add(new TextComponent("     " + "Greater: ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRolls.get("greater").roll)))));
+
             } else {
                 ret.add(new TextComponent("     ").append(ComponentUtil.replace(ttipComponent.copy(), "-100%", new TextComponent(processFloatrollPercent(config.modifierRoll)))));
                 for (var mr: config.modifierRolls.entrySet()) {
@@ -654,7 +664,7 @@ public class CardRolls {
         return true;
     }
 
-    private static String processIntroll(IntRoll intRoll) {
+    static String processIntroll(IntRoll intRoll) {
         if (intRoll == null) {
             return null;
         }
@@ -683,9 +693,15 @@ public class CardRolls {
             }
             return DECIMAL_FORMAT.format(uniform.getMin()*100) + "%-" + DECIMAL_FORMAT.format(uniform.getMax()*100)+"%";
         }
+        if (floatRoll instanceof FloatRoll.UniformedStep uniform) {
+            if (uniform.getMin() == uniform.getMax()) {
+                return DECIMAL_FORMAT.format(uniform.getMin()*100)+"%";
+            }
+            return DECIMAL_FORMAT.format(uniform.getMin()*100) + "%-" + DECIMAL_FORMAT.format(uniform.getMax()*100)+"%";
+        }
         return "UNSUPPORTED FLOAT ROLL " + floatRoll;
     }
-    private static String processFloatroll(FloatRoll floatRoll) {
+    static String processFloatroll(FloatRoll floatRoll) {
         if (floatRoll == null) {
             return null;
         }
@@ -693,6 +709,12 @@ public class CardRolls {
             return DECIMAL_FORMAT.format(constant.getCount());
         }
         if (floatRoll instanceof FloatRoll.Uniform uniform) {
+            if (uniform.getMin() == uniform.getMax()) {
+                return DECIMAL_FORMAT.format(uniform.getMin());
+            }
+            return DECIMAL_FORMAT.format(uniform.getMin()) + "-" + DECIMAL_FORMAT.format(uniform.getMax());
+        }
+        if (floatRoll instanceof FloatRoll.UniformedStep uniform) {
             if (uniform.getMin() == uniform.getMax()) {
                 return DECIMAL_FORMAT.format(uniform.getMin());
             }
