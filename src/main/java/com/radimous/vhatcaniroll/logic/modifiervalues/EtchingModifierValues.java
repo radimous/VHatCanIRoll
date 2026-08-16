@@ -7,6 +7,7 @@ import iskallia.vault.config.gear.EtchingTierConfig;
 import iskallia.vault.config.gear.VaultEtchingConfig;
 import iskallia.vault.gear.attribute.VaultGearAttribute;
 import iskallia.vault.gear.attribute.config.*;
+import iskallia.vault.gear.attribute.talent.TalentLevelAttribute;
 import iskallia.vault.init.ModConfigs;
 import iskallia.vault.util.TextUtil;
 import iskallia.vault.util.Throuple;
@@ -85,7 +86,9 @@ public class EtchingModifierValues {
             } else if (minConfig instanceof BooleanFlagGenerator.BooleanFlag booleanFlag) {
                 return TextUtil.applyColorTags(RangedEtchingHelper.formatDescription(eCfg.getDescription(), Optional.of(booleanFlag.get()), Optional.of(booleanFlag.get())));
             } else if (minConfig instanceof WeightedListAttributeGenerator.Config minWeightedList && maxConfig instanceof WeightedListAttributeGenerator.Config maxWeightedList) {
-                return TextUtil.applyColorTags(RangedEtchingHelper.formatDescription(eCfg.getDescription(), Optional.of(prepMin(minWeightedList.strings)), Optional.of(prepMax(maxWeightedList.strings))));
+                return TextUtil.applyColorTags(RangedEtchingHelper.formatDescription(eCfg.getDescription(), Optional.of(minWeightedList), Optional.of(maxWeightedList)));
+            } else if (minConfig instanceof TalentLevelAttribute.Config minTalent && maxConfig instanceof TalentLevelAttribute.Config maxTalent) {
+                return TextUtil.applyColorTags(RangedEtchingHelper.formatDescription(eCfg.getDescription(), Optional.of(prepMin(minTalent.getLevelChange())), Optional.of(prepMax(maxTalent.getLevelChange()))));
             } else {
                 var enclosing = minConfig.getClass().getEnclosingClass();
                 var className = minConfig.getClass().getSimpleName();

@@ -1,1 +1,1 @@
-- fixed crash when placing jewel in the gear sealer
+- Fixed issues with some etchings

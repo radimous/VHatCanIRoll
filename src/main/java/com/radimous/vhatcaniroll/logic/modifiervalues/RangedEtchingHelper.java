@@ -110,11 +110,11 @@ public class RangedEtchingHelper {
                         continue;
                     }
                     var total = minList.values().stream().reduce(0.0, Double::sum);
+                    boolean equalWeight = equalWeight(minList);
                     sb.append("<gray><<yellow>");
                     boolean first = true;
                     for (Map.Entry<?, Double> s : minList.entrySet()) {
                         if (!first) {sb.append("<gray> | <yellow>");} first = false;
-                        String formattedWeight = DECIMAL_FORMAT.format(s.getValue() / total * 100);
 
                         if ("ability".equals(caseKey)) {
                             sb.append(ModConfigs.ABILITIES.getAbilityById(s.getKey().toString()).map(Skill::getName).orElse(s.getKey().toString()));
@@ -125,7 +125,10 @@ public class RangedEtchingHelper {
                             }
                         }
 
-                        sb.append(" <darkgray>").append(formattedWeight).append("%<yellow>");
+                        if (!equalWeight) {
+                            String formattedWeight = DECIMAL_FORMAT.format(s.getValue() / total * 100);
+                            sb.append(" <darkgray>").append(formattedWeight).append("%<yellow>");
+                        }
                     }
                     sb.append("<gray>><yellow>");
                     result.append(sb);
@@ -248,12 +251,31 @@ public class RangedEtchingHelper {
     }
 
     /**
+     * returns true if all elements of weighted list have the same weight
+     */
+    private static boolean equalWeight(AbstractMap<?, Double> list) {
+        Double lastWeight = null;
+        for (var weight: list.values()) {
+            if (lastWeight == null) {
+                lastWeight = weight;
+                continue;
+            }
+            if (lastWeight.doubleValue() != weight) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * This is used for pluralization
      */
     private static String evaluateConditional(String expr, Map<String, Double> minValues, Map<String, Double> maxValues) {
+        boolean matched = false;
         for(String part : expr.split("\\|")) {
             Matcher matcher = CONDITIONAL_PATTERN.matcher(part.trim());
             if (matcher.matches()) {
+                matched = true;
                 String key = matcher.group(1);
                 String operator = matcher.group(2);
                 double compareValue = Double.parseDouble(matcher.group(3));
@@ -266,6 +288,9 @@ public class RangedEtchingHelper {
             }
         }
 
+        if (!matched) {
+            return expr; // it wasn't conditional at all
+        }
         return "";
     }
 
