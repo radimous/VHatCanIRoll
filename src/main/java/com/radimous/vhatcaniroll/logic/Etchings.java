@@ -28,7 +28,7 @@ public class Etchings {
                 modList.add(new TextComponent("ID: " + modTierGroup.getIdentifier().toString()));
             }
             var atr = VaultGearAttributeRegistry.getAttribute(modTierGroup.getAttribute());
-            modList.add(EtchingModifierValues.getEtchingComponent(atr, modTierGroup));
+            modList.add(EtchingModifierValues.getEtchingComponent(etching, atr, modTierGroup));
         }
 
         return modList;
