@@ -9,7 +9,6 @@ import iskallia.vault.client.gui.framework.element.ModifierListElement;
 import iskallia.vault.client.gui.framework.render.TooltipDirection;
 import iskallia.vault.client.gui.framework.render.Tooltips;
 import iskallia.vault.client.gui.framework.render.spi.ITooltipRenderFunction;
-import iskallia.vault.client.gui.framework.screen.layout.ScreenLayout;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
 import iskallia.vault.client.gui.framework.text.LabelTextStyle;
 import iskallia.vault.config.gear.VaultGearTierConfig;
