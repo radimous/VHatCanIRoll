@@ -70,7 +70,7 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
             if (idx != 0) {
                 optCfg = Optional.ofNullable(ModConfigs.VAULT_GEAR_CONFIG.get(VaultMod.id("map_"+idx)));
             }
-            itemName.set(new TextComponent(gearPiece.getItem().getName(gearPiece).getString().toUpperCase() + " - Tier " + idx)
+            itemName.set(new TextComponent(gearPiece.getItem().getName(gearPiece).getString().toUpperCase() + " - Tier " + (idx + 1))
                 .withStyle(ChatFormatting.UNDERLINE).withStyle(modifierCategory.getStyle()));
 
             LabelElement<?> tierTooltip = new LabelElement<>(

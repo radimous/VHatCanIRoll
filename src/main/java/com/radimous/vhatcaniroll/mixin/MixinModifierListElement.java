@@ -2,15 +2,18 @@ package com.radimous.vhatcaniroll.mixin;
 
 import com.radimous.vhatcaniroll.Config;
 import com.radimous.vhatcaniroll.ui.artisan.ArtisanReplacement;
+import iskallia.vault.VaultMod;
 import iskallia.vault.client.gui.framework.element.ModifierListElement;
 import iskallia.vault.client.gui.framework.element.VerticalScrollClipContainer;
 import iskallia.vault.client.gui.framework.screen.layout.ScreenLayout;
 import iskallia.vault.client.gui.framework.spatial.spi.ISpatial;
 import iskallia.vault.config.gear.VaultGearTierConfig;
+import iskallia.vault.gear.data.VaultGearData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -34,7 +37,7 @@ public abstract class MixinModifierListElement<E extends ModifierListElement<E>>
         if (config == null) {
             return;
         }
-        int itemLevel = this.getItemLevel(gearStack);
+        int itemLevel = vhatcaniroll$woldsMapLevel(gearStack, this.getItemLevel(gearStack));
         ci.cancel();
         ArtisanReplacement.addModifierList(itemLevel, config, (ModifierListElement<?>) (Object) this, this.innerContainerElement);
         ScreenLayout.requestLayout();
@@ -48,5 +51,18 @@ public abstract class MixinModifierListElement<E extends ModifierListElement<E>>
         } else {
             cir.setReturnValue(Config.ARTISAN_MODIFIER_LIST_WIDTH.get());
         }
+    }
+
+    @Unique
+    private static int vhatcaniroll$woldsMapLevel(ItemStack stack, int defaultValue) {
+        if (VaultMod.id("map").equals(stack.getItem().getRegistryName())){
+            VaultGearData data = VaultGearData.read(stack);
+            for (var mapAttr: data.getAttributes()) {
+                if (VaultMod.id("map_tier").equals(mapAttr.getAttribute().getRegistryName()) && mapAttr.getValue() instanceof Integer intValue) {
+                    return intValue;
+                }
+            }
+        }
+        return defaultValue;
     }
 }
