@@ -554,6 +554,8 @@ public class CardRolls {
                 List<Component> ttips = new ArrayList<>();
                 modifier.addText(ttips, 0, TooltipFlag.Default.NORMAL, 0);
                 ttipComponent = ComponentUtil.replace(ttips.get(0), "-100.0%", new TextComponent("-100%"));
+                ttipComponent = ComponentUtil.replace(ttipComponent, "-1.0x", new TextComponent("-100%"));
+//                ttipComponent = ComponentUtil.replace(ttipComponent, "-1", new TextComponent("-100%")); // this gets into infinite loop
             } catch (Exception e) {
                 System.out.println("ERR" + e.getMessage());
             }
@@ -702,23 +704,26 @@ public class CardRolls {
         return "UNSUPPORTED FLOAT ROLL " + floatRoll;
     }
     static String processFloatroll(FloatRoll floatRoll) {
+        return processFloatroll(floatRoll, 0);
+    }
+    static String processFloatroll(FloatRoll floatRoll, float offset) {
         if (floatRoll == null) {
             return null;
         }
         if (floatRoll instanceof FloatRoll.Constant constant) {
-            return DECIMAL_FORMAT.format(constant.getCount());
+            return DECIMAL_FORMAT.format(constant.getCount() + offset);
         }
         if (floatRoll instanceof FloatRoll.Uniform uniform) {
             if (uniform.getMin() == uniform.getMax()) {
-                return DECIMAL_FORMAT.format(uniform.getMin());
+                return DECIMAL_FORMAT.format(uniform.getMin() + offset);
             }
-            return DECIMAL_FORMAT.format(uniform.getMin()) + "-" + DECIMAL_FORMAT.format(uniform.getMax());
+            return DECIMAL_FORMAT.format(uniform.getMin() + offset) + "-" + DECIMAL_FORMAT.format(uniform.getMax() + offset);
         }
         if (floatRoll instanceof FloatRoll.UniformedStep uniform) {
             if (uniform.getMin() == uniform.getMax()) {
-                return DECIMAL_FORMAT.format(uniform.getMin());
+                return DECIMAL_FORMAT.format(uniform.getMin() + offset);
             }
-            return DECIMAL_FORMAT.format(uniform.getMin()) + "-" + DECIMAL_FORMAT.format(uniform.getMax());
+            return DECIMAL_FORMAT.format(uniform.getMin() + offset) + "-" + DECIMAL_FORMAT.format(uniform.getMax() + offset);
         }
         return "UNSUPPORTED FLOAT ROLL " + floatRoll;
     }
