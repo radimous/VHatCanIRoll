@@ -1,11 +1,11 @@
 package com.radimous.vhatcaniroll.mixin;
 
 import com.radimous.vhatcaniroll.Config;
-import com.radimous.vhatcaniroll.QOLHuntersCompat;
 import com.radimous.vhatcaniroll.ui.gear.GearModifierScreen;
+import com.radimous.vhatcaniroll.ui.mainhud.MainHud;
 import iskallia.vault.client.gui.framework.ScreenTextures;
-import iskallia.vault.client.gui.framework.element.ButtonElement;
 import iskallia.vault.client.gui.framework.element.FakeItemSlotElement;
+import iskallia.vault.client.gui.framework.element.NineSliceButtonElement;
 import iskallia.vault.client.gui.framework.render.TooltipDirection;
 import iskallia.vault.client.gui.framework.render.spi.IElementRenderer;
 import iskallia.vault.client.gui.framework.spatial.Spatials;
@@ -40,36 +40,8 @@ public class StatisticsElementContainerScreenMixin extends AbstractSkillTabEleme
         if (!Config.VAULT_SCREEN_BUTTON.get()){
             return;
         }
-
-        // TODO: figure out how to add button like the quest button, not this ugly shit
-
-        QOLHuntersCompat.resolveQOLHuntersButtonConflict();
-
-        // add blank button to vault screen
-        this.addElement(
-            new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
-                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-                Minecraft.getInstance().setScreen(new GearModifierScreen());
-            }).layout(
-                    (screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.right() + Config.BUTTON_X.get()).translateY(this.getTabContentSpatial().bottom() + Config.BUTTON_Y.get())
-                )
-                .tooltip((tooltipRenderer, poseStack, mouseX, mouseY, tooltipFlag) -> {
-                    tooltipRenderer.renderTooltip(poseStack, List.of(new TextComponent("Gear modifiers")), mouseX, mouseY, ItemStack.EMPTY, TooltipDirection.RIGHT);
-                    return false;
-                })
-        );
-        // add chestplate icon to it
-        ItemStack chestplateStack = new ItemStack(ModItems.CHESTPLATE);
-        this.addElement(
-            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> chestplateStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY
-            ).layout(
-                    (screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.right() + Config.BUTTON_X.get()).translateY(this.getTabContentSpatial().bottom() + Config.BUTTON_Y.get())
-                )
-                .tooltip((tooltipRenderer, poseStack, mouseX, mouseY, tooltipFlag) -> {
-                    tooltipRenderer.renderTooltip(poseStack, List.of(new TextComponent("Gear modifiers")), mouseX, mouseY, ItemStack.EMPTY, TooltipDirection.RIGHT);
-                    return false;
-                })
-        );
+        this.addElement(MainHud.getOpenButton(this.getTabContentSpatial()));
+        this.addElement(MainHud.getChestplateStack(this.getTabContentSpatial()));
     }
 
     @Shadow
