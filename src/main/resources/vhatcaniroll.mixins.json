@@ -8,11 +8,11 @@
     "accessors.cards.DeckModifiersConfigAccessor"
   ],
   "client": [
-    "MixinArtisanStationScreen",
-    "MixinIntegrationJEI",
+//    "MixinArtisanStationScreen",
+//    "MixinIntegrationJEI",
     "MixinModifierListElement",
     "MixinUniqueCodexScreen",
-    "MixinVaultSealerScreen",
+//    "MixinVaultSealerScreen",
     "StatisticsElementContainerScreenMixin",
     "accessors.AbilityFloatValueAttributeReaderInvoker",
     "accessors.DoubleRangeAccessor",
