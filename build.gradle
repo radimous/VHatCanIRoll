@@ -13,7 +13,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
-    id 'com.radimous.vh-addon-dev' version '0.3.6'
+    id 'com.radimous.vh-addon-dev' version '0.3.8'
     id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
@@ -100,7 +100,9 @@ repositories {
         }
     }
 }
-
+vhaddon {
+    vhVersion = "latest-regular"
+}
 dependencies {
 
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
