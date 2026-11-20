@@ -36,7 +36,6 @@ public class MainHud {
 
     public static IElement getOpenButton(ISpatial tabContentSpatial) {
         return new NineSliceButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_GRAY_TEXTURES, () -> {
-            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             Minecraft.getInstance().setScreen(new GearModifierScreen());
         }).layout((screen, gui, parent, world) -> world.width(20).height(20).translateX(gui.right() + 24 + Config.BUTTON_X.get()).translateY(
                         tabContentSpatial.bottom() + 14 + Config.BUTTON_Y.get()))
