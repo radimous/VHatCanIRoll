@@ -20,7 +20,6 @@ public class Config {
     public static final ForgeConfigSpec.BooleanValue SHOW_CARD_WEIGHT;
     public static final ForgeConfigSpec.BooleanValue SHOW_CARD_CHANCE;
     public static final ForgeConfigSpec.BooleanValue SHOW_GEAR_CHANCE;
-    public static final ForgeConfigSpec.BooleanValue QOL_HUNTERS_CONFLICT_RESOLUTION;
     public static final ForgeConfigSpec.BooleanValue SHOW_UNOBTAINABLE_CRAFTED;
     public static final ForgeConfigSpec.BooleanValue DEBUG_UNIQUE_GEAR;
     public static final ForgeConfigSpec.BooleanValue DEBUG_CARDS;
@@ -54,9 +53,6 @@ public class Config {
         builder.pop();
 
         builder.push("Debug");
-        QOL_HUNTERS_CONFLICT_RESOLUTION = builder
-            .comment("QOL Hunters conflict resolution (shouldn't be disabled unless it causes issues)")
-            .define("QOLHuntersConflictResolution", true);
         AFFIX_TAG_GROUP_CHANCE_BLACKLIST = builder
             .comment("vhcir won't show chance/weight for affixes in these groups")
             .defineList("affixTagGroupBlacklist", List.of(VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_PREFIX.name(), VaultGearTierConfig.ModifierAffixTagGroup.CRAFTED_SUFFIX.name()), obj -> true);
