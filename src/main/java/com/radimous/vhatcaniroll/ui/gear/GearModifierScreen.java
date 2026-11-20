@@ -8,7 +8,6 @@ import com.radimous.vhatcaniroll.logic.ModifierCategory;
 import com.radimous.vhatcaniroll.ui.VHCIRTextures;
 import com.radimous.vhatcaniroll.ui.cards.CardRollScreen;
 import com.radimous.vhatcaniroll.ui.gear.inner.*;
-import com.radimous.vhatcaniroll.ui.greedquests.GreedQuestScreen;
 import com.simibubi.create.foundation.config.ui.ConfigScreen;
 import com.simibubi.create.foundation.config.ui.SubMenuConfigScreen;
 import iskallia.vault.VaultMod;
@@ -552,23 +551,6 @@ public class GearModifierScreen extends AbstractElementScreen {
         btnHeight += 20;
     }
 
-    private void createGreedQuestButton() {
-        int height = btnHeight;
-        btnHeight += 20;
-        this.addElement(new ButtonElement<>(Spatials.positionXY(-3, 3), ScreenTextures.BUTTON_EMPTY_16_TEXTURES, () -> {
-            Minecraft.getInstance().setScreen(new GreedQuestScreen());
-        })).layout((screen, gui, parent, world) -> {
-            world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height);
-        }).tooltip(
-            Tooltips.single(TooltipDirection.LEFT, () -> new TextComponent("Greed"))
-        );
-        ItemStack boosterPackStack = new ItemStack(ModItems.GREED_COIN);
-        this.addElement(
-            new FakeItemSlotElement<>(Spatials.positionXY(-3, 3), () -> boosterPackStack, () -> false, ScreenTextures.EMPTY, ScreenTextures.EMPTY)
-                .layout((screen, gui, parent, world) -> world.width(21).height(21).translateX(gui.left() - 16).translateY(this.getGuiSpatial().top() + height))
-        );
-    }
-
     private void createEtchingButton() {
         int height = btnHeight;
         btnHeight += 20;
@@ -658,37 +640,9 @@ public class GearModifierScreen extends AbstractElementScreen {
                 nextModifierCategory();
             }
         }
-        processGreedCode(keyCode);
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-
-    private static final String GREED_STRING = "greed";
-    private int greedProgress = 0;
-    private void processGreedCode(int keyCode) {
-        char typedChar = getCharFromKeyCode(keyCode);
-        if (typedChar == 0) return;
-
-        if (Character.toLowerCase(typedChar) == GREED_STRING.charAt(greedProgress)) {
-            greedProgress++;
-            if (greedProgress == GREED_STRING.length()) {
-                Minecraft.getInstance().setScreen(new GreedQuestScreen());
-                greedProgress = 0;
-            }
-        } else {
-            greedProgress = 0;
-            if (Character.toLowerCase(typedChar) == GREED_STRING.charAt(0)) {
-                greedProgress = 1;
-            }
-        }
-    }
-
-    private char getCharFromKeyCode(int keyCode) {
-        if (keyCode >= 32 && keyCode <= 126) {
-            return (char) keyCode;
-        }
-        return 0;
-    }
 
     //</editor-fold>
 
