@@ -1,1 +1,4 @@
-- Fixed issues with some etchings
+- Update 22 / Remastered 4 compatibility
+  - everything except etchings works, those will be fixed soon
+- added IMC if other mods want to register their gear pieces
+- improved support for wold's maps
