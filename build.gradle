@@ -100,9 +100,7 @@ repositories {
         }
     }
 }
-vhaddon {
-    vhVersion = "latest-regular"
-}
+
 dependencies {
 
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
