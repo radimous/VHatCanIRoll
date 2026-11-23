@@ -5,14 +5,15 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "vhatcaniroll.refmap.json",
   "mixins": [
-    "accessors.cards.DeckModifiersConfigAccessor"
+
   ],
   "client": [
-//    "MixinArtisanStationScreen",
-//    "MixinIntegrationJEI",
+    "MixinUniqueRollLines",
+    "accessors.cards.DeckModifiersConfigAccessor",
+    //    "MixinArtisanStationScreen",
+    //    "MixinIntegrationJEI",
     "MixinModifierListElement",
-    "MixinUniqueCodexScreen",
-//    "MixinVaultSealerScreen",
+    //    "MixinVaultSealerScreen",
     "StatisticsElementContainerScreenMixin",
     "accessors.AbilityFloatValueAttributeReaderInvoker",
     "accessors.DoubleRangeAccessor",
