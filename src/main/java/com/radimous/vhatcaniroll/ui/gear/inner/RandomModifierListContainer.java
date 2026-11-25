@@ -2,6 +2,7 @@ package com.radimous.vhatcaniroll.ui.gear.inner;
 
 import com.radimous.vhatcaniroll.logic.GroupTextComponent;
 import com.radimous.vhatcaniroll.logic.ModifierCategory;
+import com.radimous.vhatcaniroll.logic.ModifierListProviders;
 import iskallia.vault.VaultMod;
 import iskallia.vault.client.gui.framework.ScreenTextures;
 import iskallia.vault.client.gui.framework.element.LabelElement;
@@ -90,6 +91,11 @@ public class RandomModifierListContainer extends VerticalScrollClipContainer<Ran
         if (optCfg.isPresent()) {
             VaultGearTierConfig cfg = optCfg.get();
             modifiers = Modifiers.getModifierList(lvl, cfg, modifierCategory, true);
+        }
+
+        List<Component> provided = ModifierListProviders.find(gearPiece, lvl, mythic);
+        if (provided != null) {
+            modifiers = provided;
         }
 
         if (modifiers == null || modifiers.isEmpty()) {

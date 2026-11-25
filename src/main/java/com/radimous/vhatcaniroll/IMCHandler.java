@@ -2,7 +2,9 @@ package com.radimous.vhatcaniroll;
 
 
 import com.mojang.datafixers.util.Pair;
+import com.radimous.vhatcaniroll.api.ModifierListProvider;
 import com.radimous.vhatcaniroll.logic.Items;
+import com.radimous.vhatcaniroll.logic.ModifierListProviders;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -32,6 +34,9 @@ public class IMCHandler {
                 case "register_items": // expects List<ItemStack>
                     handleRegisterItems(sender, data);
                     break;
+                case "register_modifier_list": // expects ModifierListProvider
+                    handleRegisterModifierList(sender, data);
+                    break;
                 default:
                     LOGGER.warn("Unknown IMC method: {}", method);
                     break;
@@ -59,6 +64,15 @@ public class IMCHandler {
             Items.registerIMCItems(sender, priority, itemList);
         } else {
             LOGGER.warn("Invalid IMC format, register_items accepts Pair<Integer, List<ItemStack>>");
+        }
+    }
+
+    private static void handleRegisterModifierList(String sender, Object data) {
+        if (data instanceof ModifierListProvider provider) {
+            LOGGER.debug("Received modifier list provider from {}", sender);
+            ModifierListProviders.register(sender, provider);
+        } else {
+            LOGGER.warn("Invalid IMC format, register_modifier_list accepts ModifierListProvider");
         }
     }
 }
